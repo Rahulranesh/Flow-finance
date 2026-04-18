@@ -89,6 +89,9 @@ class TransactionRepository {
       paymentMethod: dbTransaction.paymentMethod,
       isRecurring: dbTransaction.isRecurring,
       recurringId: dbTransaction.recurringId,
+      walletId: dbTransaction.walletId,
+      currency: dbTransaction.currency,
+      exchangeRate: dbTransaction.exchangeRate,
     );
   }
 
@@ -105,6 +108,9 @@ class TransactionRepository {
       paymentMethod: Value(transaction.paymentMethod),
       isRecurring: Value(transaction.isRecurring),
       recurringId: Value(transaction.recurringId),
+      walletId: Value(transaction.walletId),
+      currency: Value(transaction.currency),
+      exchangeRate: Value(transaction.exchangeRate),
     );
   }
 }

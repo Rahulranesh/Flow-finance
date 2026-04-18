@@ -67,6 +67,26 @@ class $TransactionsTable extends Transactions
   late final GeneratedColumn<String> recurringId = GeneratedColumn<String>(
       'recurring_id', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _walletIdMeta =
+      const VerificationMeta('walletId');
+  @override
+  late final GeneratedColumn<String> walletId = GeneratedColumn<String>(
+      'wallet_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _currencyMeta =
+      const VerificationMeta('currency');
+  @override
+  late final GeneratedColumn<String> currency = GeneratedColumn<String>(
+      'currency', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('USD'));
+  static const VerificationMeta _exchangeRateMeta =
+      const VerificationMeta('exchangeRate');
+  @override
+  late final GeneratedColumn<double> exchangeRate = GeneratedColumn<double>(
+      'exchange_rate', aliasedName, true,
+      type: DriftSqlType.double, requiredDuringInsert: false);
   static const VerificationMeta _createdAtMeta =
       const VerificationMeta('createdAt');
   @override
@@ -95,6 +115,9 @@ class $TransactionsTable extends Transactions
         paymentMethod,
         isRecurring,
         recurringId,
+        walletId,
+        currency,
+        exchangeRate,
         createdAt,
         updatedAt
       ];
@@ -165,6 +188,20 @@ class $TransactionsTable extends Transactions
           recurringId.isAcceptableOrUnknown(
               data['recurring_id']!, _recurringIdMeta));
     }
+    if (data.containsKey('wallet_id')) {
+      context.handle(_walletIdMeta,
+          walletId.isAcceptableOrUnknown(data['wallet_id']!, _walletIdMeta));
+    }
+    if (data.containsKey('currency')) {
+      context.handle(_currencyMeta,
+          currency.isAcceptableOrUnknown(data['currency']!, _currencyMeta));
+    }
+    if (data.containsKey('exchange_rate')) {
+      context.handle(
+          _exchangeRateMeta,
+          exchangeRate.isAcceptableOrUnknown(
+              data['exchange_rate']!, _exchangeRateMeta));
+    }
     if (data.containsKey('created_at')) {
       context.handle(_createdAtMeta,
           createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
@@ -202,6 +239,12 @@ class $TransactionsTable extends Transactions
           .read(DriftSqlType.bool, data['${effectivePrefix}is_recurring'])!,
       recurringId: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}recurring_id']),
+      walletId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}wallet_id']),
+      currency: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}currency'])!,
+      exchangeRate: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}exchange_rate']),
       createdAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
       updatedAt: attachedDatabase.typeMapping
@@ -226,6 +269,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
   final String? paymentMethod;
   final bool isRecurring;
   final String? recurringId;
+  final String? walletId;
+  final String currency;
+  final double? exchangeRate;
   final DateTime createdAt;
   final DateTime updatedAt;
   const Transaction(
@@ -239,6 +285,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       this.paymentMethod,
       required this.isRecurring,
       this.recurringId,
+      this.walletId,
+      required this.currency,
+      this.exchangeRate,
       required this.createdAt,
       required this.updatedAt});
   @override
@@ -259,6 +308,13 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     map['is_recurring'] = Variable<bool>(isRecurring);
     if (!nullToAbsent || recurringId != null) {
       map['recurring_id'] = Variable<String>(recurringId);
+    }
+    if (!nullToAbsent || walletId != null) {
+      map['wallet_id'] = Variable<String>(walletId);
+    }
+    map['currency'] = Variable<String>(currency);
+    if (!nullToAbsent || exchangeRate != null) {
+      map['exchange_rate'] = Variable<double>(exchangeRate);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -281,6 +337,13 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       recurringId: recurringId == null && nullToAbsent
           ? const Value.absent()
           : Value(recurringId),
+      walletId: walletId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(walletId),
+      currency: Value(currency),
+      exchangeRate: exchangeRate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(exchangeRate),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -300,6 +363,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       paymentMethod: serializer.fromJson<String?>(json['paymentMethod']),
       isRecurring: serializer.fromJson<bool>(json['isRecurring']),
       recurringId: serializer.fromJson<String?>(json['recurringId']),
+      walletId: serializer.fromJson<String?>(json['walletId']),
+      currency: serializer.fromJson<String>(json['currency']),
+      exchangeRate: serializer.fromJson<double?>(json['exchangeRate']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -318,6 +384,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       'paymentMethod': serializer.toJson<String?>(paymentMethod),
       'isRecurring': serializer.toJson<bool>(isRecurring),
       'recurringId': serializer.toJson<String?>(recurringId),
+      'walletId': serializer.toJson<String?>(walletId),
+      'currency': serializer.toJson<String>(currency),
+      'exchangeRate': serializer.toJson<double?>(exchangeRate),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -334,6 +403,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           Value<String?> paymentMethod = const Value.absent(),
           bool? isRecurring,
           Value<String?> recurringId = const Value.absent(),
+          Value<String?> walletId = const Value.absent(),
+          String? currency,
+          Value<double?> exchangeRate = const Value.absent(),
           DateTime? createdAt,
           DateTime? updatedAt}) =>
       Transaction(
@@ -348,6 +420,10 @@ class Transaction extends DataClass implements Insertable<Transaction> {
             paymentMethod.present ? paymentMethod.value : this.paymentMethod,
         isRecurring: isRecurring ?? this.isRecurring,
         recurringId: recurringId.present ? recurringId.value : this.recurringId,
+        walletId: walletId.present ? walletId.value : this.walletId,
+        currency: currency ?? this.currency,
+        exchangeRate:
+            exchangeRate.present ? exchangeRate.value : this.exchangeRate,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
       );
@@ -367,6 +443,11 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           data.isRecurring.present ? data.isRecurring.value : this.isRecurring,
       recurringId:
           data.recurringId.present ? data.recurringId.value : this.recurringId,
+      walletId: data.walletId.present ? data.walletId.value : this.walletId,
+      currency: data.currency.present ? data.currency.value : this.currency,
+      exchangeRate: data.exchangeRate.present
+          ? data.exchangeRate.value
+          : this.exchangeRate,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -385,6 +466,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           ..write('paymentMethod: $paymentMethod, ')
           ..write('isRecurring: $isRecurring, ')
           ..write('recurringId: $recurringId, ')
+          ..write('walletId: $walletId, ')
+          ..write('currency: $currency, ')
+          ..write('exchangeRate: $exchangeRate, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -392,8 +476,22 @@ class Transaction extends DataClass implements Insertable<Transaction> {
   }
 
   @override
-  int get hashCode => Object.hash(id, title, amount, type, category, date, note,
-      paymentMethod, isRecurring, recurringId, createdAt, updatedAt);
+  int get hashCode => Object.hash(
+      id,
+      title,
+      amount,
+      type,
+      category,
+      date,
+      note,
+      paymentMethod,
+      isRecurring,
+      recurringId,
+      walletId,
+      currency,
+      exchangeRate,
+      createdAt,
+      updatedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -408,6 +506,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           other.paymentMethod == this.paymentMethod &&
           other.isRecurring == this.isRecurring &&
           other.recurringId == this.recurringId &&
+          other.walletId == this.walletId &&
+          other.currency == this.currency &&
+          other.exchangeRate == this.exchangeRate &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -423,6 +524,9 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
   final Value<String?> paymentMethod;
   final Value<bool> isRecurring;
   final Value<String?> recurringId;
+  final Value<String?> walletId;
+  final Value<String> currency;
+  final Value<double?> exchangeRate;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<int> rowid;
@@ -437,6 +541,9 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     this.paymentMethod = const Value.absent(),
     this.isRecurring = const Value.absent(),
     this.recurringId = const Value.absent(),
+    this.walletId = const Value.absent(),
+    this.currency = const Value.absent(),
+    this.exchangeRate = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -452,6 +559,9 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     this.paymentMethod = const Value.absent(),
     this.isRecurring = const Value.absent(),
     this.recurringId = const Value.absent(),
+    this.walletId = const Value.absent(),
+    this.currency = const Value.absent(),
+    this.exchangeRate = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -472,6 +582,9 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     Expression<String>? paymentMethod,
     Expression<bool>? isRecurring,
     Expression<String>? recurringId,
+    Expression<String>? walletId,
+    Expression<String>? currency,
+    Expression<double>? exchangeRate,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
@@ -487,6 +600,9 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
       if (paymentMethod != null) 'payment_method': paymentMethod,
       if (isRecurring != null) 'is_recurring': isRecurring,
       if (recurringId != null) 'recurring_id': recurringId,
+      if (walletId != null) 'wallet_id': walletId,
+      if (currency != null) 'currency': currency,
+      if (exchangeRate != null) 'exchange_rate': exchangeRate,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -504,6 +620,9 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
       Value<String?>? paymentMethod,
       Value<bool>? isRecurring,
       Value<String?>? recurringId,
+      Value<String?>? walletId,
+      Value<String>? currency,
+      Value<double?>? exchangeRate,
       Value<DateTime>? createdAt,
       Value<DateTime>? updatedAt,
       Value<int>? rowid}) {
@@ -518,6 +637,9 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
       paymentMethod: paymentMethod ?? this.paymentMethod,
       isRecurring: isRecurring ?? this.isRecurring,
       recurringId: recurringId ?? this.recurringId,
+      walletId: walletId ?? this.walletId,
+      currency: currency ?? this.currency,
+      exchangeRate: exchangeRate ?? this.exchangeRate,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -557,6 +679,15 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     if (recurringId.present) {
       map['recurring_id'] = Variable<String>(recurringId.value);
     }
+    if (walletId.present) {
+      map['wallet_id'] = Variable<String>(walletId.value);
+    }
+    if (currency.present) {
+      map['currency'] = Variable<String>(currency.value);
+    }
+    if (exchangeRate.present) {
+      map['exchange_rate'] = Variable<double>(exchangeRate.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -582,6 +713,9 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
           ..write('paymentMethod: $paymentMethod, ')
           ..write('isRecurring: $isRecurring, ')
           ..write('recurringId: $recurringId, ')
+          ..write('walletId: $walletId, ')
+          ..write('currency: $currency, ')
+          ..write('exchangeRate: $exchangeRate, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -2721,6 +2855,9 @@ typedef $$TransactionsTableCreateCompanionBuilder = TransactionsCompanion
   Value<String?> paymentMethod,
   Value<bool> isRecurring,
   Value<String?> recurringId,
+  Value<String?> walletId,
+  Value<String> currency,
+  Value<double?> exchangeRate,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
   Value<int> rowid,
@@ -2737,6 +2874,9 @@ typedef $$TransactionsTableUpdateCompanionBuilder = TransactionsCompanion
   Value<String?> paymentMethod,
   Value<bool> isRecurring,
   Value<String?> recurringId,
+  Value<String?> walletId,
+  Value<String> currency,
+  Value<double?> exchangeRate,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
   Value<int> rowid,
@@ -2780,6 +2920,15 @@ class $$TransactionsTableFilterComposer
 
   ColumnFilters<String> get recurringId => $composableBuilder(
       column: $table.recurringId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get walletId => $composableBuilder(
+      column: $table.walletId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get currency => $composableBuilder(
+      column: $table.currency, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get exchangeRate => $composableBuilder(
+      column: $table.exchangeRate, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnFilters(column));
@@ -2828,6 +2977,16 @@ class $$TransactionsTableOrderingComposer
   ColumnOrderings<String> get recurringId => $composableBuilder(
       column: $table.recurringId, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get walletId => $composableBuilder(
+      column: $table.walletId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get currency => $composableBuilder(
+      column: $table.currency, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get exchangeRate => $composableBuilder(
+      column: $table.exchangeRate,
+      builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnOrderings(column));
 
@@ -2874,6 +3033,15 @@ class $$TransactionsTableAnnotationComposer
   GeneratedColumn<String> get recurringId => $composableBuilder(
       column: $table.recurringId, builder: (column) => column);
 
+  GeneratedColumn<String> get walletId =>
+      $composableBuilder(column: $table.walletId, builder: (column) => column);
+
+  GeneratedColumn<String> get currency =>
+      $composableBuilder(column: $table.currency, builder: (column) => column);
+
+  GeneratedColumn<double> get exchangeRate => $composableBuilder(
+      column: $table.exchangeRate, builder: (column) => column);
+
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
@@ -2917,6 +3085,9 @@ class $$TransactionsTableTableManager extends RootTableManager<
             Value<String?> paymentMethod = const Value.absent(),
             Value<bool> isRecurring = const Value.absent(),
             Value<String?> recurringId = const Value.absent(),
+            Value<String?> walletId = const Value.absent(),
+            Value<String> currency = const Value.absent(),
+            Value<double?> exchangeRate = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
@@ -2932,6 +3103,9 @@ class $$TransactionsTableTableManager extends RootTableManager<
             paymentMethod: paymentMethod,
             isRecurring: isRecurring,
             recurringId: recurringId,
+            walletId: walletId,
+            currency: currency,
+            exchangeRate: exchangeRate,
             createdAt: createdAt,
             updatedAt: updatedAt,
             rowid: rowid,
@@ -2947,6 +3121,9 @@ class $$TransactionsTableTableManager extends RootTableManager<
             Value<String?> paymentMethod = const Value.absent(),
             Value<bool> isRecurring = const Value.absent(),
             Value<String?> recurringId = const Value.absent(),
+            Value<String?> walletId = const Value.absent(),
+            Value<String> currency = const Value.absent(),
+            Value<double?> exchangeRate = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
@@ -2962,6 +3139,9 @@ class $$TransactionsTableTableManager extends RootTableManager<
             paymentMethod: paymentMethod,
             isRecurring: isRecurring,
             recurringId: recurringId,
+            walletId: walletId,
+            currency: currency,
+            exchangeRate: exchangeRate,
             createdAt: createdAt,
             updatedAt: updatedAt,
             rowid: rowid,

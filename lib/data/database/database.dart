@@ -20,6 +20,9 @@ class Transactions extends Table {
   TextColumn get paymentMethod => text().nullable()();
   BoolColumn get isRecurring => boolean().withDefault(const Constant(false))();
   TextColumn get recurringId => text().nullable()();
+  TextColumn get walletId => text().nullable()();
+  TextColumn get currency => text().withDefault(const Constant('USD'))();
+  RealColumn get exchangeRate => real().nullable()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 

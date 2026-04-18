@@ -14,6 +14,9 @@ class Transaction {
   final List<String>? tags;
   final bool isRecurring;
   final String? recurringId;
+  final String? walletId;
+  final String currency;
+  final double? exchangeRate;
 
   const Transaction({
     required this.id,
@@ -27,6 +30,9 @@ class Transaction {
     this.tags,
     this.isRecurring = false,
     this.recurringId,
+    this.walletId,
+    this.currency = 'USD',
+    this.exchangeRate,
   });
 
   /// Create a copy of this transaction with modified fields
@@ -42,6 +48,9 @@ class Transaction {
     List<String>? tags,
     bool? isRecurring,
     String? recurringId,
+    String? walletId,
+    String? currency,
+    double? exchangeRate,
   }) {
     return Transaction(
       id: id ?? this.id,
@@ -55,6 +64,9 @@ class Transaction {
       tags: tags ?? this.tags,
       isRecurring: isRecurring ?? this.isRecurring,
       recurringId: recurringId ?? this.recurringId,
+      walletId: walletId ?? this.walletId,
+      currency: currency ?? this.currency,
+      exchangeRate: exchangeRate ?? this.exchangeRate,
     );
   }
 
@@ -72,6 +84,9 @@ class Transaction {
       'tags': tags,
       'isRecurring': isRecurring,
       'recurringId': recurringId,
+      'walletId': walletId,
+      'currency': currency,
+      'exchangeRate': exchangeRate,
     };
   }
 
@@ -92,6 +107,11 @@ class Transaction {
       tags: (json['tags'] as List<dynamic>?)?.cast<String>(),
       isRecurring: json['isRecurring'] as bool? ?? false,
       recurringId: json['recurringId'] as String?,
+      walletId: json['walletId'] as String?,
+      currency: json['currency'] as String? ?? 'USD',
+      exchangeRate: json['exchangeRate'] != null
+          ? (json['exchangeRate'] as num).toDouble()
+          : null,
     );
   }
 
