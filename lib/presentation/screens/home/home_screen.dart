@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../core/theme/theme.dart';
 import '../../../core/widgets/widgets.dart';
+import '../../../core/utils/extensions.dart';
+import '../../../data/models/models.dart';
+import '../../blocs/blocs.dart';
 
 /// Modern home screen with balance overview, quick actions, and recent transactions
 class HomeScreen extends StatefulWidget {
@@ -59,14 +63,61 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
 
           // Recent Transactions List
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) => _TransactionListItem(
-                isExpense: index % 3 != 0,
-                index: index,
-              ),
-              childCount: 10,
-            ),
+          Consumer<TransactionBloc>(
+            builder: (context, bloc, child) {
+              if (bloc.isLoading) {
+                return const SliverFillRemaining(
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+
+              if (bloc.error != null) {
+                return SliverFillRemaining(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          size: 48,
+                          color: AppColors.error,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(bloc.error!),
+                        const SizedBox(height: 16),
+                        AppButton.secondary(
+                          label: 'Retry',
+                          onPressed: () => bloc.loadTransactions(),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              final transactions = bloc.transactions.take(10).toList();
+
+              if (transactions.isEmpty) {
+                return const SliverFillRemaining(
+                  child: Center(
+                    child: EmptyStateWidget(
+                      icon: Icons.receipt_long,
+                      title: 'No transactions yet',
+                      subtitle: 'Add your first transaction to get started',
+                    ),
+                  ),
+                );
+              }
+
+              return SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) => _TransactionListItem(
+                    transaction: transactions[index],
+                  ),
+                  childCount: transactions.length,
+                ),
+              );
+            },
           ),
 
           // Bottom padding
@@ -87,6 +138,11 @@ class _HomeScreenState extends State<HomeScreen> {
 class _BalanceHeroCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final transactionBloc = context.watch<TransactionBloc>();
+    final balance = transactionBloc.balance;
+    final income = transactionBloc.totalIncome;
+    final expense = transactionBloc.totalExpense;
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Padding(
@@ -151,8 +207,10 @@ class _BalanceHeroCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            Text(
-              '\$24,562.80',
+            AnimatedCounter(
+              value: balance,
+              prefix: '\$',
+              decimalPlaces: 2,
               style: AppTypography.displayLarge(color: Colors.white),
             ),
             const SizedBox(height: 24),
@@ -161,7 +219,7 @@ class _BalanceHeroCard extends StatelessWidget {
                 Expanded(
                   child: _MiniStat(
                     label: 'Income',
-                    amount: '\$8,420.00',
+                    amount: income.toCurrency(),
                     icon: Icons.arrow_downward,
                     iconColor: AppColors.income,
                   ),
@@ -174,7 +232,7 @@ class _BalanceHeroCard extends StatelessWidget {
                 Expanded(
                   child: _MiniStat(
                     label: 'Expense',
-                    amount: '\$3,250.00',
+                    amount: expense.toCurrency(),
                     icon: Icons.arrow_upward,
                     iconColor: AppColors.expense,
                   ),
@@ -420,26 +478,19 @@ class _SectionHeaderDelegate extends SliverPersistentHeaderDelegate {
 
 /// Transaction list item
 class _TransactionListItem extends StatelessWidget {
-  final bool isExpense;
-  final int index;
+  final Transaction transaction;
 
   const _TransactionListItem({
-    required this.isExpense,
-    required this.index,
+    required this.transaction,
   });
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final categories = [
-      ('Shopping', Icons.shopping_bag, const Color(0xFFEC4899)),
-      ('Food', Icons.restaurant, const Color(0xFFF59E0B)),
-      ('Transport', Icons.directions_car, const Color(0xFF3B82F6)),
-      ('Entertainment', Icons.movie, const Color(0xFF8B5CF6)),
-      ('Health', Icons.favorite, const Color(0xFFEF4444)),
-      ('Salary', Icons.work, const Color(0xFF10B981)),
-    ];
-    final category = categories[index % categories.length];
+    final isExpense = transaction.type == TransactionType.expense;
+
+    // Get category icon and color
+    final categoryData = _getCategoryData(transaction.category);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
@@ -453,12 +504,12 @@ class _TransactionListItem extends StatelessWidget {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: category.$3.withOpacity(0.1),
+                color: categoryData.$2.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
-                category.$2,
-                color: category.$3,
+                categoryData.$1,
+                color: categoryData.$2,
                 size: 24,
               ),
             ),
@@ -468,25 +519,25 @@ class _TransactionListItem extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    category.$1,
+                    transaction.title,
                     style: AppTypography.bodyLarge(
                       fontWeight: FontWeight.w600,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Today, 2:30 PM',
+                    transaction.date.toRelative(),
                     style: AppTypography.bodySmall(
-                      color: isDark
-                          ? AppColors.textTertiaryDark
-                          : AppColors.textTertiaryLight,
+                      color: AppColors.textTertiary(context),
                     ),
                   ),
                 ],
               ),
             ),
             Text(
-              '${isExpense ? '-' : '+'}\$${(index + 1) * 25}.00',
+              '${isExpense ? '-' : '+'}${transaction.amount.toCurrency()}',
               style: AppTypography.amountSmall(
                 isNegative: isExpense,
               ),
@@ -495,5 +546,22 @@ class _TransactionListItem extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  (IconData, Color) _getCategoryData(String category) {
+    final categoryMap = <String, (IconData, Color)>{
+      'Food': (Icons.restaurant, const Color(0xFFF59E0B)),
+      'Transport': (Icons.directions_car, const Color(0xFF3B82F6)),
+      'Shopping': (Icons.shopping_bag, const Color(0xFFEC4899)),
+      'Entertainment': (Icons.movie, const Color(0xFF8B5CF6)),
+      'Bills': (Icons.receipt, const Color(0xFFEF4444)),
+      'Health': (Icons.favorite, const Color(0xFF10B981)),
+      'Education': (Icons.school, const Color(0xFF14B8A6)),
+      'Salary': (Icons.work, const Color(0xFF22C55E)),
+      'Freelance': (Icons.laptop, const Color(0xFF6366F1)),
+      'Investment': (Icons.trending_up, const Color(0xFF06B6D4)),
+    };
+
+    return categoryMap[category] ?? (Icons.category, AppColors.primary);
   }
 }

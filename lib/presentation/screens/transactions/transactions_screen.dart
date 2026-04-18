@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../core/theme/theme.dart';
 import '../../../core/widgets/widgets.dart';
+import '../../../core/utils/extensions.dart';
+import '../../../data/models/models.dart';
+import '../../blocs/blocs.dart';
 
 /// Transactions list screen with filtering and search
 class TransactionsScreen extends StatefulWidget {
@@ -12,8 +16,13 @@ class TransactionsScreen extends StatefulWidget {
 
 class _TransactionsScreenState extends State<TransactionsScreen> {
   final TextEditingController _searchController = TextEditingController();
-  String _selectedFilter = 'All';
-  final List<String> _filters = ['All', 'Income', 'Expense', 'Transfer'];
+  TransactionFilter _selectedFilter = TransactionFilter.all;
+
+  final List<(String, TransactionFilter)> _filters = const [
+    ('All', TransactionFilter.all),
+    ('Income', TransactionFilter.income),
+    ('Expense', TransactionFilter.expense),
+  ];
 
   @override
   void dispose() {
@@ -42,8 +51,12 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
               controller: _searchController,
               hint: 'Search transactions...',
               onChanged: (value) {
-                // Handle search
-              },
+              context.read<TransactionBloc>().search(value);
+            },
+            onClear: () {
+              _searchController.clear();
+              context.read<TransactionBloc>().clearSearch();
+            },
             ),
           ),
 
@@ -56,7 +69,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
               itemCount: _filters.length,
               separatorBuilder: (_, __) => const SizedBox(width: 8),
               itemBuilder: (context, index) {
-                final filter = _filters[index];
+                final (label, filter) = _filters[index];
                 final isSelected = filter == _selectedFilter;
 
                 return GestureDetector(
@@ -64,7 +77,82 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                     setState(() {
                       _selectedFilter = filter;
                     });
+                    context.read<TransactionBloc>().setFilter(filter);
                   },
+                  child: AnimatedContainer(
+                    duration: AppAnimations.fast,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? AppColors.primary
+                          : AppColors.surfaceVariant(context),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      label,
+                      style: AppTypography.labelMedium(
+                        color: isSelected ? Colors.white : null,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Transactions List
+          Expanded(
+            child: Consumer<TransactionBloc>(
+              builder: (context, bloc, child) {
+                if (bloc.isLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (bloc.error != null) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          size: 48,
+                          color: AppColors.error,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(bloc.error!),
+                        const SizedBox(height: 16),
+                        AppButton.secondary(
+                          label: 'Retry',
+                          onPressed: () => bloc.loadTransactions(),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                final transactions = bloc.transactions;
+
+                if (transactions.isEmpty) {
+                  return const Center(
+                    child: EmptyStateWidget(
+                      icon: Icons.receipt_long,
+                      title: 'No transactions found',
+                      subtitle: 'Try adjusting your filters or add a new transaction',
+                    ),
+                  );
+                }
+
+                return _TransactionsList(transactions: transactions);
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
                   child: AnimatedContainer(
                     duration: AppAnimations.fast,
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -100,21 +188,37 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
 
 /// Grouped transactions list with date headers
 class _TransactionsList extends StatelessWidget {
+  final List<Transaction> transactions;
+
+  const _TransactionsList({required this.transactions});
+
   @override
   Widget build(BuildContext context) {
-    // Sample grouped data
-    final groups = [
-      ('Today', 3),
-      ('Yesterday', 4),
-      ('This Week', 5),
-      ('Last Week', 6),
-    ];
+    // Group transactions by date
+    final grouped = <String, List<Transaction>>{};
+    for (final transaction in transactions) {
+      final date = transaction.date;
+      String key;
+      if (date.isToday) {
+        key = 'Today';
+      } else if (date.isYesterday) {
+        key = 'Yesterday';
+      } else if (date.difference(DateTime.now()).inDays > -7) {
+        key = 'This Week';
+      } else if (date.difference(DateTime.now()).inDays > -14) {
+        key = 'Last Week';
+      } else {
+        key = date.toShortDate();
+      }
+      grouped.putIfAbsent(key, () => []).add(transaction);
+    }
 
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      itemCount: groups.length,
+      itemCount: grouped.length,
       itemBuilder: (context, groupIndex) {
-        final (date, count) = groups[groupIndex];
+        final date = grouped.keys.elementAt(groupIndex);
+        final items = grouped[date]!;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,13 +235,9 @@ class _TransactionsList extends StatelessWidget {
             ),
 
             // Transactions for this date
-            ...List.generate(count, (index) {
-              final itemIndex = groupIndex * 10 + index;
-              return _TransactionItem(
-                index: itemIndex,
-                isExpense: itemIndex % 3 != 0,
-              );
-            }),
+            ...items.map((transaction) => _TransactionItem(
+              transaction: transaction,
+            )),
           ],
         );
       },
@@ -147,30 +247,33 @@ class _TransactionsList extends StatelessWidget {
 
 /// Individual transaction item with swipe actions
 class _TransactionItem extends StatelessWidget {
-  final int index;
-  final bool isExpense;
+  final Transaction transaction;
 
   const _TransactionItem({
-    required this.index,
-    required this.isExpense,
+    required this.transaction,
   });
 
   @override
   Widget build(BuildContext context) {
-    final categories = [
-      ('Shopping', Icons.shopping_bag, const Color(0xFFEC4899)),
-      ('Food', Icons.restaurant, const Color(0xFFF59E0B)),
-      ('Transport', Icons.directions_car, const Color(0xFF3B82F6)),
-      ('Entertainment', Icons.movie, const Color(0xFF8B5CF6)),
-      ('Health', Icons.favorite, const Color(0xFFEF4444)),
-      ('Salary', Icons.work, const Color(0xFF10B981)),
-      ('Investment', Icons.trending_up, const Color(0xFF14B8A6)),
-      ('Utilities', Icons.bolt, const Color(0xFFF97316)),
-    ];
-    final category = categories[index % categories.length];
+    final isExpense = transaction.type == TransactionType.expense;
+    final categoryData = _getCategoryData(transaction.category);
 
     return Dismissible(
-      key: ValueKey('transaction_$index'),
+      key: ValueKey('transaction_${transaction.id}'),
+      onDismissed: (_) {
+        context.read<TransactionBloc>().deleteTransaction(transaction.id);
+        context.showSnackBar(
+          SnackBar(
+            content: const Text('Transaction deleted'),
+            action: SnackBarAction(
+              label: 'Undo',
+              onPressed: () {
+                // Could implement undo here
+              },
+            ),
+          ),
+        );
+      },
       direction: DismissDirection.endToStart,
       background: Container(
         margin: const EdgeInsets.only(bottom: 12),
@@ -201,8 +304,8 @@ class _TransactionItem extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
-                category.$2,
-                color: category.$3,
+                categoryData.$1,
+                color: categoryData.$2,
                 size: 24,
               ),
             ),
@@ -214,14 +317,16 @@ class _TransactionItem extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    category.$1,
+                    transaction.title,
                     style: AppTypography.bodyLarge(
                       fontWeight: FontWeight.w600,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Visa ending in 4242',
+                    transaction.category,
                     style: AppTypography.bodySmall(
                       color: AppColors.textTertiary(context),
                     ),
@@ -235,7 +340,7 @@ class _TransactionItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '${isExpense ? '-' : '+'}\$${(index + 1) * 25}.00',
+                  '${isExpense ? '-' : '+'}${transaction.amount.toCurrency()}',
                   style: AppTypography.amountSmall(
                     isNegative: isExpense,
                   ),
@@ -260,6 +365,23 @@ class _TransactionItem extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  (IconData, Color) _getCategoryData(String category) {
+    final categoryMap = <String, (IconData, Color)>{
+      'Food': (Icons.restaurant, const Color(0xFFF59E0B)),
+      'Transport': (Icons.directions_car, const Color(0xFF3B82F6)),
+      'Shopping': (Icons.shopping_bag, const Color(0xFFEC4899)),
+      'Entertainment': (Icons.movie, const Color(0xFF8B5CF6)),
+      'Bills': (Icons.receipt, const Color(0xFFEF4444)),
+      'Health': (Icons.favorite, const Color(0xFF10B981)),
+      'Education': (Icons.school, const Color(0xFF14B8A6)),
+      'Salary': (Icons.work, const Color(0xFF22C55E)),
+      'Freelance': (Icons.laptop, const Color(0xFF6366F1)),
+      'Investment': (Icons.trending_up, const Color(0xFF06B6D4)),
+    };
+
+    return categoryMap[category] ?? (Icons.category, AppColors.primary);
   }
 }
 

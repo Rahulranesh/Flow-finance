@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 import '../../../core/theme/theme.dart';
 import '../../../core/widgets/widgets.dart';
+import '../../../core/utils/extensions.dart';
+import '../../../core/validators/validators.dart';
+import '../../../data/models/models.dart';
+import '../../blocs/blocs.dart';
 
 /// Add transaction screen with clean number pad and category selection
 class AddTransactionScreen extends StatefulWidget {
@@ -13,10 +19,13 @@ class AddTransactionScreen extends StatefulWidget {
 
 class _AddTransactionScreenState extends State<AddTransactionScreen> {
   final TextEditingController _noteController = TextEditingController();
+  final TextEditingController _titleController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
   String _amount = '0';
   bool _isExpense = true;
   String _selectedCategory = 'Food';
   DateTime _selectedDate = DateTime.now();
+  bool _isLoading = false;
 
   final List<_Category> _categories = [
     _Category('Food', Icons.restaurant, const Color(0xFFF59E0B)),
@@ -26,13 +35,63 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     _Category('Health', Icons.favorite, const Color(0xFFEF4444)),
     _Category('Bills', Icons.receipt, const Color(0xFF64748B)),
     _Category('Education', Icons.school, const Color(0xFF14B8A6)),
-    _Category('Other', Icons.more_horiz, const Color(0xFF94A3B8)),
+    _Category('Salary', Icons.work, const Color(0xFF22C55E)),
+    _Category('Freelance', Icons.laptop, const Color(0xFF6366F1)),
   ];
 
   @override
   void dispose() {
     _noteController.dispose();
+    _titleController.dispose();
     super.dispose();
+  }
+
+  Future<void> _saveTransaction() async {
+    // Validate amount
+    final amountError = FormValidators.positiveNumber(_amount, fieldName: 'Amount');
+    if (amountError != null) {
+      context.showSnackBar(SnackBar(content: Text(amountError)));
+      return;
+    }
+
+    final amount = double.parse(_amount);
+    if (amount <= 0) {
+      context.showSnackBar(const SnackBar(content: Text('Please enter a valid amount')));
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final transaction = Transaction(
+        id: const Uuid().v4(),
+        title: _isExpense ? _selectedCategory : 'Income',
+        amount: amount,
+        type: _isExpense ? TransactionType.expense : TransactionType.income,
+        category: _selectedCategory,
+        date: _selectedDate,
+        note: _noteController.text.isEmpty ? null : _noteController.text,
+      );
+
+      await context.read<TransactionBloc>().addTransaction(transaction);
+
+      if (mounted) {
+        context.showSnackBar(
+          const SnackBar(content: Text('Transaction saved successfully')),
+        );
+        context.pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        context.showSnackBar(
+          const SnackBar(content: Text('Failed to save transaction')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   void _onNumberPressed(String number) {
@@ -118,10 +177,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           Padding(
             padding: const EdgeInsets.all(20),
             child: AppButton.primary(
-              label: 'Save Transaction',
-              onPressed: () {},
+              label: _isLoading ? 'Saving...' : 'Save Transaction',
+              onPressed: _isLoading ? null : _saveTransaction,
               expanded: true,
               size: AppButtonSize.large,
+              icon: _isLoading ? null : Icons.check,
             ),
           ),
         ],
