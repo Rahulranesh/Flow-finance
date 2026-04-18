@@ -1,8 +1,10 @@
 import 'dart:io';
 import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+
 
 part 'database.g.dart';
 
@@ -92,70 +94,70 @@ class AppDatabase extends _$AppDatabase {
         name: 'Food & Dining',
         iconName: 'restaurant',
         colorValue: 0xFFF59E0B,
-        isDefault: const Constant(true),
+        isDefault: const Value(true),
       ),
       CategoriesCompanion.insert(
         id: 'transport',
         name: 'Transportation',
         iconName: 'directions_car',
         colorValue: 0xFF3B82F6,
-        isDefault: const Constant(true),
+        isDefault: const Value(true),
       ),
       CategoriesCompanion.insert(
         id: 'shopping',
         name: 'Shopping',
         iconName: 'shopping_bag',
         colorValue: 0xFFEC4899,
-        isDefault: const Constant(true),
+        isDefault: const Value(true),
       ),
       CategoriesCompanion.insert(
         id: 'entertainment',
         name: 'Entertainment',
         iconName: 'movie',
         colorValue: 0xFF8B5CF6,
-        isDefault: const Constant(true),
+        isDefault: const Value(true),
       ),
       CategoriesCompanion.insert(
         id: 'bills',
         name: 'Bills & Utilities',
         iconName: 'receipt',
         colorValue: 0xFFEF4444,
-        isDefault: const Constant(true),
+        isDefault: const Value(true),
       ),
       CategoriesCompanion.insert(
         id: 'health',
         name: 'Health & Fitness',
         iconName: 'favorite',
         colorValue: 0xFF10B981,
-        isDefault: const Constant(true),
+        isDefault: const Value(true),
       ),
       CategoriesCompanion.insert(
         id: 'education',
         name: 'Education',
         iconName: 'school',
         colorValue: 0xFF14B8A6,
-        isDefault: const Constant(true),
+        isDefault: const Value(true),
       ),
       CategoriesCompanion.insert(
         id: 'salary',
         name: 'Salary',
         iconName: 'work',
         colorValue: 0xFF22C55E,
-        isDefault: const Constant(true),
+        isDefault: const Value(true),
       ),
       CategoriesCompanion.insert(
         id: 'freelance',
         name: 'Freelance',
         iconName: 'laptop',
         colorValue: 0xFF6366F1,
-        isDefault: const Constant(true),
+        isDefault: const Value(true),
       ),
       CategoriesCompanion.insert(
         id: 'investment',
         name: 'Investment',
         iconName: 'trending_up',
         colorValue: 0xFF06B6D4,
-        isDefault: const Constant(true),
+        isDefault: const Value(true),
       ),
     ];
 
@@ -245,7 +247,8 @@ class AppDatabase extends _$AppDatabase {
       'SELECT SUM(amount) as total FROM transactions WHERE type = ?',
       variables: [Variable('income')],
     ).getSingleOrNull();
-    return result?.data['total'] ?? 0.0;
+    final total = result?.data['total'];
+    return total != null ? (total as num).toDouble() : 0.0;
   }
 
   Future<double> getTotalExpense() async {
@@ -253,7 +256,8 @@ class AppDatabase extends _$AppDatabase {
       'SELECT SUM(amount) as total FROM transactions WHERE type = ?',
       variables: [Variable('expense')],
     ).getSingleOrNull();
-    return result?.data['total'] ?? 0.0;
+    final total = result?.data['total'];
+    return total != null ? (total as num).toDouble() : 0.0;
   }
 
   Future<Map<String, double>> getExpensesByCategory() async {
@@ -275,6 +279,6 @@ LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final dbFolder = await getApplicationDocumentsDirectory();
     final file = File(p.join(dbFolder.path, 'flow_finance.db'));
-    return NativeDatabase.createInBackground(file);
+    return NativeDatabase(file);
   });
 }

@@ -71,8 +71,6 @@ dependencies:
   sliver_tools: ^0.2.12
   reorderable_grid_view: ^2.2.8
   local_auth: ^2.2.0
-  local_auth_android: ^1.0.34
-  local_auth_ios: ^1.1.6
   archive: ^3.4.10
   timer_builder: ^2.0.0
   device_info_plus: ^10.1.0

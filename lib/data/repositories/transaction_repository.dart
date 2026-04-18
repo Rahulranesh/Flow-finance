@@ -1,9 +1,10 @@
-import '../database/database.dart';
+import 'package:drift/drift.dart';
+import '../database/database.dart' as db;
 import '../models/transaction_model.dart';
 
 /// Repository for transaction data operations
 class TransactionRepository {
-  final AppDatabase _database;
+  final db.AppDatabase _database;
 
   TransactionRepository(this._database);
 
@@ -92,8 +93,8 @@ class TransactionRepository {
   }
 
   /// Map domain model to database companion
-  TransactionsCompanion _mapToCompanion(Transaction transaction) {
-    return TransactionsCompanion(
+  db.TransactionsCompanion _mapToCompanion(Transaction transaction) {
+    return db.TransactionsCompanion(
       id: Value(transaction.id),
       title: Value(transaction.title),
       amount: Value(transaction.amount),

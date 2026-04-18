@@ -122,6 +122,8 @@ class NotificationService {
       tz.TZDateTime.from(scheduledDate, tz.local),
       details,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
       payload: payload,
     );
   }
@@ -158,6 +160,8 @@ class NotificationService {
       _nextInstanceOfTime(hour, minute),
       details,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.time,
     );
   }
@@ -195,6 +199,8 @@ class NotificationService {
       _nextInstanceOfDayAndTime(day, hour, minute),
       details,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
     );
   }
@@ -251,7 +257,7 @@ class NotificationService {
       await scheduleNotification(
         id: id,
         title: 'Upcoming Bill: $billName',
-        body: '\$${amount.toStringAsFixed(2)} due on ${dueDate.toShortDate()}',
+        body: '\$${amount.toStringAsFixed(2)} due on ${dueDate.toNotificationShortDate()}',
         scheduledDate: reminderDate,
         payload: 'bill:$id',
       );
@@ -331,9 +337,9 @@ class NotificationService {
   }
 }
 
-/// Extension for date formatting
-extension DateFormatting on DateTime {
-  String toShortDate() {
+/// Extension for date formatting - notification specific
+extension NotificationDateFormatting on DateTime {
+  String toNotificationShortDate() {
     return '$year-${month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}';
   }
 }

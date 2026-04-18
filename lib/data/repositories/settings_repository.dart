@@ -1,11 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import '../database/database.dart';
-import '../models/transaction_model.dart';
+import '../database/database.dart' as db;
 
 /// Repository for settings data operations
 class SettingsRepository {
-  final AppDatabase _database;
+  final db.AppDatabase _database;
 
   SettingsRepository(this._database);
 

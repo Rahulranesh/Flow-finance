@@ -132,7 +132,7 @@ class ExportService {
     buffer.writeln();
     buffer.writeln('TRANSACTION COUNT: ${transactions.length}');
     buffer.writeln();
-    buffer.writeln('Generated on: ${DateTime.now().toDateTime()}');
+    buffer.writeln('Generated on: ${DateTime.now().toIso8601String()}');
 
     return buffer.toString();
   }

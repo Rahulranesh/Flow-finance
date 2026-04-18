@@ -1,7 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:local_auth_android/local_auth_android.dart';
-import 'package:local_auth_ios/local_auth_ios.dart';
+import 'package:local_auth/error_codes.dart' as auth_error;
 
 /// Authentication result
 class AuthResult {
@@ -85,26 +85,6 @@ class AuthService {
 
       final success = await _localAuth.authenticate(
         localizedReason: localizedReason,
-        authMessages: const [
-          AndroidAuthMessages(
-            signInTitle: 'Biometric Authentication',
-            cancelButton: 'Cancel',
-            biometricHint: 'Verify your identity',
-            biometricNotRecognized: 'Not recognized, try again',
-            biometricRequiredTitle: 'Biometric authentication required',
-            biometricSuccess: 'Authentication successful',
-            deviceCredentialsRequiredTitle: 'Device credentials required',
-            deviceCredentialsSetupDescription: 'Please set up device credentials',
-            goToSettingsButton: 'Go to Settings',
-            goToSettingsDescription: 'Please set up biometric authentication in Settings',
-          ),
-          IOSAuthMessages(
-            cancelButton: 'Cancel',
-            goToSettingsButton: 'Go to Settings',
-            goToSettingsDescription: 'Please set up biometric authentication in Settings',
-            lockOut: 'Please reenable biometric authentication',
-          ),
-        ],
         options: AuthenticationOptions(
           useErrorDialogs: useErrorDialogs,
           stickyAuth: stickyAuth,
@@ -178,22 +158,22 @@ class AuthService {
   /// Handle platform exceptions
   AuthResult _handlePlatformException(PlatformException e) {
     switch (e.code) {
-      case 'NotAvailable':
+      case auth_error.notAvailable:
         return AuthResult.failure(
           'Biometric authentication is not available',
           type: AuthErrorType.notAvailable,
         );
-      case 'NotEnrolled':
+      case auth_error.notEnrolled:
         return AuthResult.failure(
           'No biometric credentials are enrolled',
           type: AuthErrorType.notEnrolled,
         );
-      case 'PasscodeNotSet':
+      case auth_error.passcodeNotSet:
         return AuthResult.failure(
           'Passcode is not set on the device',
           type: AuthErrorType.passcodeNotSet,
         );
-      case 'LockedOut':
+      case auth_error.lockedOut:
         return AuthResult.failure(
           'Too many failed attempts. Please try again later.',
           type: AuthErrorType.lockedOut,

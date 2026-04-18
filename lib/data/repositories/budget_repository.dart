@@ -1,9 +1,10 @@
-import '../database/database.dart';
+import 'package:drift/drift.dart';
+import '../database/database.dart' as db;
 import '../models/transaction_model.dart';
 
 /// Repository for budget data operations
 class BudgetRepository {
-  final AppDatabase _database;
+  final db.AppDatabase _database;
 
   BudgetRepository(this._database);
 
@@ -68,8 +69,8 @@ class BudgetRepository {
   }
 
   /// Map domain model to database companion
-  BudgetsCompanion _mapToCompanion(Budget budget) {
-    return BudgetsCompanion(
+  db.BudgetsCompanion _mapToCompanion(Budget budget) {
+    return db.BudgetsCompanion(
       id: Value(budget.id),
       categoryId: Value(budget.categoryId),
       limit: Value(budget.limit),
