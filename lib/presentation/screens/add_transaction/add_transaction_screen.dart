@@ -24,6 +24,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   String _amount = '0';
   bool _isExpense = true;
   String _selectedCategory = 'Food';
+  String? _selectedWalletId;
   DateTime _selectedDate = DateTime.now();
   bool _isLoading = false;
 
@@ -63,6 +64,15 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     setState(() => _isLoading = true);
 
     try {
+      // Get wallet info if selected
+      final walletBloc = context.read<WalletBloc>();
+      final selectedWallet = _selectedWalletId != null
+          ? walletBloc.wallets.firstWhere(
+              (w) => w.id == _selectedWalletId,
+              orElse: () => walletBloc.defaultWallet!,
+            )
+          : walletBloc.defaultWallet;
+
       final transaction = Transaction(
         id: const Uuid().v4(),
         title: _isExpense ? _selectedCategory : 'Income',
@@ -71,6 +81,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         category: _selectedCategory,
         date: _selectedDate,
         note: _noteController.text.isEmpty ? null : _noteController.text,
+        walletId: selectedWallet?.id,
+        currency: selectedWallet?.currency ?? 'USD',
       );
 
       await context.read<TransactionBloc>().addTransaction(transaction);
@@ -149,6 +161,16 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             onCategorySelected: (category) {
               setState(() {
                 _selectedCategory = category;
+              });
+            },
+          ),
+
+          // Wallet Selector
+          _WalletSelector(
+            selectedWalletId: _selectedWalletId,
+            onWalletSelected: (walletId) {
+              setState(() {
+                _selectedWalletId = walletId;
               });
             },
           ),
@@ -607,6 +629,119 @@ class _ActionButton extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _WalletSelector extends StatelessWidget {
+  final String? selectedWalletId;
+  final ValueChanged<String?> onWalletSelected;
+
+  const _WalletSelector({
+    required this.selectedWalletId,
+    required this.onWalletSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<WalletBloc>(
+      builder: (context, walletBloc, child) {
+        final wallets = walletBloc.activeWallets;
+
+        if (wallets.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        final selectedWallet = selectedWalletId != null
+            ? wallets.firstWhere(
+                (w) => w.id == selectedWalletId,
+                orElse: () => wallets.first,
+              )
+            : wallets.firstWhere(
+                (w) => w.isDefault,
+                orElse: () => wallets.first,
+              );
+
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: AppColors.surface(context),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: AppColors.border(context),
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.account_balance_wallet,
+                color: AppColors.textSecondary(context),
+                size: 20,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Wallet',
+                      style: AppTypography.labelSmall(
+                        color: AppColors.textSecondary(context),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      selectedWallet.name,
+                      style: AppTypography.bodyMedium(
+                        color: AppColors.textPrimary(context),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              DropdownButton<String?>(
+                value: selectedWallet.id,
+                underline: const SizedBox.shrink(),
+                icon: Icon(
+                  Icons.arrow_drop_down,
+                  color: AppColors.textSecondary(context),
+                ),
+                items: wallets.map((wallet) {
+                  return DropdownMenuItem<String>(
+                    value: wallet.id,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: wallet.color,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(wallet.name),
+                        if (wallet.isDefault) ...[
+                          const SizedBox(width: 4),
+                          Text(
+                            '(Default)',
+                            style: AppTypography.labelSmall(
+                              color: AppColors.textSecondary(context),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  );
+                }).toList(),
+                onChanged: onWalletSelected,
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
