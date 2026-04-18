@@ -71,6 +71,9 @@ dependencies:
   sliver_tools: ^0.2.12
   reorderable_grid_view: ^2.2.8
   local_auth: ^2.2.0
+  local_auth_android: ^1.0.34
+  local_auth_ios: ^1.1.6
+  archive: ^3.4.10
   timer_builder: ^2.0.0
   device_info_plus: ^10.1.0
   flutter_lazy_indexed_stack: ^0.0.6 
@@ -102,6 +105,7 @@ dependencies:
   value_layout_builder: ^0.5.0
   google_sign_in_android: ^6.2.1
   cupertino_icons: ^1.0.9
+  drift_flutter: ^0.3.0
   
 # flutter pub run flutter_launcher_icons:main
 flutter_icons:
