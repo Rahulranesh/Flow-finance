@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../theme/theme.dart';
+import 'app_card.dart';
 
 /// Modern chart components for data visualization
 class AppCharts {

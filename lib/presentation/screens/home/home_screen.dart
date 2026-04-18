@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/theme.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../../core/utils/extensions.dart';
+import '../../../core/utils/animations.dart';
 import '../../../data/models/models.dart';
 import '../../blocs/blocs.dart';
 
@@ -98,9 +99,9 @@ class _HomeScreenState extends State<HomeScreen> {
               final transactions = bloc.transactions.take(10).toList();
 
               if (transactions.isEmpty) {
-                return const SliverFillRemaining(
+                return SliverFillRemaining(
                   child: Center(
-                    child: EmptyStateWidget(
+                    child: AppEmptyState(
                       icon: Icons.receipt_long,
                       title: 'No transactions yet',
                       subtitle: 'Add your first transaction to get started',

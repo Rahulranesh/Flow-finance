@@ -103,62 +103,62 @@ class AppTypography {
       );
 
   // Body
-  static TextStyle bodyLarge({Color? color}) => TextStyle(
+  static TextStyle bodyLarge({Color? color, FontWeight? fontWeight}) => TextStyle(
         fontFamily: fontFamily,
         fontFamilyFallback: const [fontFamilyFallback],
         fontSize: 16,
-        fontWeight: FontWeight.normal,
+        fontWeight: fontWeight ?? FontWeight.normal,
         letterSpacing: 0,
         height: 1.5,
         color: color,
       );
 
-  static TextStyle bodyMedium({Color? color}) => TextStyle(
+  static TextStyle bodyMedium({Color? color, FontWeight? fontWeight}) => TextStyle(
         fontFamily: fontFamily,
         fontFamilyFallback: const [fontFamilyFallback],
         fontSize: 14,
-        fontWeight: FontWeight.normal,
+        fontWeight: fontWeight ?? FontWeight.normal,
         letterSpacing: 0,
         height: 1.5,
         color: color,
       );
 
-  static TextStyle bodySmall({Color? color}) => TextStyle(
+  static TextStyle bodySmall({Color? color, FontWeight? fontWeight}) => TextStyle(
         fontFamily: fontFamily,
         fontFamilyFallback: const [fontFamilyFallback],
         fontSize: 12,
-        fontWeight: FontWeight.normal,
+        fontWeight: fontWeight ?? FontWeight.normal,
         letterSpacing: 0,
         height: 1.5,
         color: color,
       );
 
   // Labels
-  static TextStyle labelLarge({Color? color}) => TextStyle(
+  static TextStyle labelLarge({Color? color, FontWeight? fontWeight}) => TextStyle(
         fontFamily: fontFamily,
         fontFamilyFallback: const [fontFamilyFallback],
         fontSize: 14,
-        fontWeight: FontWeight.w600,
+        fontWeight: fontWeight ?? FontWeight.w600,
         letterSpacing: 0.1,
         height: 1.4,
         color: color,
       );
 
-  static TextStyle labelMedium({Color? color}) => TextStyle(
+  static TextStyle labelMedium({Color? color, FontWeight? fontWeight}) => TextStyle(
         fontFamily: fontFamily,
         fontFamilyFallback: const [fontFamilyFallback],
         fontSize: 12,
-        fontWeight: FontWeight.w600,
+        fontWeight: fontWeight ?? FontWeight.w600,
         letterSpacing: 0.2,
         height: 1.4,
         color: color,
       );
 
-  static TextStyle labelSmall({Color? color}) => TextStyle(
+  static TextStyle labelSmall({Color? color, FontWeight? fontWeight}) => TextStyle(
         fontFamily: fontFamily,
         fontFamilyFallback: const [fontFamilyFallback],
         fontSize: 10,
-        fontWeight: FontWeight.w600,
+        fontWeight: fontWeight ?? FontWeight.w600,
         letterSpacing: 0.3,
         height: 1.4,
         color: color,

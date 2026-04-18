@@ -3,7 +3,9 @@ import 'package:shimmer/shimmer.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import '../theme/app_animations.dart';
+import '../theme/app_shadows.dart';
 import 'app_card.dart';
+import 'app_button.dart';
 
 /// Modern loading states and skeleton screens
 class AppLoading {

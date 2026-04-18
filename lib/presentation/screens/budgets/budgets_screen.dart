@@ -77,7 +77,7 @@ class _MonthlyOverviewCard extends StatelessWidget {
           (sum, p) => sum + p.spent,
         );
         final remaining = totalBudget - totalSpent;
-        final percentage = totalBudget > 0 ? totalSpent / totalBudget : 0;
+        final double percentage = totalBudget > 0 ? totalSpent / totalBudget : 0.0;
 
         return AppCard(
           variant: AppCardVariant.highlighted,
@@ -151,7 +151,7 @@ class _MonthlyOverviewCard extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               AppLinearProgress(
-                value: percentage.clamp(0, 1),
+                value: percentage.clamp(0.0, 1.0),
                 label: 'Spent: ${totalSpent.toCurrency()} / ${totalBudget.toCurrency()}',
                 showPercentage: true,
                 height: 12,
@@ -261,7 +261,7 @@ class _BudgetList extends StatelessWidget {
         final progress = bloc.budgetProgress;
 
         if (progress.isEmpty) {
-          return const EmptyStateWidget(
+          return const AppEmptyState(
             icon: Icons.pie_chart,
             title: 'No budgets yet',
             subtitle: 'Create your first budget to start tracking',
@@ -346,7 +346,7 @@ class _BudgetList extends StatelessWidget {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(6),
                     child: LinearProgressIndicator(
-                      value: p.percentage.clamp(0, 1),
+                      value: p.percentage.clamp(0.0, 1.0),
                       minHeight: 8,
                       backgroundColor: AppColors.surfaceVariant(context),
                       valueColor: AlwaysStoppedAnimation<Color>(

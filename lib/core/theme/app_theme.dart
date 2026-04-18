@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'app_colors.dart';
 import 'app_typography.dart';
-import 'app_shadows.dart';
 
 /// Main theme configuration for the app
 /// Provides light and dark themes with consistent styling
@@ -85,7 +84,7 @@ class AppTheme {
       ),
 
       // Card theme
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radiusLg),
@@ -258,7 +257,7 @@ class AppTheme {
       ),
 
       // Dialog theme
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         backgroundColor: isLight ? AppColors.surfaceLight : AppColors.surfaceDark,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radiusXl),
@@ -332,7 +331,7 @@ class AppTheme {
       ),
 
       // Tab bar theme
-      tabBarTheme: TabBarTheme(
+      tabBarTheme: TabBarThemeData(
         labelColor: AppColors.primary,
         unselectedLabelColor: isLight ? AppColors.textTertiaryLight : AppColors.textTertiaryDark,
         labelStyle: AppTypography.labelLarge(),

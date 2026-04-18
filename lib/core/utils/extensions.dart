@@ -436,6 +436,21 @@ extension ColorExtension on Color {
 
   /// Get the hex string representation
   String get hexString {
-    return '#${value.toRadixString(16).padLeft(8, '0').substring(2)}';
+    return '#${toARGB32().toRadixString(16).padLeft(8, '0').substring(2)}';
+  }
+
+  /// Get color with opacity (compatible with Flutter 3.27+)
+  Color withValues({double? alpha, double? red, double? green, double? blue}) {
+    return Color.from(
+      alpha: alpha ?? a,
+      red: red ?? r,
+      green: green ?? g,
+      blue: blue ?? b,
+    );
+  }
+
+  /// Get color with opacity value (0.0 to 1.0)
+  Color withOpacityValue(double opacity) {
+    return withValues(alpha: opacity);
   }
 }

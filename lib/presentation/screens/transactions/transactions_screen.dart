@@ -51,12 +51,12 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
               controller: _searchController,
               hint: 'Search transactions...',
               onChanged: (value) {
-              context.read<TransactionBloc>().search(value);
-            },
-            onClear: () {
-              _searchController.clear();
-              context.read<TransactionBloc>().clearSearch();
-            },
+                context.read<TransactionBloc>().search(value);
+              },
+              onClear: () {
+                _searchController.clear();
+                context.read<TransactionBloc>().clearSearch();
+              },
             ),
           ),
 
@@ -135,8 +135,8 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                 final transactions = bloc.transactions;
 
                 if (transactions.isEmpty) {
-                  return const Center(
-                    child: EmptyStateWidget(
+                  return Center(
+                    child: AppEmptyState(
                       icon: Icons.receipt_long,
                       title: 'No transactions found',
                       subtitle: 'Try adjusting your filters or add a new transaction',
@@ -147,38 +147,6 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                 return _TransactionsList(transactions: transactions);
               },
             ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-                  child: AnimatedContainer(
-                    duration: AppAnimations.fast,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? AppColors.primary
-                          : AppColors.surfaceVariant(context),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      filter,
-                      style: AppTypography.labelMedium(
-                        color: isSelected ? Colors.white : null,
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // Transactions List
-          Expanded(
-            child: _TransactionsList(),
           ),
         ],
       ),
@@ -260,6 +228,7 @@ class _TransactionItem extends StatelessWidget {
 
     return Dismissible(
       key: ValueKey('transaction_${transaction.id}'),
+      direction: DismissDirection.endToStart,
       onDismissed: (_) {
         context.read<TransactionBloc>().deleteTransaction(transaction.id);
         context.showSnackBar(
@@ -274,7 +243,6 @@ class _TransactionItem extends StatelessWidget {
           ),
         );
       },
-      direction: DismissDirection.endToStart,
       background: Container(
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
@@ -300,7 +268,7 @@ class _TransactionItem extends StatelessWidget {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: category.$3.withOpacity(0.1),
+                color: categoryData.$2.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
@@ -382,175 +350,5 @@ class _TransactionItem extends StatelessWidget {
     };
 
     return categoryMap[category] ?? (Icons.category, AppColors.primary);
-  }
-}
-
-/// Transaction detail screen
-class TransactionDetailScreen extends StatelessWidget {
-  const TransactionDetailScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return AppScaffold(
-      title: 'Transaction Details',
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            // Amount Section
-            Container(
-              padding: const EdgeInsets.all(32),
-              decoration: BoxDecoration(
-                color: AppColors.surface(context),
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Column(
-                children: [
-                  Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      color: AppColors.expense.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: const Icon(
-                      Icons.shopping_bag,
-                      color: AppColors.expense,
-                      size: 32,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    '-\$125.00',
-                    style: AppTypography.amountLarge(isNegative: true),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Shopping',
-                    style: AppTypography.titleMedium(),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // Details Section
-            AppCard(
-              variant: AppCardVariant.flat,
-              child: Column(
-                children: [
-                  _DetailRow(
-                    label: 'Status',
-                    value: 'Completed',
-                    valueColor: AppColors.success,
-                  ),
-                  const Divider(height: 24),
-                  _DetailRow(
-                    label: 'Date',
-                    value: 'Jan 15, 2025',
-                  ),
-                  const Divider(height: 24),
-                  _DetailRow(
-                    label: 'Time',
-                    value: '2:30 PM',
-                  ),
-                  const Divider(height: 24),
-                  _DetailRow(
-                    label: 'Payment Method',
-                    value: 'Visa ending in 4242',
-                  ),
-                  const Divider(height: 24),
-                  _DetailRow(
-                    label: 'Transaction ID',
-                    value: '#TRX-2025-001',
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // Notes Section
-            AppCard(
-              variant: AppCardVariant.flat,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Notes',
-                    style: AppTypography.labelLarge(),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Weekly grocery shopping at Whole Foods. Included some organic items.',
-                    style: AppTypography.bodyMedium(
-                      color: AppColors.textSecondary(context),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 32),
-
-            // Actions
-            Row(
-              children: [
-                Expanded(
-                  child: AppButton.secondary(
-                    label: 'Edit',
-                    onPressed: () {},
-                    icon: Icons.edit,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: AppButton.danger(
-                    label: 'Delete',
-                    onPressed: () {},
-                    icon: Icons.delete,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _DetailRow extends StatelessWidget {
-  final String label;
-  final String value;
-  final Color? valueColor;
-
-  const _DetailRow({
-    required this.label,
-    required this.value,
-    this.valueColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: AppTypography.bodyMedium(
-            color: AppColors.textSecondary(context),
-          ),
-        ),
-        Text(
-          value,
-          style: AppTypography.bodyMedium(
-            fontWeight: FontWeight.w600,
-            color: valueColor,
-          ),
-        ),
-      ],
-    );
   }
 }

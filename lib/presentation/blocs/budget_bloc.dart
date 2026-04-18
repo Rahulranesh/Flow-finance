@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' hide Category;
 import '../../data/models/transaction_model.dart';
 
 /// BLoC for managing budget state
