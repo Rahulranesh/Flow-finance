@@ -67,8 +67,42 @@ class Settings extends Table {
   Set<Column> get primaryKey => {key};
 }
 
+/// Wallet table definition
+class Wallets extends Table {
+  TextColumn get id => text()();
+  TextColumn get name => text()();
+  TextColumn get type => text()(); // 'cash', 'bank', 'creditCard', 'savings', 'investment', 'digital', 'other'
+  TextColumn get currency => text().withDefault(const Constant('USD'))();
+  RealColumn get balance => real().withDefault(const Constant(0.0))();
+  IntColumn get colorValue => integer()();
+  TextColumn get iconName => text().nullable()();
+  BoolColumn get isDefault => boolean().withDefault(const Constant(false))();
+  BoolColumn get isArchived => boolean().withDefault(const Constant(false))();
+  TextColumn get note => text().nullable()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Wallet transfer table definition
+class WalletTransfers extends Table {
+  TextColumn get id => text()();
+  TextColumn get fromWalletId => text()();
+  TextColumn get toWalletId => text()();
+  RealColumn get amount => real()();
+  RealColumn get exchangeRate => real().nullable()();
+  TextColumn get note => text().nullable()();
+  DateTimeColumn get date => dateTime()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 /// Main database class
-@DriftDatabase(tables: [Transactions, Budgets, Categories, Settings])
+@DriftDatabase(tables: [Transactions, Budgets, Categories, Settings, Wallets, WalletTransfers])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
@@ -273,6 +307,54 @@ class AppDatabase extends _$AppDatabase {
       )),
     );
   }
+
+  // Wallet queries
+  Future<List<Wallet>> getAllWallets() => select(wallets).get();
+
+  Future<List<Wallet>> getActiveWallets() {
+    return (select(wallets)..where((w) => w.isArchived.equals(false))).get();
+  }
+
+  Future<Wallet?> getDefaultWallet() {
+    return (select(wallets)..where((w) => w.isDefault.equals(true))).getSingleOrNull();
+  }
+
+  Future<Wallet?> getWalletById(String id) {
+    return (select(wallets)..where((w) => w.id.equals(id))).getSingleOrNull();
+  }
+
+  Future<int> insertWallet(WalletsCompanion wallet) => into(wallets).insert(wallet);
+
+  Future<bool> updateWallet(WalletsCompanion wallet) => update(wallets).replace(wallet);
+
+  Future<int> deleteWallet(String id) =>
+      (delete(wallets)..where((w) => w.id.equals(id))).go();
+
+  Future<void> setDefaultWallet(String id) async {
+    // Clear existing default
+    await (update(wallets)..where((w) => w.isDefault.equals(true))).write(
+      const WalletsCompanion(isDefault: Value(false)),
+    );
+    // Set new default
+    await (update(wallets)..where((w) => w.id.equals(id))).write(
+      const WalletsCompanion(isDefault: Value(true)),
+    );
+  }
+
+  // Wallet transfer queries
+  Future<List<WalletTransfer>> getAllWalletTransfers() => select(walletTransfers).get();
+
+  Future<List<WalletTransfer>> getWalletTransfersByWallet(String walletId) {
+    return (select(walletTransfers)
+          ..where((t) => t.fromWalletId.equals(walletId) | t.toWalletId.equals(walletId)))
+        .get();
+  }
+
+  Future<int> insertWalletTransfer(WalletTransfersCompanion transfer) =>
+      into(walletTransfers).insert(transfer);
+
+  Future<int> deleteWalletTransfer(String id) =>
+      (delete(walletTransfers)..where((t) => t.id.equals(id))).go();
 }
 
 LazyDatabase _openConnection() {

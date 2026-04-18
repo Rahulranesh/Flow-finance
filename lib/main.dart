@@ -66,6 +66,9 @@ class FlowFinanceApp extends StatelessWidget {
         ProxyProvider<AppDatabase, SettingsRepository>(
           update: (_, db, __) => SettingsRepository(db),
         ),
+        ProxyProvider<AppDatabase, WalletRepository>(
+          update: (_, db, __) => WalletRepository(db),
+        ),
 
         // BLoCs
         ChangeNotifierProvider(
@@ -76,6 +79,11 @@ class FlowFinanceApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (context) => BudgetBloc(
             context.read<BudgetRepository>(),
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => WalletBloc(
+            context.read<WalletRepository>(),
           ),
         ),
       ],
