@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
@@ -34,8 +35,13 @@ class _FamilyScreenState extends State<FamilyScreen> {
 
     try {
       final repo = context.read<FamilyRepository>();
-      // TODO: Get actual user ID from auth
-      _currentUserId = 'current_user_id';
+      // Get user ID from SharedPreferences or use a default for now
+      final prefs = await SharedPreferences.getInstance();
+      _currentUserId = prefs.getString('user_id') ?? 'user_${DateTime.now().millisecondsSinceEpoch}';
+      // Save the user ID if it was generated
+      if (!prefs.containsKey('user_id')) {
+        await prefs.setString('user_id', _currentUserId!);
+      }
       final families = await repo.getFamilies(_currentUserId!);
 
       setState(() {
@@ -447,6 +453,227 @@ class _FamilyDetailScreen extends StatelessWidget {
       ),
     );
   }
+
+  void _showInviteDialog(BuildContext context, Family family) {
+    final emailController = TextEditingController();
+    FamilyRole selectedRole = FamilyRole.member;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Invite Member'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: emailController,
+              decoration: const InputDecoration(
+                labelText: 'Email Address',
+                hintText: 'member@example.com',
+              ),
+              keyboardType: TextInputType.emailAddress,
+            ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<FamilyRole>(
+              value: selectedRole,
+              decoration: const InputDecoration(labelText: 'Role'),
+              items: FamilyRole.values.map((role) {
+                return DropdownMenuItem(
+                  value: role,
+                  child: Text(role.displayName),
+                );
+              }).toList(),
+              onChanged: (value) {
+                if (value != null) selectedRole = value;
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          AppButton.primary(
+            label: 'Send Invite',
+            onPressed: () async {
+              if (emailController.text.isEmpty) return;
+
+              try {
+                final repo = context.read<FamilyRepository>();
+                await repo.createInvitation(
+                  id: const Uuid().v4(),
+                  familyId: family.id,
+                  familyName: family.name,
+                  invitedBy: currentUserId,
+                  invitedByName: 'You', // TODO: Get actual user name
+                  email: emailController.text,
+                  role: selectedRole,
+                );
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Invitation sent!')),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Failed to send invitation')),
+                );
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showChangeRoleDialog(BuildContext context, Family family, FamilyMember member) {
+    FamilyRole selectedRole = member.role;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Change Role for ${member.displayName}'),
+        content: DropdownButtonFormField<FamilyRole>(
+          value: selectedRole,
+          items: FamilyRole.values.map((role) {
+            return DropdownMenuItem(
+              value: role,
+              child: Text(role.displayName),
+            );
+          }).toList(),
+          onChanged: (value) {
+            if (value != null) selectedRole = value;
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          AppButton.primary(
+            label: 'Update',
+            onPressed: () async {
+              try {
+                final repo = context.read<FamilyRepository>();
+                await repo.updateMemberRole(family.id, member.userId, selectedRole);
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Role updated!')),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Failed to update role')),
+                );
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showRemoveMemberDialog(BuildContext context, Family family, FamilyMember member) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Remove ${member.displayName}?'),
+        content: Text('Are you sure you want to remove ${member.displayName} from the family?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          AppButton.primary(
+            label: 'Remove',
+            onPressed: () async {
+              try {
+                final repo = context.read<FamilyRepository>();
+                await repo.removeMember(family.id, member.userId);
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Member removed')),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Failed to remove member')),
+                );
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showCreateBudgetDialog(BuildContext context, Family family) {
+    final categoryController = TextEditingController();
+    final amountController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Create Budget'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: categoryController,
+              decoration: const InputDecoration(
+                labelText: 'Category',
+                hintText: 'e.g., Groceries, Utilities',
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: amountController,
+              decoration: const InputDecoration(
+                labelText: 'Budget Amount',
+                prefixText: '\$',
+              ),
+              keyboardType: TextInputType.number,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          AppButton.primary(
+            label: 'Create',
+            onPressed: () async {
+              final amount = double.tryParse(amountController.text);
+              if (categoryController.text.isEmpty || amount == null || amount <= 0) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Please fill in all fields')),
+                );
+                return;
+              }
+
+              try {
+                final repo = context.read<FamilyRepository>();
+                await repo.setBudget(
+                  family.id,
+                  FamilyBudget(
+                    category: categoryController.text,
+                    allocatedAmount: amount,
+                  ),
+                );
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Budget created!')),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Failed to create budget')),
+                );
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _OverviewTab extends StatelessWidget {
@@ -602,9 +829,7 @@ class _MembersTab extends StatelessWidget {
         if (canEdit && index == family.activeMembers.length) {
           return AppButton.secondary(
             label: 'Invite Member',
-            onPressed: () {
-              // TODO: Implement invite functionality
-            },
+            onPressed: () => _showInviteDialog(context, family, currentUserId),
             icon: Icons.person_add,
             expanded: true,
           );
@@ -648,12 +873,167 @@ class _MembersTab extends StatelessWidget {
                     ),
                   ],
                   onSelected: (value) {
-                    // TODO: Implement member management
+                    if (value == 'role') {
+                      _showChangeRoleDialog(context, family, member);
+                    } else if (value == 'remove') {
+                      _showRemoveMemberDialog(context, family, member);
+                    }
                   },
                 )
               : null,
         );
       },
+    );
+  }
+
+  void _showInviteDialog(BuildContext context, Family family, String currentUserId) {
+    final emailController = TextEditingController();
+    FamilyRole selectedRole = FamilyRole.member;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Invite Member'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: emailController,
+              decoration: const InputDecoration(
+                labelText: 'Email Address',
+                hintText: 'member@example.com',
+              ),
+              keyboardType: TextInputType.emailAddress,
+            ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<FamilyRole>(
+              value: selectedRole,
+              decoration: const InputDecoration(labelText: 'Role'),
+              items: FamilyRole.values.map((role) {
+                return DropdownMenuItem(
+                  value: role,
+                  child: Text(role.displayName),
+                );
+              }).toList(),
+              onChanged: (value) {
+                if (value != null) selectedRole = value;
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          AppButton.primary(
+            label: 'Send Invite',
+            onPressed: () async {
+              if (emailController.text.isEmpty) return;
+
+              try {
+                final repo = context.read<FamilyRepository>();
+                await repo.createInvitation(
+                  id: const Uuid().v4(),
+                  familyId: family.id,
+                  familyName: family.name,
+                  invitedBy: currentUserId,
+                  invitedByName: 'You',
+                  email: emailController.text,
+                  role: selectedRole,
+                );
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Invitation sent!')),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Failed to send invitation')),
+                );
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showChangeRoleDialog(BuildContext context, Family family, FamilyMember member) {
+    FamilyRole selectedRole = member.role;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Change Role for ${member.displayName}'),
+        content: DropdownButtonFormField<FamilyRole>(
+          value: selectedRole,
+          items: FamilyRole.values.map((role) {
+            return DropdownMenuItem(
+              value: role,
+              child: Text(role.displayName),
+            );
+          }).toList(),
+          onChanged: (value) {
+            if (value != null) selectedRole = value;
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          AppButton.primary(
+            label: 'Update',
+            onPressed: () async {
+              try {
+                final repo = context.read<FamilyRepository>();
+                await repo.updateMemberRole(family.id, member.userId, selectedRole);
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Role updated!')),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Failed to update role')),
+                );
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showRemoveMemberDialog(BuildContext context, Family family, FamilyMember member) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Remove ${member.displayName}?'),
+        content: Text('Are you sure you want to remove ${member.displayName} from the family?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          AppButton.primary(
+            label: 'Remove',
+            onPressed: () async {
+              try {
+                final repo = context.read<FamilyRepository>();
+                await repo.removeMember(family.id, member.userId);
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Member removed')),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Failed to remove member')),
+                );
+              }
+            },
+          ),
+        ],
+      ),
     );
   }
 }
@@ -705,9 +1085,7 @@ class _BudgetsTab extends StatelessWidget {
               const SizedBox(height: 24),
               AppButton.primary(
                 label: 'Create Budget',
-                onPressed: () {
-                  // TODO: Implement budget creation
-                },
+                onPressed: () => _showCreateBudgetDialog(context, family),
                 icon: Icons.add,
               ),
             ],
@@ -725,9 +1103,7 @@ class _BudgetsTab extends StatelessWidget {
             padding: const EdgeInsets.only(top: 16),
             child: AppButton.secondary(
               label: 'Add Budget',
-              onPressed: () {
-                // TODO: Implement budget creation
-              },
+              onPressed: () => _showCreateBudgetDialog(context, family),
               icon: Icons.add,
               expanded: true,
             ),
@@ -737,6 +1113,76 @@ class _BudgetsTab extends StatelessWidget {
         final budget = family.budgets[index];
         return _BudgetCard(budget: budget);
       },
+    );
+  }
+
+  void _showCreateBudgetDialog(BuildContext context, Family family) {
+    final categoryController = TextEditingController();
+    final amountController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Create Budget'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: categoryController,
+              decoration: const InputDecoration(
+                labelText: 'Category',
+                hintText: 'e.g., Groceries, Utilities',
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: amountController,
+              decoration: const InputDecoration(
+                labelText: 'Budget Amount',
+                prefixText: '\$',
+              ),
+              keyboardType: TextInputType.number,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          AppButton.primary(
+            label: 'Create',
+            onPressed: () async {
+              final amount = double.tryParse(amountController.text);
+              if (categoryController.text.isEmpty || amount == null || amount <= 0) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Please fill in all fields')),
+                );
+                return;
+              }
+
+              try {
+                final repo = context.read<FamilyRepository>();
+                await repo.setBudget(
+                  family.id,
+                  FamilyBudget(
+                    category: categoryController.text,
+                    allocatedAmount: amount,
+                  ),
+                );
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Budget created!')),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Failed to create budget')),
+                );
+              }
+            },
+          ),
+        ],
+      ),
     );
   }
 }

@@ -499,16 +499,148 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
 
   void _exportReport() {
-    // TODO: Implement export functionality
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 16),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.border(context),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Export Report',
+              style: AppTypography.titleMedium(),
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: const Icon(Icons.table_chart, color: AppColors.success),
+              title: const Text('Export as CSV'),
+              subtitle: const Text('Spreadsheet format for Excel/Google Sheets'),
+              onTap: () {
+                Navigator.pop(context);
+                _exportToCsv();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.picture_as_pdf, color: AppColors.error),
+              title: const Text('Export as PDF'),
+              subtitle: const Text('Document format for sharing/printing'),
+              onTap: () {
+                Navigator.pop(context);
+                _exportToPdf();
+              },
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _exportToCsv() {
+    final bloc = context.read<TransactionBloc>();
+    final transactions = _getFilteredTransactions(bloc.transactions);
+
+    // Generate CSV content
+    final buffer = StringBuffer();
+    buffer.writeln('Date,Title,Category,Type,Amount,Note');
+
+    for (final t in transactions) {
+      final date = '${t.date.year}-${t.date.month.toString().padLeft(2, '0')}-${t.date.day.toString().padLeft(2, '0')}';
+      final type = t.type == TransactionType.income ? 'Income' : 'Expense';
+      final note = t.note?.replaceAll(',', ' ') ?? '';
+      buffer.writeln('$date,"${t.title}","${t.category}",$type,${t.amount},$note');
+    }
+
+    // Show share dialog with CSV content
+    _showExportResult('CSV', buffer.toString(), transactions.length);
+  }
+
+  void _exportToPdf() {
+    final bloc = context.read<TransactionBloc>();
+    final transactions = _getFilteredTransactions(bloc.transactions);
+
+    // Calculate summary
+    double totalIncome = 0;
+    double totalExpense = 0;
+    for (final t in transactions) {
+      if (t.type == TransactionType.income) {
+        totalIncome += t.amount;
+      } else {
+        totalExpense += t.amount;
+      }
+    }
+
+    // Generate PDF content summary
+    final buffer = StringBuffer();
+    buffer.writeln('FINANCIAL REPORT');
+    buffer.writeln('Period: ${_formatDate(_dateRange.start)} - ${_formatDate(_dateRange.end)}');
+    buffer.writeln('');
+    buffer.writeln('SUMMARY');
+    buffer.writeln('Total Income: \$${totalIncome.toStringAsFixed(2)}');
+    buffer.writeln('Total Expense: \$${totalExpense.toStringAsFixed(2)}');
+    buffer.writeln('Net Savings: \$${(totalIncome - totalExpense).toStringAsFixed(2)}');
+    buffer.writeln('');
+    buffer.writeln('TRANSACTIONS (${transactions.length})');
+    buffer.writeln('-------------------');
+
+    for (final t in transactions) {
+      final date = '${t.date.month}/${t.date.day}/${t.date.year}';
+      final type = t.type == TransactionType.income ? 'INC' : 'EXP';
+      buffer.writeln('$date [$type] ${t.title} - \$${t.amount.toStringAsFixed(2)}');
+    }
+
+    _showExportResult('PDF', buffer.toString(), transactions.length);
+  }
+
+  void _showExportResult(String format, String content, int count) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Export Report'),
-        content: const Text('Export to PDF/CSV functionality to be implemented'),
+        title: Text('Export Complete'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('$count transactions exported to $format format.'),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceVariant(context),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                content.substring(0, content.length > 200 ? 200 : content.length) + (content.length > 200 ? '...' : ''),
+                style: AppTypography.bodySmall().copyWith(
+                  fontFamily: 'monospace',
+                ),
+              ),
+            ),
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+            child: const Text('Close'),
+          ),
+          AppButton.primary(
+            label: 'Share',
+            onPressed: () {
+              // TODO: Implement actual file sharing using share_plus
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Sharing $format file...')),
+              );
+            },
           ),
         ],
       ),

@@ -263,24 +263,64 @@ class _RecurringTransactionsScreenState extends State<RecurringTransactionsScree
   }
 
   void _createRecurring() {
-    // TODO: Implement create dialog
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Add Recurring Transaction'),
-        content: const Text('Create dialog to be implemented'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
+    _showRecurringDialog();
   }
 
   void _editTransaction(RecurringTransaction transaction) {
-    // TODO: Implement edit dialog
+    _showRecurringDialog(transaction: transaction);
+  }
+
+  void _showRecurringDialog({RecurringTransaction? transaction}) {
+    final isEditing = transaction != null;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _RecurringTransactionForm(
+        transaction: transaction,
+        onSave: (data) async {
+          try {
+            final repo = context.read<RecurringTransactionRepository>();
+
+            if (isEditing) {
+              final updated = transaction.copyWith(
+                title: data['title'] as String,
+                amount: data['amount'] as double,
+                type: data['type'] as TransactionType,
+                category: data['category'] as String,
+                frequency: data['frequency'] as RecurringFrequency,
+                startDate: data['startDate'] as DateTime,
+                endCondition: data['endCondition'] as EndConditionType,
+                occurrenceCount: data['occurrenceCount'] as int?,
+                endDate: data['endDate'] as DateTime?,
+              );
+              await repo.update(updated);
+            } else {
+              await repo.create(
+                id: const Uuid().v4(),
+                title: data['title'] as String,
+                amount: data['amount'] as double,
+                type: data['type'] as TransactionType,
+                category: data['category'] as String,
+                frequency: data['frequency'] as RecurringFrequency,
+                startDate: data['startDate'] as DateTime,
+                endCondition: data['endCondition'] as EndConditionType,
+                occurrenceCount: data['occurrenceCount'] as int?,
+                endDate: data['endDate'] as DateTime?,
+              );
+            }
+
+            Navigator.pop(context);
+            _loadData();
+          } catch (e) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Failed to ${isEditing ? 'update' : 'create'} transaction')),
+            );
+          }
+        },
+      ),
+    );
   }
 
   Future<void> _toggleTransaction(RecurringTransaction transaction) async {
@@ -490,5 +530,322 @@ class _RecurringTransactionCard extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _RecurringTransactionForm extends StatefulWidget {
+  final RecurringTransaction? transaction;
+  final Function(Map<String, dynamic>) onSave;
+
+  const _RecurringTransactionForm({
+    this.transaction,
+    required this.onSave,
+  });
+
+  @override
+  State<_RecurringTransactionForm> createState() => _RecurringTransactionFormState();
+}
+
+class _RecurringTransactionFormState extends State<_RecurringTransactionForm> {
+  final _titleController = TextEditingController();
+  final _amountController = TextEditingController();
+  final _categoryController = TextEditingController();
+  bool _isExpense = true;
+  RecurringFrequency _frequency = RecurringFrequency.monthly;
+  EndConditionType _endCondition = EndConditionType.never;
+  DateTime _startDate = DateTime.now();
+  DateTime? _endDate;
+  int? _occurrenceCount;
+
+  final List<String> _categories = [
+    'Food', 'Shopping', 'Transport', 'Entertainment',
+    'Health', 'Bills', 'Education', 'Salary', 'Freelance', 'Other'
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.transaction != null) {
+      _titleController.text = widget.transaction!.title;
+      _amountController.text = widget.transaction!.amount.toString();
+      _categoryController.text = widget.transaction!.category;
+      _isExpense = widget.transaction!.type == TransactionType.expense;
+      _frequency = widget.transaction!.frequency;
+      _endCondition = widget.transaction!.endCondition;
+      _startDate = widget.transaction!.startDate;
+      _endDate = widget.transaction!.endDate;
+      _occurrenceCount = widget.transaction!.occurrenceCount;
+    }
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _amountController.dispose();
+    _categoryController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: DraggableScrollableSheet(
+        initialChildSize: 0.9,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        expand: false,
+        builder: (context, scrollController) {
+          return SingleChildScrollView(
+            controller: scrollController,
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Handle
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: AppColors.border(context),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Title
+                Text(
+                  widget.transaction != null ? 'Edit Recurring Transaction' : 'Add Recurring Transaction',
+                  style: AppTypography.titleLarge(),
+                ),
+                const SizedBox(height: 24),
+
+                // Type Toggle
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildTypeButton('Expense', true, AppColors.error),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildTypeButton('Income', false, AppColors.success),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                // Title
+                TextField(
+                  controller: _titleController,
+                  decoration: const InputDecoration(
+                    labelText: 'Title',
+                    hintText: 'e.g., Rent, Salary',
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Amount
+                TextField(
+                  controller: _amountController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Amount',
+                    prefixText: '\$',
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Category
+                DropdownButtonFormField<String>(
+                  value: _categories.contains(_categoryController.text) ? _categoryController.text : null,
+                  decoration: const InputDecoration(labelText: 'Category'),
+                  items: _categories.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+                  onChanged: (value) => setState(() => _categoryController.text = value ?? ''),
+                ),
+                const SizedBox(height: 20),
+
+                // Frequency
+                Text('Frequency', style: AppTypography.titleSmall()),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  children: RecurringFrequency.values.map((f) {
+                    final isSelected = _frequency == f;
+                    return ChoiceChip(
+                      selected: isSelected,
+                      onSelected: (selected) {
+                        if (selected) setState(() => _frequency = f);
+                      },
+                      label: Text(f.displayName),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 20),
+
+                // Start Date
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Start Date'),
+                  subtitle: Text('${_startDate.month}/${_startDate.day}/${_startDate.year}'),
+                  trailing: const Icon(Icons.calendar_today),
+                  onTap: () async {
+                    final date = await showDatePicker(
+                      context: context,
+                      initialDate: _startDate,
+                      firstDate: DateTime(2020),
+                      lastDate: DateTime(2030),
+                    );
+                    if (date != null) setState(() => _startDate = date);
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // End Condition
+                Text('End Condition', style: AppTypography.titleSmall()),
+                const SizedBox(height: 8),
+                Column(
+                  children: [
+                    RadioListTile<EndConditionType>(
+                      title: const Text('Never'),
+                      value: EndConditionType.never,
+                      groupValue: _endCondition,
+                      onChanged: (v) => setState(() => _endCondition = v!),
+                    ),
+                    RadioListTile<EndConditionType>(
+                      title: const Text('After specific number of occurrences'),
+                      value: EndConditionType.afterCount,
+                      groupValue: _endCondition,
+                      onChanged: (v) => setState(() => _endCondition = v!),
+                    ),
+                    if (_endCondition == EndConditionType.afterCount)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 48, right: 16, bottom: 8),
+                        child: TextField(
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            labelText: 'Number of occurrences',
+                            hintText: 'e.g., 12',
+                          ),
+                          onChanged: (v) => _occurrenceCount = int.tryParse(v),
+                        ),
+                      ),
+                    RadioListTile<EndConditionType>(
+                      title: const Text('On specific date'),
+                      value: EndConditionType.onDate,
+                      groupValue: _endCondition,
+                      onChanged: (v) => setState(() => _endCondition = v!),
+                    ),
+                    if (_endCondition == EndConditionType.onDate)
+                      ListTile(
+                        contentPadding: const EdgeInsets.only(left: 48, right: 16),
+                        title: const Text('End Date'),
+                        subtitle: Text(_endDate != null
+                            ? '${_endDate!.month}/${_endDate!.day}/${_endDate!.year}'
+                            : 'Select date'),
+                        trailing: const Icon(Icons.calendar_today),
+                        onTap: () async {
+                          final date = await showDatePicker(
+                            context: context,
+                            initialDate: _endDate ?? DateTime.now().add(const Duration(days: 365)),
+                            firstDate: _startDate,
+                            lastDate: DateTime(2030),
+                          );
+                          if (date != null) setState(() => _endDate = date);
+                        },
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 32),
+
+                // Save Button
+                AppButton.primary(
+                  label: widget.transaction != null ? 'Update' : 'Create',
+                  onPressed: _save,
+                  expanded: true,
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildTypeButton(String label, bool isExpense, Color color) {
+    final isSelected = _isExpense == isExpense;
+    return GestureDetector(
+      onTap: () => setState(() => _isExpense = isExpense),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? color.withValues(alpha: 0.1) : null,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? color : AppColors.border(context),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              isExpense ? Icons.arrow_downward : Icons.arrow_upward,
+              color: isSelected ? color : AppColors.textSecondary(context),
+              size: 18,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: AppTypography.labelMedium(
+                color: isSelected ? color : AppColors.textPrimary(context),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _save() {
+    final amount = double.tryParse(_amountController.text);
+    if (amount == null || amount <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid amount')),
+      );
+      return;
+    }
+
+    if (_titleController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a title')),
+      );
+      return;
+    }
+
+    if (_categoryController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a category')),
+      );
+      return;
+    }
+
+    widget.onSave({
+      'title': _titleController.text,
+      'amount': amount,
+      'type': _isExpense ? TransactionType.expense : TransactionType.income,
+      'category': _categoryController.text,
+      'frequency': _frequency,
+      'startDate': _startDate,
+      'endCondition': _endCondition,
+      'occurrenceCount': _occurrenceCount,
+      'endDate': _endDate,
+    });
   }
 }
