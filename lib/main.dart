@@ -6,6 +6,7 @@ import 'presentation/screens/transactions/transactions_screen.dart';
 import 'presentation/screens/add_transaction/add_transaction_screen.dart';
 import 'presentation/screens/budgets/budgets_screen.dart';
 import 'presentation/screens/settings/settings_screen.dart';
+import 'presentation/screens/onboarding/onboarding_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,7 +25,7 @@ class FlowFinanceApp extends StatelessWidget {
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.system,
-      home: const MainNavigationScreen(),
+      home: const OnboardingScreen(),
     );
   }
 }
