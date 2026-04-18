@@ -7,8 +7,10 @@ import 'package:provider/provider.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/app_colors.dart';
 
-// Data Models
+// Data
+import 'data/database/database_exports.dart';
 import 'data/models/models.dart';
+import 'data/repositories/repositories.dart';
 
 // BLoCs
 import 'presentation/blocs/blocs.dart';
@@ -51,8 +53,31 @@ class FlowFinanceApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => TransactionBloc()),
-        ChangeNotifierProvider(create: (_) => BudgetBloc()),
+        // Database
+        Provider(create: (_) => AppDatabase()),
+
+        // Repositories
+        ProxyProvider<AppDatabase, TransactionRepository>(
+          update: (_, db, __) => TransactionRepository(db),
+        ),
+        ProxyProvider<AppDatabase, BudgetRepository>(
+          update: (_, db, __) => BudgetRepository(db),
+        ),
+        ProxyProvider<AppDatabase, SettingsRepository>(
+          update: (_, db, __) => SettingsRepository(db),
+        ),
+
+        // BLoCs
+        ChangeNotifierProvider(
+          create: (context) => TransactionBloc(
+            context.read<TransactionRepository>(),
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => BudgetBloc(
+            context.read<BudgetRepository>(),
+          ),
+        ),
       ],
       child: MaterialApp(
         title: 'Flow Finance',

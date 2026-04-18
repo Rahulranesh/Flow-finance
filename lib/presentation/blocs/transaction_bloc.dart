@@ -1,8 +1,13 @@
 import 'package:flutter/foundation.dart';
 import '../../data/models/transaction_model.dart';
+import '../../data/repositories/transaction_repository.dart';
 
 /// BLoC for managing transaction state
 class TransactionBloc extends ChangeNotifier {
+  final TransactionRepository _repository;
+
+  TransactionBloc(this._repository);
+
   // State
   List<Transaction> _transactions = [];
   List<Transaction> _filteredTransactions = [];
@@ -45,10 +50,14 @@ class TransactionBloc extends ChangeNotifier {
     _clearError();
 
     try {
-      // Simulate API call
-      await Future.delayed(const Duration(milliseconds: 500));
-
-      _transactions = _getMockTransactions();
+      _transactions = await _repository.getAllTransactions();
+      if (_transactions.isEmpty) {
+        // Load mock data for first run
+        _transactions = _getMockTransactions();
+        for (final transaction in _transactions) {
+          await _repository.insertTransaction(transaction);
+        }
+      }
       _applyFilter();
     } catch (e) {
       _setError('Failed to load transactions');
@@ -61,9 +70,7 @@ class TransactionBloc extends ChangeNotifier {
     _setLoading(true);
 
     try {
-      // Simulate API call
-      await Future.delayed(const Duration(milliseconds: 300));
-
+      await _repository.insertTransaction(transaction);
       _transactions.insert(0, transaction);
       _applyFilter();
     } catch (e) {
@@ -77,6 +84,7 @@ class TransactionBloc extends ChangeNotifier {
     _setLoading(true);
 
     try {
+      await _repository.updateTransaction(transaction);
       final index = _transactions.indexWhere((t) => t.id == transaction.id);
       if (index != -1) {
         _transactions[index] = transaction;
@@ -93,6 +101,7 @@ class TransactionBloc extends ChangeNotifier {
     _setLoading(true);
 
     try {
+      await _repository.deleteTransaction(id);
       _transactions.removeWhere((t) => t.id == id);
       _applyFilter();
     } catch (e) {

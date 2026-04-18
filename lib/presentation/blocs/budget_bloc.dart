@@ -1,8 +1,13 @@
 import 'package:flutter/foundation.dart' hide Category;
 import '../../data/models/transaction_model.dart';
+import '../../data/repositories/budget_repository.dart';
 
 /// BLoC for managing budget state
 class BudgetBloc extends ChangeNotifier {
+  final BudgetRepository _repository;
+
+  BudgetBloc(this._repository);
+
   // State
   List<Budget> _budgets = [];
   List<Category> _categories = [];
@@ -60,10 +65,15 @@ class BudgetBloc extends ChangeNotifier {
     _clearError();
 
     try {
-      await Future.delayed(const Duration(milliseconds: 500));
-
       _categories = Category.defaultCategories;
-      _budgets = _getMockBudgets();
+      _budgets = await _repository.getAllBudgets();
+      if (_budgets.isEmpty) {
+        // Load mock budgets for first run
+        _budgets = _getMockBudgets();
+        for (final budget in _budgets) {
+          await _repository.insertBudget(budget);
+        }
+      }
     } catch (e) {
       _setError('Failed to load budgets');
     } finally {
@@ -75,8 +85,7 @@ class BudgetBloc extends ChangeNotifier {
     _setLoading(true);
 
     try {
-      await Future.delayed(const Duration(milliseconds: 300));
-
+      await _repository.insertBudget(budget);
       _budgets.add(budget);
       notifyListeners();
     } catch (e) {
@@ -90,6 +99,7 @@ class BudgetBloc extends ChangeNotifier {
     _setLoading(true);
 
     try {
+      await _repository.updateBudget(budget);
       final index = _budgets.indexWhere((b) => b.id == budget.id);
       if (index != -1) {
         _budgets[index] = budget;
@@ -106,6 +116,7 @@ class BudgetBloc extends ChangeNotifier {
     _setLoading(true);
 
     try {
+      await _repository.deleteBudget(id);
       _budgets.removeWhere((b) => b.id == id);
       notifyListeners();
     } catch (e) {
