@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
+import '../../../core/services/currency_formatter.dart';
+import '../../../core/services/data_export_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_scaffold.dart';
 import '../../../core/widgets/app_loading.dart';
+import '../../../core/utils/extensions.dart';
 import '../../../data/models/transaction_model.dart';
 import '../../blocs/transaction_bloc.dart';
 import '../../widgets/charts/charts.dart';
@@ -19,6 +22,7 @@ class ReportsScreen extends StatefulWidget {
 }
 
 class _ReportsScreenState extends State<ReportsScreen> {
+  final DataExportService _dataExportService = const DataExportService();
   DateTimeRange _dateRange = DateTimeRange(
     start: DateTime.now().subtract(const Duration(days: 30)),
     end: DateTime.now(),
@@ -37,7 +41,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return AppScaffold(
-      title: 'Reports',
+      title: 'Reports'.tr(),
       actions: [
         IconButton(
           icon: const Icon(Icons.calendar_today),
@@ -54,7 +58,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
             return AppLoading.fullScreen();
           }
 
-          final filteredTransactions = _getFilteredTransactions(bloc.transactions);
+          final filteredTransactions =
+              _getFilteredTransactions(bloc.transactions);
           final insights = _generateInsights(filteredTransactions);
 
           return SingleChildScrollView(
@@ -118,20 +123,20 @@ class _ReportsScreenState extends State<ReportsScreen> {
           ),
           TextButton(
             onPressed: _selectDateRange,
-            child: const Text('Change'),
+            child: Text('Change'.tr()),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSummaryCards(Map<String, dynamic> insights) {
+  Widget _buildSummaryCards(_ReportInsights insights) {
     return Row(
       children: [
         Expanded(
           child: _buildSummaryCard(
-            'Total Income',
-            insights['totalIncome'] as double,
+            'Total Income'.tr(),
+            insights.totalIncome,
             AppColors.success,
             Icons.arrow_upward,
           ),
@@ -139,8 +144,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
         const SizedBox(width: 12),
         Expanded(
           child: _buildSummaryCard(
-            'Total Expense',
-            insights['totalExpense'] as double,
+            'Total Expense'.tr(),
+            insights.totalExpense,
             AppColors.error,
             Icons.arrow_downward,
           ),
@@ -149,7 +154,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
     );
   }
 
-  Widget _buildSummaryCard(String label, double amount, Color color, IconData icon) {
+  Widget _buildSummaryCard(
+      String label, double amount, Color color, IconData icon) {
     return AppCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -170,7 +176,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              '\$${amount.toStringAsFixed(2)}',
+              amount.toCurrency(),
               style: AppTypography.titleLarge(
                 color: color,
               ).copyWith(fontWeight: FontWeight.bold),
@@ -186,11 +192,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Spending Overview',
+          'Spending Overview'.tr(),
           style: AppTypography.titleMedium(
-            color: isDark
-                ? AppColors.textPrimaryDark
-                : AppColors.textPrimaryLight,
+            color:
+                isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
           ),
         ),
         const SizedBox(height: 16),
@@ -225,21 +230,15 @@ class _ReportsScreenState extends State<ReportsScreen> {
     );
   }
 
-  Widget _buildInsightsSection(Map<String, dynamic> insights, bool isDark) {
-    final savingsRate = insights['savingsRate'] as double;
-    final avgDailySpend = insights['avgDailySpend'] as double;
-    final topCategory = insights['topCategory'] as String?;
-    final topCategoryAmount = insights['topCategoryAmount'] as double;
-
+  Widget _buildInsightsSection(_ReportInsights insights, bool isDark) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Key Insights',
+          'Key Insights'.tr(),
           style: AppTypography.titleMedium(
-            color: isDark
-                ? AppColors.textPrimaryDark
-                : AppColors.textPrimaryLight,
+            color:
+                isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
           ),
         ),
         const SizedBox(height: 16),
@@ -249,23 +248,25 @@ class _ReportsScreenState extends State<ReportsScreen> {
             child: Column(
               children: [
                 _buildInsightRow(
-                  'Savings Rate',
-                  '${savingsRate.toStringAsFixed(1)}%',
-                  savingsRate >= 20 ? AppColors.success : AppColors.warning,
+                  'Savings Rate'.tr(),
+                  '${insights.savingsRate.toStringAsFixed(1)}%',
+                  insights.savingsRate >= 20
+                      ? AppColors.success
+                      : AppColors.warning,
                   Icons.savings,
                 ),
                 const Divider(height: 24),
                 _buildInsightRow(
-                  'Avg Daily Spend',
-                  '\$${avgDailySpend.toStringAsFixed(2)}',
+                  'Avg Daily Spend'.tr(),
+                  insights.avgDailySpend.toCurrency(),
                   AppColors.primary,
                   Icons.today,
                 ),
-                if (topCategory != null) ...[
+                if (insights.topCategory != null) ...[
                   const Divider(height: 24),
                   _buildInsightRow(
-                    'Top Category',
-                    '$topCategory (\$${topCategoryAmount.toStringAsFixed(0)})',
+                    'Top Category'.tr(),
+                    '${insights.topCategory} (${insights.topCategoryAmount.toCurrency(decimalDigits: 0)})',
                     AppColors.secondary,
                     Icons.category,
                   ),
@@ -278,7 +279,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
     );
   }
 
-  Widget _buildInsightRow(String label, String value, Color color, IconData icon) {
+  Widget _buildInsightRow(
+      String label, String value, Color color, IconData icon) {
     return Row(
       children: [
         Container(
@@ -314,7 +316,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
     );
   }
 
-  Widget _buildTopCategoriesSection(List<Transaction> transactions, bool isDark) {
+  Widget _buildTopCategoriesSection(
+      List<Transaction> transactions, bool isDark) {
     final categoryTotals = <String, double>{};
 
     for (final transaction in transactions) {
@@ -333,17 +336,17 @@ class _ReportsScreenState extends State<ReportsScreen> {
       return const SizedBox.shrink();
     }
 
-    final totalExpense = categoryTotals.values.fold(0.0, (sum, amount) => sum + amount);
+    final totalExpense =
+        categoryTotals.values.fold(0.0, (sum, amount) => sum + amount);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Top Spending Categories',
+          'Top Spending Categories'.tr(),
           style: AppTypography.titleMedium(
-            color: isDark
-                ? AppColors.textPrimaryDark
-                : AppColors.textPrimaryLight,
+            color:
+                isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
           ),
         ),
         const SizedBox(height: 16),
@@ -364,7 +367,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
     );
   }
 
-  Widget _buildCategoryRow(String category, double amount, double percentage, Color color) {
+  Widget _buildCategoryRow(
+      String category, double amount, double percentage, Color color) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Column(
@@ -393,7 +397,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 ],
               ),
               Text(
-                '\$${amount.toStringAsFixed(0)} (${percentage.toStringAsFixed(1)}%)',
+                '${amount.toCurrency(decimalDigits: 0)} (${percentage.toStringAsFixed(1)}%)',
                 style: AppTypography.bodySmall(
                   color: AppColors.textSecondaryLight,
                 ),
@@ -415,7 +419,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
     );
   }
 
-  Map<String, dynamic> _generateInsights(List<Transaction> transactions) {
+  _ReportInsights _generateInsights(List<Transaction> transactions) {
     double totalIncome = 0;
     double totalExpense = 0;
     final categoryTotals = <String, double>{};
@@ -431,10 +435,11 @@ class _ReportsScreenState extends State<ReportsScreen> {
     }
 
     final netSavings = totalIncome - totalExpense;
-    final savingsRate = totalIncome > 0 ? (netSavings / totalIncome) * 100 : 0;
+    final savingsRate =
+        totalIncome > 0 ? (netSavings / totalIncome) * 100 : 0.0;
 
     final days = _dateRange.duration.inDays + 1;
-    final avgDailySpend = days > 0 ? totalExpense / days : 0;
+    final avgDailySpend = days > 0 ? totalExpense / days : 0.0;
 
     String? topCategory;
     double topCategoryAmount = 0;
@@ -445,15 +450,15 @@ class _ReportsScreenState extends State<ReportsScreen> {
       }
     });
 
-    return {
-      'totalIncome': totalIncome,
-      'totalExpense': totalExpense,
-      'netSavings': netSavings,
-      'savingsRate': savingsRate,
-      'avgDailySpend': avgDailySpend,
-      'topCategory': topCategory,
-      'topCategoryAmount': topCategoryAmount,
-    };
+    return _ReportInsights(
+      totalIncome: totalIncome,
+      totalExpense: totalExpense,
+      netSavings: netSavings,
+      savingsRate: savingsRate,
+      avgDailySpend: avgDailySpend,
+      topCategory: topCategory,
+      topCategoryAmount: topCategoryAmount,
+    );
   }
 
   Color _getCategoryColor(String category) {
@@ -478,7 +483,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
   List<Transaction> _getFilteredTransactions(List<Transaction> transactions) {
     return transactions.where((t) {
-      return t.date.isAfter(_dateRange.start.subtract(const Duration(days: 1))) &&
+      return t.date
+              .isAfter(_dateRange.start.subtract(const Duration(days: 1))) &&
           t.date.isBefore(_dateRange.end.add(const Duration(days: 1)));
     }).toList();
   }
@@ -516,14 +522,14 @@ class _ReportsScreenState extends State<ReportsScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Export Report',
+              'Export Report'.tr(),
               style: AppTypography.titleMedium(),
             ),
             const SizedBox(height: 16),
             ListTile(
               leading: const Icon(Icons.table_chart, color: AppColors.success),
-              title: const Text('Export as CSV'),
-              subtitle: const Text('Spreadsheet format for Excel/Google Sheets'),
+              title: Text('Export as CSV'.tr()),
+              subtitle: Text('Spreadsheet format for Excel/Google Sheets'.tr()),
               onTap: () {
                 Navigator.pop(context);
                 _exportToCsv();
@@ -531,8 +537,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.picture_as_pdf, color: AppColors.error),
-              title: const Text('Export as PDF'),
-              subtitle: const Text('Document format for sharing/printing'),
+              title: Text('Export as PDF'.tr()),
+              subtitle: Text('Document format for sharing/printing'.tr()),
               onTap: () {
                 Navigator.pop(context);
                 _exportToPdf();
@@ -548,106 +554,46 @@ class _ReportsScreenState extends State<ReportsScreen> {
   void _exportToCsv() {
     final bloc = context.read<TransactionBloc>();
     final transactions = _getFilteredTransactions(bloc.transactions);
-
-    // Generate CSV content
-    final buffer = StringBuffer();
-    buffer.writeln('Date,Title,Category,Type,Amount,Note');
-
-    for (final t in transactions) {
-      final date = '${t.date.year}-${t.date.month.toString().padLeft(2, '0')}-${t.date.day.toString().padLeft(2, '0')}';
-      final type = t.type == TransactionType.income ? 'Income' : 'Expense';
-      final note = t.note?.replaceAll(',', ' ') ?? '';
-      buffer.writeln('$date,"${t.title}","${t.category}",$type,${t.amount},$note');
-    }
-
-    // Show share dialog with CSV content
-    _showExportResult('CSV', buffer.toString(), transactions.length);
+    _dataExportService.shareExport(
+      transactions: transactions,
+      dateRange: _dateRange,
+      format: ExportFormat.csv,
+      currencySymbol: CurrencyFormatter.currentCurrency.symbol,
+    );
   }
 
   void _exportToPdf() {
     final bloc = context.read<TransactionBloc>();
     final transactions = _getFilteredTransactions(bloc.transactions);
-
-    // Calculate summary
-    double totalIncome = 0;
-    double totalExpense = 0;
-    for (final t in transactions) {
-      if (t.type == TransactionType.income) {
-        totalIncome += t.amount;
-      } else {
-        totalExpense += t.amount;
-      }
-    }
-
-    // Generate PDF content summary
-    final buffer = StringBuffer();
-    buffer.writeln('FINANCIAL REPORT');
-    buffer.writeln('Period: ${_formatDate(_dateRange.start)} - ${_formatDate(_dateRange.end)}');
-    buffer.writeln('');
-    buffer.writeln('SUMMARY');
-    buffer.writeln('Total Income: \$${totalIncome.toStringAsFixed(2)}');
-    buffer.writeln('Total Expense: \$${totalExpense.toStringAsFixed(2)}');
-    buffer.writeln('Net Savings: \$${(totalIncome - totalExpense).toStringAsFixed(2)}');
-    buffer.writeln('');
-    buffer.writeln('TRANSACTIONS (${transactions.length})');
-    buffer.writeln('-------------------');
-
-    for (final t in transactions) {
-      final date = '${t.date.month}/${t.date.day}/${t.date.year}';
-      final type = t.type == TransactionType.income ? 'INC' : 'EXP';
-      buffer.writeln('$date [$type] ${t.title} - \$${t.amount.toStringAsFixed(2)}');
-    }
-
-    _showExportResult('PDF', buffer.toString(), transactions.length);
-  }
-
-  void _showExportResult(String format, String content, int count) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Export Complete'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('$count transactions exported to $format format.'),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceVariant(context),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                content.substring(0, content.length > 200 ? 200 : content.length) + (content.length > 200 ? '...' : ''),
-                style: AppTypography.bodySmall().copyWith(
-                  fontFamily: 'monospace',
-                ),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-          AppButton.primary(
-            label: 'Share',
-            onPressed: () {
-              // TODO: Implement actual file sharing using share_plus
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Sharing $format file...')),
-              );
-            },
-          ),
-        ],
-      ),
+    _dataExportService.shareExport(
+      transactions: transactions,
+      dateRange: _dateRange,
+      format: ExportFormat.pdf,
+      currencySymbol: CurrencyFormatter.currentCurrency.symbol,
     );
   }
 
   String _formatDate(DateTime date) {
     return '${date.month}/${date.day}/${date.year}';
   }
+}
+
+class _ReportInsights {
+  const _ReportInsights({
+    required this.totalIncome,
+    required this.totalExpense,
+    required this.netSavings,
+    required this.savingsRate,
+    required this.avgDailySpend,
+    required this.topCategory,
+    required this.topCategoryAmount,
+  });
+
+  final double totalIncome;
+  final double totalExpense;
+  final double netSavings;
+  final double savingsRate;
+  final double avgDailySpend;
+  final String? topCategory;
+  final double topCategoryAmount;
 }

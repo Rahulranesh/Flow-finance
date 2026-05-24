@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../../../core/models/bank_account.dart';
 import '../../../core/services/bank_integration/plaid_service.dart';
 import '../../../core/services/bank_integration/truelayer_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_scaffold.dart';
 import '../../blocs/wallet_bloc.dart';
@@ -21,7 +21,7 @@ class BankConnectScreen extends StatefulWidget {
 class _BankConnectScreenState extends State<BankConnectScreen> {
   final PlaidService _plaidService = PlaidService();
   final TrueLayerService _trueLayerService = TrueLayerService();
-  
+
   bool _isLoading = false;
   String? _selectedCountry;
   String? _selectedProvider;
@@ -67,7 +67,7 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return AppScaffold(
-      title: 'Connect Bank Account',
+      title: 'Connect Bank Account'.tr(),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -75,37 +75,37 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
           children: [
             // Info card
             _buildInfoCard(isDark),
-            
+
             const SizedBox(height: 24),
-            
+
             // Country selection
-            _buildSectionTitle('Select Your Country', isDark),
+            _buildSectionTitle('Select Your Country'.tr(), isDark),
             const SizedBox(height: 12),
             _buildCountrySelector(isDark),
-            
+
             const SizedBox(height: 24),
-            
+
             // Provider selection
             if (_selectedCountry != null) ...[
-              _buildSectionTitle('Select Provider', isDark),
+              _buildSectionTitle('Select Provider'.tr(), isDark),
               const SizedBox(height: 12),
               _buildProviderSelector(isDark),
             ],
-            
+
             const SizedBox(height: 24),
-            
+
             // Bank selection
             if (_selectedProvider != null) ...[
-              _buildSectionTitle('Select Your Bank', isDark),
+              _buildSectionTitle('Select Your Bank'.tr(), isDark),
               const SizedBox(height: 12),
               _buildBankSelector(isDark),
             ],
-            
+
             const SizedBox(height: 24),
-            
+
             // Connected accounts
             _buildConnectedAccountsSection(isDark),
-            
+
             const SizedBox(height: 100),
           ],
         ),
@@ -127,15 +127,17 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Secure Bank Connection',
-                    style: AppTypography.bodyMedium(fontWeight: FontWeight.w600),
+                    'Secure Bank Connection'.tr(),
+                    style:
+                        AppTypography.bodyMedium(fontWeight: FontWeight.w600),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 8),
             Text(
-              'Your credentials are never stored on our servers. We use bank-grade encryption and secure OAuth connections.',
+              'Your credentials are never stored on our servers. We use bank-grade encryption and secure OAuth connections.'
+                  .tr(),
               style: AppTypography.bodySmall(
                 color: AppColors.textSecondaryLight,
               ),
@@ -187,7 +189,7 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
 
   Widget _buildProviderSelector(bool isDark) {
     final providers = _getProvidersForCountry(_selectedCountry!);
-    
+
     return Column(
       children: providers.map((provider) {
         final isSelected = _selectedProvider == provider['id'];
@@ -198,9 +200,8 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
             });
             _loadInstitutions();
           },
-          backgroundColor: isSelected
-              ? AppColors.primary.withValues(alpha: 0.1)
-              : null,
+          backgroundColor:
+              isSelected ? AppColors.primary.withValues(alpha: 0.1) : null,
           child: ListTile(
             leading: Icon(
               provider['icon'] as IconData,
@@ -224,9 +225,10 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
 
   List<Map<String, dynamic>> _getProvidersForCountry(String countryCode) {
     final providers = <Map<String, dynamic>>[];
-    
+
     // Plaid supports US, CA, UK, EU
-    if (['US', 'CA', 'GB', 'IE', 'FR', 'DE', 'ES', 'NL'].contains(countryCode)) {
+    if (['US', 'CA', 'GB', 'IE', 'FR', 'DE', 'ES', 'NL']
+        .contains(countryCode)) {
       providers.add({
         'id': 'plaid',
         'name': 'Plaid',
@@ -234,7 +236,7 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
         'icon': Icons.account_balance,
       });
     }
-    
+
     // TrueLayer supports UK and EU
     if (['GB', 'IE', 'FR', 'DE', 'ES', 'NL'].contains(countryCode)) {
       providers.add({
@@ -244,7 +246,7 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
         'icon': Icons.account_balance_wallet,
       });
     }
-    
+
     // Indian providers
     if (countryCode == 'IN') {
       providers.add({
@@ -260,7 +262,7 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
         'icon': Icons.message,
       });
     }
-    
+
     return providers;
   }
 
@@ -382,7 +384,7 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
 
   Future<void> _loadInstitutions() async {
     setState(() => _isLoading = true);
-    
+
     try {
       if (_selectedProvider == 'plaid') {
         final institutions = await _plaidService.getInstitutions(
@@ -395,13 +397,15 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
           country: _selectedCountry,
         );
         setState(() {
-          _institutions = providers.map((p) => BankInstitution(
-            id: p.id,
-            name: p.displayName,
-            logo: p.logoUri,
-            countryCodes: p.countries,
-            supportedFeatures: p.supportedScopes,
-          )).toList();
+          _institutions = providers
+              .map((p) => BankInstitution(
+                    id: p.id,
+                    name: p.displayName,
+                    logo: p.logoUri,
+                    countryCodes: p.countries,
+                    supportedFeatures: p.supportedScopes,
+                  ))
+              .toList();
         });
       }
     } catch (e) {
@@ -415,9 +419,9 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
 
   Future<void> _searchInstitutions(String query) async {
     if (query.length < 2) return;
-    
+
     setState(() => _isLoading = true);
-    
+
     try {
       if (_selectedProvider == 'plaid') {
         final institutions = await _plaidService.searchInstitutions(
@@ -437,9 +441,9 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
     // Show wallet selection dialog
     final walletBloc = context.read<WalletBloc>();
     final wallets = walletBloc.wallets;
-    
+
     String? selectedWalletId;
-    
+
     if (wallets.isNotEmpty) {
       selectedWalletId = await showDialog<String>(
         context: context,

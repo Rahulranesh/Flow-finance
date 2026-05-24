@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/theme.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../../core/utils/extensions.dart';
 import '../../../data/models/models.dart';
 import '../../blocs/blocs.dart';
+import '../../widgets/transaction_details_sheet.dart';
+import '../reports/reports_screen.dart';
 
 /// Transactions list screen with filtering and search
 class TransactionsScreen extends StatefulWidget {
@@ -33,11 +36,16 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
-      title: 'Transactions',
+      title: 'Transactions'.tr(),
       actions: [
         AppIconButton(
           icon: Icons.filter_list,
-          onPressed: () {},
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ReportsScreen()),
+            );
+          },
           variant: AppIconButtonVariant.filled,
         ),
         const SizedBox(width: 16),
@@ -49,7 +57,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
             padding: const EdgeInsets.all(20),
             child: AppSearchInput(
               controller: _searchController,
-              hint: 'Search transactions...',
+              hint: 'Search transactions...'.tr(),
               onChanged: (value) {
                 context.read<TransactionBloc>().search(value);
               },
@@ -81,7 +89,8 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                   },
                   child: AnimatedContainer(
                     duration: AppAnimations.fast,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 10),
                     decoration: BoxDecoration(
                       color: isSelected
                           ? AppColors.primary
@@ -89,7 +98,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      label,
+                      label.tr(),
                       style: AppTypography.labelMedium(
                         color: isSelected ? Colors.white : null,
                       ),
@@ -124,7 +133,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                         Text(bloc.error!),
                         const SizedBox(height: 16),
                         AppButton.secondary(
-                          label: 'Retry',
+                          label: 'Retry'.tr(),
                           onPressed: () => bloc.loadTransactions(),
                         ),
                       ],
@@ -138,8 +147,10 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                   return Center(
                     child: AppEmptyState(
                       icon: Icons.receipt_long,
-                      title: 'No transactions found',
-                      subtitle: 'Try adjusting your filters or add a new transaction',
+                      title: 'No transactions found'.tr(),
+                      subtitle:
+                          'Try adjusting your filters or add a new transaction'
+                              .tr(),
                     ),
                   );
                 }
@@ -168,13 +179,13 @@ class _TransactionsList extends StatelessWidget {
       final date = transaction.date;
       String key;
       if (date.isToday) {
-        key = 'Today';
+        key = 'Today'.tr();
       } else if (date.isYesterday) {
-        key = 'Yesterday';
+        key = 'Yesterday'.tr();
       } else if (date.difference(DateTime.now()).inDays > -7) {
-        key = 'This Week';
+        key = 'This Week'.tr();
       } else if (date.difference(DateTime.now()).inDays > -14) {
-        key = 'Last Week';
+        key = 'Last Week'.tr();
       } else {
         key = date.toShortDate();
       }
@@ -204,8 +215,8 @@ class _TransactionsList extends StatelessWidget {
 
             // Transactions for this date
             ...items.map((transaction) => _TransactionItem(
-              transaction: transaction,
-            )),
+                  transaction: transaction,
+                )),
           ],
         );
       },
@@ -233,9 +244,9 @@ class _TransactionItem extends StatelessWidget {
         context.read<TransactionBloc>().deleteTransaction(transaction.id);
         context.showSnackBar(
           SnackBar(
-            content: const Text('Transaction deleted'),
+            content: Text('Transaction deleted'.tr()),
             action: SnackBarAction(
-              label: 'Undo',
+              label: 'Undo'.tr(),
               onPressed: () {
                 // Could implement undo here
               },
@@ -260,7 +271,7 @@ class _TransactionItem extends StatelessWidget {
         variant: AppCardVariant.flat,
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
-        onTap: () {},
+        onTap: () => showTransactionDetailsSheet(context, transaction),
         child: Row(
           children: [
             // Category Icon
@@ -315,7 +326,8 @@ class _TransactionItem extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
                     color: AppColors.success.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(4),
@@ -338,15 +350,24 @@ class _TransactionItem extends StatelessWidget {
   (IconData, Color) _getCategoryData(String category) {
     final categoryMap = <String, (IconData, Color)>{
       'Food': (Icons.restaurant, const Color(0xFFF59E0B)),
+      'Food & Dining': (Icons.restaurant, const Color(0xFFF59E0B)),
       'Transport': (Icons.directions_car, const Color(0xFF3B82F6)),
+      'Transportation': (Icons.directions_car, const Color(0xFF3B82F6)),
       'Shopping': (Icons.shopping_bag, const Color(0xFFEC4899)),
       'Entertainment': (Icons.movie, const Color(0xFF8B5CF6)),
       'Bills': (Icons.receipt, const Color(0xFFEF4444)),
+      'Bills & Utilities': (Icons.receipt, const Color(0xFFEF4444)),
       'Health': (Icons.favorite, const Color(0xFF10B981)),
+      'Health & Fitness': (Icons.favorite, const Color(0xFF10B981)),
       'Education': (Icons.school, const Color(0xFF14B8A6)),
       'Salary': (Icons.work, const Color(0xFF22C55E)),
+      'Income': (Icons.arrow_downward, const Color(0xFF22C55E)),
+      'Refund': (Icons.replay, const Color(0xFF22C55E)),
+      'Interest': (Icons.savings, const Color(0xFF22C55E)),
       'Freelance': (Icons.laptop, const Color(0xFF6366F1)),
       'Investment': (Icons.trending_up, const Color(0xFF06B6D4)),
+      'Transfer': (Icons.swap_horiz, const Color(0xFF6366F1)),
+      'Cash Withdrawal': (Icons.money, const Color(0xFFEF4444)),
     };
 
     return categoryMap[category] ?? (Icons.category, AppColors.primary);

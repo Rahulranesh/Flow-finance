@@ -1,16 +1,31 @@
 import 'package:flutter/foundation.dart' hide Category;
+import 'dart:async';
+import '../../core/services/budget_alert_service.dart';
 import '../../data/models/transaction_model.dart';
 import '../../data/repositories/budget_repository.dart';
+import '../../data/repositories/transaction_repository.dart';
 
 /// BLoC for managing budget state
 class BudgetBloc extends ChangeNotifier {
   final BudgetRepository _repository;
+  final TransactionRepository _transactionRepository;
+  final BudgetAlertService _alertService = BudgetAlertService();
+  StreamSubscription<List<Transaction>>? _transactionsSubscription;
 
-  BudgetBloc(this._repository);
+  BudgetBloc(this._repository, this._transactionRepository) {
+    _transactionsSubscription =
+        _transactionRepository.watchAllTransactions().listen(
+      (transactions) {
+        _transactions = transactions;
+        notifyListeners();
+      },
+    );
+  }
 
   // State
   List<Budget> _budgets = [];
   List<Category> _categories = [];
+  List<Transaction> _transactions = [];
   bool _isLoading = false;
   String? _error;
 
@@ -21,9 +36,8 @@ class BudgetBloc extends ChangeNotifier {
   String? get error => _error;
 
   // Computed
-  double get totalBudgetLimit => _budgets
-      .where((b) => b.isActive)
-      .fold(0, (sum, b) => sum + b.limit);
+  double get totalBudgetLimit =>
+      _budgets.where((b) => b.isActive).fold(0, (sum, b) => sum + b.limit);
 
   Map<String, BudgetProgress> get budgetProgress {
     final Map<String, BudgetProgress> result = {};
@@ -34,8 +48,7 @@ class BudgetBloc extends ChangeNotifier {
         orElse: () => Category.defaultCategories.first,
       );
 
-      // Mock spent amount - in real app, calculate from transactions
-      final spent = budget.limit * 0.65; // 65% spent as mock
+      final spent = _calculateSpentForCategory(category, budget);
 
       result[budget.id] = BudgetProgress(
         budget: budget,
@@ -67,13 +80,7 @@ class BudgetBloc extends ChangeNotifier {
     try {
       _categories = Category.defaultCategories;
       _budgets = await _repository.getAllBudgets();
-      if (_budgets.isEmpty) {
-        // Load mock budgets for first run
-        _budgets = _getMockBudgets();
-        for (final budget in _budgets) {
-          await _repository.insertBudget(budget);
-        }
-      }
+      _transactions = await _transactionRepository.getAllTransactions();
     } catch (e) {
       _setError('Failed to load budgets');
     } finally {
@@ -109,6 +116,22 @@ class BudgetBloc extends ChangeNotifier {
       _setError('Failed to update budget');
     } finally {
       _setLoading(false);
+    }
+  }
+
+  /// Check budget spending and trigger alerts if needed
+  Future<void> checkBudgetAlerts(List<Transaction> transactions) async {
+    for (final budget in _budgets.where((b) => b.isActive)) {
+      final category = _categories.firstWhere(
+        (c) => c.id == budget.categoryId,
+        orElse: () => Category.defaultCategories.first,
+      );
+
+      await _alertService.checkBudgetAlerts(
+        budget: budget,
+        transactions: transactions,
+        categoryName: category.name,
+      );
     }
   }
 
@@ -154,37 +177,31 @@ class BudgetBloc extends ChangeNotifier {
     _error = null;
   }
 
-  List<Budget> _getMockBudgets() {
-    return [
-      Budget(
-        id: '1',
-        categoryId: 'food',
-        limit: 800,
-        period: BudgetPeriod.monthly,
-        startDate: DateTime.now().subtract(const Duration(days: 15)),
-      ),
-      Budget(
-        id: '2',
-        categoryId: 'transport',
-        limit: 400,
-        period: BudgetPeriod.monthly,
-        startDate: DateTime.now().subtract(const Duration(days: 15)),
-      ),
-      Budget(
-        id: '3',
-        categoryId: 'shopping',
-        limit: 500,
-        period: BudgetPeriod.monthly,
-        startDate: DateTime.now().subtract(const Duration(days: 15)),
-      ),
-      Budget(
-        id: '4',
-        categoryId: 'entertainment',
-        limit: 200,
-        period: BudgetPeriod.monthly,
-        startDate: DateTime.now().subtract(const Duration(days: 15)),
-      ),
-    ];
+  double _calculateSpentForCategory(Category category, Budget budget) {
+    return _transactions.where((transaction) {
+      if (transaction.type != TransactionType.expense) return false;
+      if (transaction.date.isBefore(budget.startDate)) return false;
+      if (budget.endDate != null && transaction.date.isAfter(budget.endDate!)) {
+        return false;
+      }
+
+      final normalizedTransaction = _normalizeCategory(transaction.category);
+      return normalizedTransaction == _normalizeCategory(category.id) ||
+          normalizedTransaction == _normalizeCategory(category.name);
+    }).fold<double>(0, (sum, item) => sum + item.amount);
+  }
+
+  String _normalizeCategory(String value) {
+    return value
+        .toLowerCase()
+        .replaceAll('&', 'and')
+        .replaceAll(RegExp(r'[^a-z0-9]+'), '');
+  }
+
+  @override
+  void dispose() {
+    _transactionsSubscription?.cancel();
+    super.dispose();
   }
 }
 

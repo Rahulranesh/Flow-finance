@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../core/utils/extensions.dart';
 import '../../../data/models/transaction_model.dart';
 
 /// Line chart showing income/expense trends over time
@@ -37,14 +39,14 @@ class TrendChart extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            if (showIncome) _buildLegendItem('Income', AppColors.success),
+            if (showIncome) _buildLegendItem('Income'.tr(), AppColors.success),
             if (showExpense) ...[
               const SizedBox(width: 16),
-              _buildLegendItem('Expense', AppColors.error),
+              _buildLegendItem('Expense'.tr(), AppColors.error),
             ],
             if (showBalance) ...[
               const SizedBox(width: 16),
-              _buildLegendItem('Balance', AppColors.primary),
+              _buildLegendItem('Balance'.tr(), AppColors.primary),
             ],
           ],
         ),
@@ -61,9 +63,8 @@ class TrendChart extends StatelessWidget {
                 horizontalInterval: _getHorizontalInterval(),
                 getDrawingHorizontalLine: (value) {
                   return FlLine(
-                    color: isDark
-                        ? AppColors.borderDark
-                        : AppColors.borderLight,
+                    color:
+                        isDark ? AppColors.borderDark : AppColors.borderLight,
                     strokeWidth: 1,
                   );
                 },
@@ -75,7 +76,7 @@ class TrendChart extends StatelessWidget {
                     reservedSize: 60,
                     getTitlesWidget: (value, meta) {
                       return Text(
-                        '\$${value.toStringAsFixed(0)}',
+                        value.toCurrency(decimalDigits: 0),
                         style: AppTypography.labelSmall(
                           color: isDark
                               ? AppColors.textSecondaryDark
@@ -90,7 +91,8 @@ class TrendChart extends StatelessWidget {
                     showTitles: true,
                     reservedSize: 30,
                     getTitlesWidget: (value, meta) {
-                      final date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
+                      final date =
+                          DateTime.fromMillisecondsSinceEpoch(value.toInt());
                       return Padding(
                         padding: const EdgeInsets.only(top: 8),
                         child: Text(
@@ -136,13 +138,12 @@ class TrendChart extends StatelessWidget {
               ],
               lineTouchData: LineTouchData(
                 touchTooltipData: LineTouchTooltipData(
-                  getTooltipColor: (lineSpot) => isDark
-                      ? AppColors.surfaceDark
-                      : AppColors.surfaceLight,
+                  getTooltipColor: (lineSpot) =>
+                      isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
                   getTooltipItems: (touchedSpots) {
                     return touchedSpots.map((spot) {
                       return LineTooltipItem(
-                        '\$${spot.y.toStringAsFixed(2)}',
+                        spot.y.toCurrency(),
                         AppTypography.bodySmall(
                           color: isDark
                               ? AppColors.textPrimaryDark

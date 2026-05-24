@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
+import '../../../core/services/currency_formatter.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/app_button.dart';
@@ -16,10 +18,12 @@ class RecurringTransactionsScreen extends StatefulWidget {
   const RecurringTransactionsScreen({super.key});
 
   @override
-  State<RecurringTransactionsScreen> createState() => _RecurringTransactionsScreenState();
+  State<RecurringTransactionsScreen> createState() =>
+      _RecurringTransactionsScreenState();
 }
 
-class _RecurringTransactionsScreenState extends State<RecurringTransactionsScreen> {
+class _RecurringTransactionsScreenState
+    extends State<RecurringTransactionsScreen> {
   bool _isLoading = true;
   List<RecurringTransaction> _transactions = [];
   RecurringTransactionSummary? _summary;
@@ -47,7 +51,7 @@ class _RecurringTransactionsScreenState extends State<RecurringTransactionsScree
       setState(() => _isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to load recurring transactions')),
+          SnackBar(content: Text('Failed to load recurring transactions'.tr())),
         );
       }
     }
@@ -58,7 +62,7 @@ class _RecurringTransactionsScreenState extends State<RecurringTransactionsScree
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return AppScaffold(
-      title: 'Recurring',
+      title: 'Recurring'.tr(),
       actions: [
         IconButton(
           icon: const Icon(Icons.add),
@@ -94,7 +98,7 @@ class _RecurringTransactionsScreenState extends State<RecurringTransactionsScree
               children: [
                 Expanded(
                   child: _buildSummaryItem(
-                    'Monthly Income',
+                    'Monthly Income'.tr(),
                     _summary!.totalMonthlyIncome,
                     AppColors.success,
                   ),
@@ -106,7 +110,7 @@ class _RecurringTransactionsScreenState extends State<RecurringTransactionsScree
                 ),
                 Expanded(
                   child: _buildSummaryItem(
-                    'Monthly Expense',
+                    'Monthly Expense'.tr(),
                     _summary!.totalMonthlyExpense,
                     AppColors.error,
                   ),
@@ -120,19 +124,19 @@ class _RecurringTransactionsScreenState extends State<RecurringTransactionsScree
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildStatChip(
-                  'Active',
+                  'Active'.tr(),
                   _summary!.activeCount.toString(),
                   AppColors.primary,
                 ),
                 if (_summary!.dueTodayCount > 0)
                   _buildStatChip(
-                    'Due Today',
+                    'Due Today'.tr(),
                     _summary!.dueTodayCount.toString(),
                     AppColors.warning,
                   ),
                 if (_summary!.overdueCount > 0)
                   _buildStatChip(
-                    'Overdue',
+                    'Overdue'.tr(),
                     _summary!.overdueCount.toString(),
                     AppColors.error,
                   ),
@@ -155,7 +159,7 @@ class _RecurringTransactionsScreenState extends State<RecurringTransactionsScree
         ),
         const SizedBox(height: 4),
         Text(
-          '\$${amount.toStringAsFixed(0)}',
+          CurrencyFormatter.format(amount, decimalDigits: 0),
           style: AppTypography.titleMedium(
             color: color,
           ).copyWith(fontWeight: FontWeight.bold),
@@ -184,7 +188,7 @@ class _RecurringTransactionsScreenState extends State<RecurringTransactionsScree
           ),
           const SizedBox(width: 6),
           Text(
-            '$label: ',
+            '${label.tr()}: ',
             style: AppTypography.labelSmall(
               color: AppColors.textSecondaryLight,
             ),
@@ -215,7 +219,7 @@ class _RecurringTransactionsScreenState extends State<RecurringTransactionsScree
           ),
           const SizedBox(height: 24),
           Text(
-            'No Recurring Transactions',
+            'No Recurring Transactions'.tr(),
             style: AppTypography.titleLarge(
               color: isDark
                   ? AppColors.textPrimaryDark
@@ -224,7 +228,8 @@ class _RecurringTransactionsScreenState extends State<RecurringTransactionsScree
           ),
           const SizedBox(height: 8),
           Text(
-            'Set up recurring income or expenses\nto track them automatically',
+            'Set up recurring income or expenses\nto track them automatically'
+                .tr(),
             textAlign: TextAlign.center,
             style: AppTypography.bodyMedium(
               color: isDark
@@ -234,7 +239,7 @@ class _RecurringTransactionsScreenState extends State<RecurringTransactionsScree
           ),
           const SizedBox(height: 32),
           AppButton.primary(
-            label: 'Add Recurring Transaction',
+            label: 'Add Recurring Transaction'.tr(),
             onPressed: _createRecurring,
             icon: Icons.add,
           ),
@@ -315,7 +320,13 @@ class _RecurringTransactionsScreenState extends State<RecurringTransactionsScree
             _loadData();
           } catch (e) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Failed to ${isEditing ? 'update' : 'create'} transaction')),
+              SnackBar(
+                content: Text(
+                  isEditing
+                      ? 'Failed to update transaction'.tr()
+                      : 'Failed to create transaction'.tr(),
+                ),
+              ),
             );
           }
         },
@@ -331,7 +342,7 @@ class _RecurringTransactionsScreenState extends State<RecurringTransactionsScree
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to update transaction')),
+          SnackBar(content: Text('Failed to update transaction'.tr())),
         );
       }
     }
@@ -341,16 +352,18 @@ class _RecurringTransactionsScreenState extends State<RecurringTransactionsScree
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Recurring Transaction'),
-        content: Text('Are you sure you want to delete "${transaction.title}"?'),
+        title: Text('Delete Recurring Transaction'.tr()),
+        content:
+            Text('Are you sure you want to delete "${transaction.title}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text('Cancel'.tr()),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete', style: TextStyle(color: AppColors.error)),
+            child: Text('Delete'.tr(),
+                style: const TextStyle(color: AppColors.error)),
           ),
         ],
       ),
@@ -364,7 +377,7 @@ class _RecurringTransactionsScreenState extends State<RecurringTransactionsScree
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to delete transaction')),
+            SnackBar(content: Text('Failed to delete transaction'.tr())),
           );
         }
       }
@@ -439,7 +452,7 @@ class _RecurringTransactionCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        '${isIncome ? '+' : '-'}\$${transaction.amount.toStringAsFixed(2)}',
+                        '${isIncome ? '+' : '-'}${CurrencyFormatter.format(transaction.amount)}',
                         style: AppTypography.bodyMedium(
                           color: color,
                           fontWeight: FontWeight.w600,
@@ -465,9 +478,9 @@ class _RecurringTransactionCard extends StatelessWidget {
                   Row(
                     children: [
                       if (transaction.isDueToday)
-                        _buildActionChip('Due Today', AppColors.warning),
+                        _buildActionChip('Due Today'.tr(), AppColors.warning),
                       if (transaction.isOverdue)
-                        _buildActionChip('Overdue', AppColors.error),
+                        _buildActionChip('Overdue'.tr(), AppColors.error),
                       const SizedBox(width: 8),
                       Switch(
                         value: transaction.isActive,
@@ -475,7 +488,8 @@ class _RecurringTransactionCard extends StatelessWidget {
                         activeColor: AppColors.primary,
                       ),
                       IconButton(
-                        icon: const Icon(Icons.delete_outline, color: AppColors.error),
+                        icon: const Icon(Icons.delete_outline,
+                            color: AppColors.error),
                         onPressed: onDelete,
                       ),
                     ],
@@ -491,12 +505,12 @@ class _RecurringTransactionCard extends StatelessWidget {
 
   Widget _buildStatusChip() {
     if (transaction.hasEnded) {
-      return _buildChip('Ended', AppColors.textSecondaryLight);
+      return _buildChip('Ended'.tr(), AppColors.textSecondaryLight);
     }
     if (!transaction.isActive) {
-      return _buildChip('Paused', AppColors.warning);
+      return _buildChip('Paused'.tr(), AppColors.warning);
     }
-    return _buildChip('Active', AppColors.success);
+    return _buildChip('Active'.tr(), AppColors.success);
   }
 
   Widget _buildChip(String label, Color color) {
@@ -543,7 +557,8 @@ class _RecurringTransactionForm extends StatefulWidget {
   });
 
   @override
-  State<_RecurringTransactionForm> createState() => _RecurringTransactionFormState();
+  State<_RecurringTransactionForm> createState() =>
+      _RecurringTransactionFormState();
 }
 
 class _RecurringTransactionFormState extends State<_RecurringTransactionForm> {
@@ -558,8 +573,16 @@ class _RecurringTransactionFormState extends State<_RecurringTransactionForm> {
   int? _occurrenceCount;
 
   final List<String> _categories = [
-    'Food', 'Shopping', 'Transport', 'Entertainment',
-    'Health', 'Bills', 'Education', 'Salary', 'Freelance', 'Other'
+    'Food',
+    'Shopping',
+    'Transport',
+    'Entertainment',
+    'Health',
+    'Bills',
+    'Education',
+    'Salary',
+    'Freelance',
+    'Other'
   ];
 
   @override
@@ -622,7 +645,9 @@ class _RecurringTransactionFormState extends State<_RecurringTransactionForm> {
 
                 // Title
                 Text(
-                  widget.transaction != null ? 'Edit Recurring Transaction' : 'Add Recurring Transaction',
+                  widget.transaction != null
+                      ? 'Edit Recurring Transaction'.tr()
+                      : 'Add Recurring Transaction'.tr(),
                   style: AppTypography.titleLarge(),
                 ),
                 const SizedBox(height: 24),
@@ -631,11 +656,13 @@ class _RecurringTransactionFormState extends State<_RecurringTransactionForm> {
                 Row(
                   children: [
                     Expanded(
-                      child: _buildTypeButton('Expense', true, AppColors.error),
+                      child: _buildTypeButton(
+                          'Expense'.tr(), true, AppColors.error),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: _buildTypeButton('Income', false, AppColors.success),
+                      child: _buildTypeButton(
+                          'Income'.tr(), false, AppColors.success),
                     ),
                   ],
                 ),
@@ -644,9 +671,9 @@ class _RecurringTransactionFormState extends State<_RecurringTransactionForm> {
                 // Title
                 TextField(
                   controller: _titleController,
-                  decoration: const InputDecoration(
-                    labelText: 'Title',
-                    hintText: 'e.g., Rent, Salary',
+                  decoration: InputDecoration(
+                    labelText: 'Title'.tr(),
+                    hintText: 'e.g., Rent, Salary'.tr(),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -655,24 +682,29 @@ class _RecurringTransactionFormState extends State<_RecurringTransactionForm> {
                 TextField(
                   controller: _amountController,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Amount',
-                    prefixText: '\$',
+                  decoration: InputDecoration(
+                    labelText: 'Amount'.tr(),
+                    prefixText: CurrencyFormatter.currentCurrency.symbol,
                   ),
                 ),
                 const SizedBox(height: 16),
 
                 // Category
                 DropdownButtonFormField<String>(
-                  value: _categories.contains(_categoryController.text) ? _categoryController.text : null,
-                  decoration: const InputDecoration(labelText: 'Category'),
-                  items: _categories.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
-                  onChanged: (value) => setState(() => _categoryController.text = value ?? ''),
+                  value: _categories.contains(_categoryController.text)
+                      ? _categoryController.text
+                      : null,
+                  decoration: InputDecoration(labelText: 'Category'.tr()),
+                  items: _categories
+                      .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                      .toList(),
+                  onChanged: (value) =>
+                      setState(() => _categoryController.text = value ?? ''),
                 ),
                 const SizedBox(height: 20),
 
                 // Frequency
-                Text('Frequency', style: AppTypography.titleSmall()),
+                Text('Frequency'.tr(), style: AppTypography.titleSmall()),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
@@ -692,8 +724,9 @@ class _RecurringTransactionFormState extends State<_RecurringTransactionForm> {
                 // Start Date
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Start Date'),
-                  subtitle: Text('${_startDate.month}/${_startDate.day}/${_startDate.year}'),
+                  title: Text('Start Date'.tr()),
+                  subtitle: Text(
+                      '${_startDate.month}/${_startDate.day}/${_startDate.year}'),
                   trailing: const Icon(Icons.calendar_today),
                   onTap: () async {
                     final date = await showDatePicker(
@@ -708,52 +741,55 @@ class _RecurringTransactionFormState extends State<_RecurringTransactionForm> {
                 const SizedBox(height: 16),
 
                 // End Condition
-                Text('End Condition', style: AppTypography.titleSmall()),
+                Text('End Condition'.tr(), style: AppTypography.titleSmall()),
                 const SizedBox(height: 8),
                 Column(
                   children: [
                     RadioListTile<EndConditionType>(
-                      title: const Text('Never'),
+                      title: Text('Never'.tr()),
                       value: EndConditionType.never,
                       groupValue: _endCondition,
                       onChanged: (v) => setState(() => _endCondition = v!),
                     ),
                     RadioListTile<EndConditionType>(
-                      title: const Text('After specific number of occurrences'),
+                      title: Text('After specific number of occurrences'.tr()),
                       value: EndConditionType.afterCount,
                       groupValue: _endCondition,
                       onChanged: (v) => setState(() => _endCondition = v!),
                     ),
                     if (_endCondition == EndConditionType.afterCount)
                       Padding(
-                        padding: const EdgeInsets.only(left: 48, right: 16, bottom: 8),
+                        padding: const EdgeInsets.only(
+                            left: 48, right: 16, bottom: 8),
                         child: TextField(
                           keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            labelText: 'Number of occurrences',
-                            hintText: 'e.g., 12',
+                          decoration: InputDecoration(
+                            labelText: 'Number of occurrences'.tr(),
+                            hintText: 'e.g., 12'.tr(),
                           ),
                           onChanged: (v) => _occurrenceCount = int.tryParse(v),
                         ),
                       ),
                     RadioListTile<EndConditionType>(
-                      title: const Text('On specific date'),
+                      title: Text('On specific date'.tr()),
                       value: EndConditionType.onDate,
                       groupValue: _endCondition,
                       onChanged: (v) => setState(() => _endCondition = v!),
                     ),
                     if (_endCondition == EndConditionType.onDate)
                       ListTile(
-                        contentPadding: const EdgeInsets.only(left: 48, right: 16),
-                        title: const Text('End Date'),
+                        contentPadding:
+                            const EdgeInsets.only(left: 48, right: 16),
+                        title: Text('End Date'.tr()),
                         subtitle: Text(_endDate != null
                             ? '${_endDate!.month}/${_endDate!.day}/${_endDate!.year}'
-                            : 'Select date'),
+                            : 'Select date'.tr()),
                         trailing: const Icon(Icons.calendar_today),
                         onTap: () async {
                           final date = await showDatePicker(
                             context: context,
-                            initialDate: _endDate ?? DateTime.now().add(const Duration(days: 365)),
+                            initialDate: _endDate ??
+                                DateTime.now().add(const Duration(days: 365)),
                             firstDate: _startDate,
                             lastDate: DateTime(2030),
                           );
@@ -766,7 +802,9 @@ class _RecurringTransactionFormState extends State<_RecurringTransactionForm> {
 
                 // Save Button
                 AppButton.primary(
-                  label: widget.transaction != null ? 'Update' : 'Create',
+                  label: widget.transaction != null
+                      ? 'Update'.tr()
+                      : 'Create'.tr(),
                   onPressed: _save,
                   expanded: true,
                 ),
@@ -817,21 +855,21 @@ class _RecurringTransactionFormState extends State<_RecurringTransactionForm> {
     final amount = double.tryParse(_amountController.text);
     if (amount == null || amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid amount')),
+        SnackBar(content: Text('Please enter a valid amount'.tr())),
       );
       return;
     }
 
     if (_titleController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a title')),
+        SnackBar(content: Text('Please enter a title'.tr())),
       );
       return;
     }
 
     if (_categoryController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a category')),
+        SnackBar(content: Text('Please select a category'.tr())),
       );
       return;
     }

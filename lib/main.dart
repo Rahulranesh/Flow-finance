@@ -1,30 +1,29 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // Core
+import 'core/services/notification_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/app_colors.dart';
 
 // Data
 import 'data/database/database_exports.dart';
-import 'data/models/models.dart';
 import 'data/repositories/repositories.dart';
+import 'data/repositories/family_repository.dart';
 
 // BLoCs
 import 'presentation/blocs/blocs.dart';
 
 // Screens
-import 'presentation/screens/home/home_screen.dart';
-import 'presentation/screens/transactions/transactions_screen.dart';
-import 'presentation/screens/add_transaction/add_transaction_screen.dart';
-import 'presentation/screens/budgets/budgets_screen.dart';
-import 'presentation/screens/settings/settings_screen.dart';
 import 'presentation/screens/onboarding/onboarding_screen.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await EasyLocalization.ensureInitialized();
+  final sharedPreferences = await SharedPreferences.getInstance();
 
   // Set preferred orientations
   SystemChrome.setPreferredOrientations([
@@ -42,12 +41,25 @@ void main() {
     ),
   );
 
-  runApp(const FlowFinanceApp());
+  runApp(
+    EasyLocalization(
+      supportedLocales: const [Locale('en'), Locale('ta')],
+      path: 'assets/translations',
+      fallbackLocale: const Locale('en'),
+      startLocale: const Locale('en'),
+      child: FlowFinanceApp(sharedPreferences: sharedPreferences),
+    ),
+  );
 }
 
 /// Main app widget with integrated state management
 class FlowFinanceApp extends StatelessWidget {
-  const FlowFinanceApp({super.key});
+  const FlowFinanceApp({
+    super.key,
+    required this.sharedPreferences,
+  });
+
+  final SharedPreferences sharedPreferences;
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +67,7 @@ class FlowFinanceApp extends StatelessWidget {
       providers: [
         // Database
         Provider(create: (_) => AppDatabase()),
+        Provider.value(value: sharedPreferences),
 
         // Repositories
         ProxyProvider<AppDatabase, TransactionRepository>(
@@ -69,6 +82,12 @@ class FlowFinanceApp extends StatelessWidget {
         ProxyProvider<AppDatabase, WalletRepository>(
           update: (_, db, __) => WalletRepository(db),
         ),
+        ProxyProvider<AppDatabase, GoalRepository>(
+          update: (_, db, __) => GoalRepository(SettingsRepository(db)),
+        ),
+        ProxyProvider<SharedPreferences, FamilyRepository>(
+          update: (_, prefs, __) => FamilyRepository(prefs),
+        ),
 
         // BLoCs
         ChangeNotifierProvider(
@@ -79,6 +98,7 @@ class FlowFinanceApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (context) => BudgetBloc(
             context.read<BudgetRepository>(),
+            context.read<TransactionRepository>(),
           ),
         ),
         ChangeNotifierProvider(
@@ -86,14 +106,26 @@ class FlowFinanceApp extends StatelessWidget {
             context.read<WalletRepository>(),
           ),
         ),
+        ChangeNotifierProvider(
+          create: (context) => SettingsController(
+            context.read<SettingsRepository>(),
+          )..load(),
+        ),
       ],
-      child: MaterialApp(
-        title: 'Flow Finance',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.light,
-        darkTheme: AppTheme.dark,
-        themeMode: ThemeMode.system,
-        home: const AppInitializer(),
+      child: Consumer<SettingsController>(
+        builder: (context, settings, child) => MaterialApp(
+          title: 'Flow Finance',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+          themeMode: settings.themeMode,
+          localizationsDelegates: context.localizationDelegates,
+          supportedLocales: context.supportedLocales,
+          locale: settings.languageCode == 'ta'
+              ? const Locale('ta')
+              : const Locale('en'),
+          home: const AppInitializer(),
+        ),
       ),
     );
   }
@@ -110,6 +142,7 @@ class AppInitializer extends StatefulWidget {
 class _AppInitializerState extends State<AppInitializer> {
   bool _isLoading = true;
   String? _error;
+  String? _errorDetails;
 
   @override
   void initState() {
@@ -119,24 +152,46 @@ class _AppInitializerState extends State<AppInitializer> {
 
   Future<void> _initializeApp() async {
     try {
+      final notifications = NotificationService();
+      try {
+        await notifications.initialize();
+      } catch (e) {
+        debugPrint('Notification initialization failed: $e');
+      }
+
       // Load initial data
       final transactionBloc = context.read<TransactionBloc>();
       final budgetBloc = context.read<BudgetBloc>();
+      final settings = context.read<SettingsController>();
 
       await Future.wait([
         transactionBloc.loadTransactions(),
         budgetBloc.loadBudgets(),
+        settings.isLoading ? settings.load() : Future<void>.value(),
       ]);
+
+      if (settings.settings.notificationsEnabled) {
+        try {
+          await notifications.requestPermissions();
+          await notifications.scheduleDailyBudgetCheck();
+          await notifications.scheduleWeeklySummary();
+        } catch (e) {
+          debugPrint('Notification scheduling failed: $e');
+        }
+      }
 
       if (mounted) {
         setState(() {
           _isLoading = false;
         });
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('App initialization failed: $e');
+      debugPrintStack(stackTrace: stackTrace);
       if (mounted) {
         setState(() {
-          _error = 'Failed to initialize app';
+          _error = 'Failed to initialize app'.tr();
+          _errorDetails = e.toString();
           _isLoading = false;
         });
       }
@@ -197,7 +252,7 @@ class _AppInitializerState extends State<AppInitializer> {
                 ),
                 const SizedBox(height: 32),
                 Text(
-                  'Flow Finance',
+                  'Flow Finance'.tr(),
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: AppColors.primary,
@@ -209,7 +264,8 @@ class _AppInitializerState extends State<AppInitializer> {
                   height: 40,
                   child: CircularProgressIndicator(
                     strokeWidth: 3,
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(AppColors.primary),
                   ),
                 ),
               ],
@@ -234,17 +290,32 @@ class _AppInitializerState extends State<AppInitializer> {
               Text(
                 _error!,
                 style: Theme.of(context).textTheme.titleLarge,
+                textAlign: TextAlign.center,
               ),
+              if (_errorDetails != null) ...[
+                const SizedBox(height: 12),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Text(
+                    _errorDetails!,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppColors.textSecondaryLight,
+                        ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: () {
                   setState(() {
                     _isLoading = true;
                     _error = null;
+                    _errorDetails = null;
                   });
                   _initializeApp();
                 },
-                child: const Text('Retry'),
+                child: Text('Retry'.tr()),
               ),
             ],
           ),
@@ -255,114 +326,5 @@ class _AppInitializerState extends State<AppInitializer> {
     // Show onboarding for first-time users
     // For now, show main navigation
     return const OnboardingScreen();
-  }
-}
-
-/// Main navigation with bottom nav bar
-class MainNavigationScreen extends StatefulWidget {
-  const MainNavigationScreen({super.key});
-
-  @override
-  State<MainNavigationScreen> createState() => _MainNavigationScreenState();
-}
-
-class _MainNavigationScreenState extends State<MainNavigationScreen> {
-  int _currentIndex = 0;
-
-  final List<Widget> _screens = const [
-    HomeScreen(),
-    TransactionsScreen(),
-    BudgetsScreen(),
-    SettingsScreen(),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
-      floatingActionButton: _currentIndex == 0 || _currentIndex == 1
-          ? FloatingActionButton.extended(
-              onPressed: () => _showAddTransaction(context),
-              backgroundColor: AppColors.primary,
-              icon: const Icon(Icons.add),
-              label: const Text('Add'),
-              elevation: 4,
-            )
-          : null,
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -5),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildNavItem(Icons.home_rounded, 'Home', 0),
-                _buildNavItem(Icons.receipt_long_rounded, 'Transactions', 1),
-                _buildNavItem(Icons.pie_chart_rounded, 'Budgets', 2),
-                _buildNavItem(Icons.settings_rounded, 'Settings', 3),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(IconData icon, String label, int index) {
-    final isSelected = _currentIndex == index;
-    final color = isSelected ? AppColors.primary : AppColors.textTertiary(context);
-
-    return GestureDetector(
-      onTap: () => setState(() => _currentIndex = index),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary.withOpacity(0.1) : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              color: color,
-              size: 24,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showAddTransaction(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => const AddTransactionScreen(),
-    );
   }
 }

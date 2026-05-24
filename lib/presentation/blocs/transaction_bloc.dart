@@ -51,13 +51,6 @@ class TransactionBloc extends ChangeNotifier {
 
     try {
       _transactions = await _repository.getAllTransactions();
-      if (_transactions.isEmpty) {
-        // Load mock data for first run
-        _transactions = _getMockTransactions();
-        for (final transaction in _transactions) {
-          await _repository.insertTransaction(transaction);
-        }
-      }
       _applyFilter();
     } catch (e) {
       _setError('Failed to load transactions');
@@ -75,6 +68,31 @@ class TransactionBloc extends ChangeNotifier {
       _applyFilter();
     } catch (e) {
       _setError('Failed to add transaction');
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<int> addTransactions(List<Transaction> transactions) async {
+    _setLoading(true);
+
+    try {
+      final existingIds = _transactions.map((item) => item.id).toSet();
+      int imported = 0;
+
+      for (final transaction in transactions) {
+        if (existingIds.contains(transaction.id)) continue;
+        await _repository.insertTransaction(transaction);
+        _transactions.add(transaction);
+        existingIds.add(transaction.id);
+        imported++;
+      }
+
+      _applyFilter();
+      return imported;
+    } catch (e) {
+      _setError('Failed to import transactions');
+      return 0;
     } finally {
       _setLoading(false);
     }
@@ -136,7 +154,8 @@ class TransactionBloc extends ChangeNotifier {
         result = result.where((t) => t.type == TransactionType.income).toList();
         break;
       case TransactionFilter.expense:
-        result = result.where((t) => t.type == TransactionType.expense).toList();
+        result =
+            result.where((t) => t.type == TransactionType.expense).toList();
         break;
       case TransactionFilter.all:
         break;
@@ -170,53 +189,6 @@ class TransactionBloc extends ChangeNotifier {
 
   void _clearError() {
     _error = null;
-  }
-
-  // Mock data for development
-  List<Transaction> _getMockTransactions() {
-    return [
-      Transaction(
-        id: '1',
-        title: 'Grocery Shopping',
-        amount: 125.50,
-        type: TransactionType.expense,
-        category: 'Food',
-        date: DateTime.now(),
-        note: 'Weekly groceries',
-      ),
-      Transaction(
-        id: '2',
-        title: 'Salary',
-        amount: 5000.00,
-        type: TransactionType.income,
-        category: 'Salary',
-        date: DateTime.now().subtract(const Duration(days: 1)),
-      ),
-      Transaction(
-        id: '3',
-        title: 'Netflix Subscription',
-        amount: 15.99,
-        type: TransactionType.expense,
-        category: 'Entertainment',
-        date: DateTime.now().subtract(const Duration(days: 2)),
-      ),
-      Transaction(
-        id: '4',
-        title: 'Gas Station',
-        amount: 45.00,
-        type: TransactionType.expense,
-        category: 'Transport',
-        date: DateTime.now().subtract(const Duration(days: 3)),
-      ),
-      Transaction(
-        id: '5',
-        title: 'Freelance Work',
-        amount: 850.00,
-        type: TransactionType.income,
-        category: 'Freelance',
-        date: DateTime.now().subtract(const Duration(days: 4)),
-      ),
-    ];
   }
 }
 

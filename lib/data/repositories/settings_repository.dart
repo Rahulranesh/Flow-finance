@@ -12,7 +12,8 @@ class SettingsRepository {
   Future<String?> getString(String key) => _database.getSetting(key);
 
   /// Set string setting
-  Future<void> setString(String key, String value) => _database.setSetting(key, value);
+  Future<void> setString(String key, String value) =>
+      _database.setSetting(key, value);
 
   /// Get boolean setting
   Future<bool> getBool(String key, {bool defaultValue = false}) async {
@@ -21,7 +22,8 @@ class SettingsRepository {
   }
 
   /// Set boolean setting
-  Future<void> setBool(String key, bool value) => _database.setSetting(key, value.toString());
+  Future<void> setBool(String key, bool value) =>
+      _database.setSetting(key, value.toString());
 
   /// Get integer setting
   Future<int?> getInt(String key) async {
@@ -30,7 +32,8 @@ class SettingsRepository {
   }
 
   /// Set integer setting
-  Future<void> setInt(String key, int value) => _database.setSetting(key, value.toString());
+  Future<void> setInt(String key, int value) =>
+      _database.setSetting(key, value.toString());
 
   /// Get double setting
   Future<double?> getDouble(String key) async {
@@ -39,7 +42,8 @@ class SettingsRepository {
   }
 
   /// Set double setting
-  Future<void> setDouble(String key, double value) => _database.setSetting(key, value.toString());
+  Future<void> setDouble(String key, double value) =>
+      _database.setSetting(key, value.toString());
 
   /// Delete setting
   Future<void> deleteSetting(String key) => _database.deleteSetting(key);
@@ -59,7 +63,7 @@ class SettingsRepository {
   Future<void> setUserEmail(String email) => setString('user_email', email);
 
   /// Get currency
-  Future<String> getCurrency({String defaultCurrency = 'USD'}) async {
+  Future<String> getCurrency({String defaultCurrency = 'INR'}) async {
     return await getString('currency') ?? defaultCurrency;
   }
 
@@ -75,7 +79,8 @@ class SettingsRepository {
   Future<void> setLanguage(String language) => setString('language', language);
 
   /// Get theme mode
-  Future<ThemeMode> getThemeMode({ThemeMode defaultMode = ThemeMode.system}) async {
+  Future<ThemeMode> getThemeMode(
+      {ThemeMode defaultMode = ThemeMode.system}) async {
     final value = await getString('theme_mode');
     return ThemeMode.values.firstWhere(
       (e) => e.name == value,
@@ -84,7 +89,8 @@ class SettingsRepository {
   }
 
   /// Set theme mode
-  Future<void> setThemeMode(ThemeMode mode) => setString('theme_mode', mode.name);
+  Future<void> setThemeMode(ThemeMode mode) =>
+      setString('theme_mode', mode.name);
 
   /// Get notifications enabled
   Future<bool> getNotificationsEnabled({bool defaultValue = true}) async {
@@ -92,7 +98,8 @@ class SettingsRepository {
   }
 
   /// Set notifications enabled
-  Future<void> setNotificationsEnabled(bool enabled) => setBool('notifications_enabled', enabled);
+  Future<void> setNotificationsEnabled(bool enabled) =>
+      setBool('notifications_enabled', enabled);
 
   /// Get biometric enabled
   Future<bool> getBiometricEnabled({bool defaultValue = false}) async {
@@ -100,7 +107,8 @@ class SettingsRepository {
   }
 
   /// Set biometric enabled
-  Future<void> setBiometricEnabled(bool enabled) => setBool('biometric_enabled', enabled);
+  Future<void> setBiometricEnabled(bool enabled) =>
+      setBool('biometric_enabled', enabled);
 
   /// Export all settings as JSON
   Future<String> exportSettings() async {

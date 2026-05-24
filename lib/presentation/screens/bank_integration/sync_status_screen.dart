@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../core/services/sync/transaction_sync_engine.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
@@ -16,7 +17,7 @@ class SyncStatusScreen extends StatefulWidget {
 
 class _SyncStatusScreenState extends State<SyncStatusScreen> {
   final TransactionSyncEngine _syncEngine = TransactionSyncEngine();
-  
+
   bool _isLoading = false;
 
   @override
@@ -42,7 +43,7 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return AppScaffold(
-      title: 'Sync Status',
+      title: 'Sync Status'.tr(),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -50,24 +51,24 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
           children: [
             // Current sync status
             _buildCurrentStatusCard(isDark),
-            
+
             const SizedBox(height: 24),
-            
+
             // Sync actions
             _buildActionsCard(isDark),
-            
+
             const SizedBox(height: 24),
-            
+
             // Connected accounts status
             _buildAccountsStatusCard(isDark),
-            
+
             const SizedBox(height: 24),
-            
+
             // Sync history
-            _buildSectionTitle('Sync History', isDark),
+            _buildSectionTitle('Sync History'.tr(), isDark),
             const SizedBox(height: 12),
             _buildSyncHistoryList(isDark),
-            
+
             const SizedBox(height: 100),
           ],
         ),
@@ -107,7 +108,7 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        isSyncing ? 'Syncing...' : 'All Synced',
+                        isSyncing ? 'Syncing...'.tr() : 'All Synced'.tr(),
                         style: AppTypography.titleMedium().copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -121,7 +122,7 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
                         )
                       else
                         Text(
-                          'Last synced: ${_getLastSyncText()}',
+                          '${'Last synced'.tr()}: ${_getLastSyncText()}',
                           style: AppTypography.bodySmall(
                             color: AppColors.textSecondaryLight,
                           ),
@@ -160,7 +161,7 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             AppButton.primary(
-              label: 'Sync Now',
+              label: 'Sync Now'.tr(),
               icon: Icons.sync,
               onPressed: _syncEngine.isSyncing ? null : _syncNow,
               isLoading: _syncEngine.isSyncing,
@@ -170,7 +171,7 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
               children: [
                 Expanded(
                   child: AppButton.secondary(
-                    label: 'Incremental',
+                    label: 'Incremental'.tr(),
                     icon: Icons.update,
                     onPressed: _syncEngine.isSyncing ? null : _syncIncremental,
                     size: AppButtonSize.small,
@@ -179,7 +180,7 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: AppButton.secondary(
-                    label: 'Full Sync',
+                    label: 'Full Sync'.tr(),
                     icon: Icons.cloud_download,
                     onPressed: _syncEngine.isSyncing ? null : _syncFull,
                     size: AppButtonSize.small,
@@ -222,7 +223,7 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle('Connected Accounts', isDark),
+        _buildSectionTitle('Connected Accounts'.tr(), isDark),
         const SizedBox(height: 12),
         ...accounts.map((account) => _buildAccountStatusItem(account, isDark)),
       ],
@@ -231,10 +232,10 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
 
   Widget _buildAccountStatusItem(Map<String, dynamic> account, bool isDark) {
     final status = account['status'] as String;
-    final statusColor = status == 'synced' 
-        ? AppColors.success 
-        : status == 'error' 
-            ? AppColors.error 
+    final statusColor = status == 'synced'
+        ? AppColors.success
+        : status == 'error'
+            ? AppColors.error
             : AppColors.warning;
 
     return AppCard(
@@ -352,9 +353,9 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
   Future<void> _syncNow() async {
     // Get current user ID from auth service
     const userId = 'current_user'; // Replace with actual user ID
-    
+
     final result = await _syncEngine.syncAllSources(userId);
-    
+
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -390,7 +391,8 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
           children: [
             Text(
               account['name'] as String,
-              style: AppTypography.titleMedium().copyWith(fontWeight: FontWeight.bold),
+              style: AppTypography.titleMedium()
+                  .copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             _buildDetailRow('Type', account['type'] as String),

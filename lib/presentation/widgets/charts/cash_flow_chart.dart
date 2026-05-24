@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../core/utils/extensions.dart';
 import '../../../data/models/transaction_model.dart';
 
 /// Bar chart comparing income vs expenses
@@ -27,7 +29,7 @@ class CashFlowChart extends StatelessWidget {
     if (barGroups.isEmpty) {
       return Center(
         child: Text(
-          'No data available',
+          'No data available'.tr(),
           style: AppTypography.bodyMedium(
             color: isDark
                 ? AppColors.textSecondaryDark
@@ -43,9 +45,9 @@ class CashFlowChart extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildLegendItem('Income', AppColors.success),
+            _buildLegendItem('Income'.tr(), AppColors.success),
             const SizedBox(width: 24),
-            _buildLegendItem('Expense', AppColors.error),
+            _buildLegendItem('Expense'.tr(), AppColors.error),
           ],
         ),
         const SizedBox(height: 16),
@@ -59,20 +61,19 @@ class CashFlowChart extends StatelessWidget {
               maxY: _getMaxY(),
               barTouchData: BarTouchData(
                 touchTooltipData: BarTouchTooltipData(
-                  getTooltipColor: (group) => isDark
-                      ? AppColors.surfaceDark
-                      : AppColors.surfaceLight,
+                  getTooltipColor: (group) =>
+                      isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
                   getTooltipItem: (group, groupIndex, rod, rodIndex) {
                     final isIncome = rodIndex == 0;
                     return BarTooltipItem(
-                      '${isIncome ? 'Income' : 'Expense'}\n',
+                      '${isIncome ? 'Income'.tr() : 'Expense'.tr()}\n',
                       AppTypography.labelSmall(
                         color: isIncome ? AppColors.success : AppColors.error,
                         fontWeight: FontWeight.bold,
                       ),
                       children: [
                         TextSpan(
-                          text: '\$${rod.toY.toStringAsFixed(2)}',
+                          text: rod.toY.toCurrency(),
                           style: AppTypography.bodySmall(
                             color: isDark
                                 ? AppColors.textPrimaryDark
@@ -91,7 +92,7 @@ class CashFlowChart extends StatelessWidget {
                     reservedSize: 60,
                     getTitlesWidget: (value, meta) {
                       return Text(
-                        '\$${value.toStringAsFixed(0)}',
+                        value.toCurrency(decimalDigits: 0),
                         style: AppTypography.labelSmall(
                           color: isDark
                               ? AppColors.textSecondaryDark
@@ -140,9 +141,8 @@ class CashFlowChart extends StatelessWidget {
                 horizontalInterval: _getHorizontalInterval(),
                 getDrawingHorizontalLine: (value) {
                   return FlLine(
-                    color: isDark
-                        ? AppColors.borderDark
-                        : AppColors.borderLight,
+                    color:
+                        isDark ? AppColors.borderDark : AppColors.borderLight,
                     strokeWidth: 1,
                   );
                 },
@@ -206,7 +206,7 @@ class CashFlowChart extends StatelessWidget {
         children: [
           Expanded(
             child: _buildSummaryItem(
-              'Income',
+              'Income'.tr(),
               totalIncome,
               AppColors.success,
             ),
@@ -218,7 +218,7 @@ class CashFlowChart extends StatelessWidget {
           ),
           Expanded(
             child: _buildSummaryItem(
-              'Expense',
+              'Expense'.tr(),
               totalExpense,
               AppColors.error,
             ),
@@ -251,7 +251,7 @@ class CashFlowChart extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          '\$${amount.toStringAsFixed(0)}',
+          amount.toCurrency(decimalDigits: 0),
           style: AppTypography.titleSmall(
             color: color,
           ).copyWith(fontWeight: FontWeight.bold),
@@ -391,8 +391,18 @@ class CashFlowChart extends StatelessWidget {
 
   String _getMonthAbbreviation(int month) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
     ];
     return months[month - 1];
   }

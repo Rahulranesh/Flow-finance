@@ -1,6 +1,7 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz_data;
+import 'currency_formatter.dart';
 
 /// Service for managing local notifications
 class NotificationService {
@@ -21,7 +22,8 @@ class NotificationService {
     tz_data.initializeTimeZones();
 
     // Android settings
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
 
     // iOS settings
     const iosSettings = DarwinInitializationSettings(
@@ -45,6 +47,9 @@ class NotificationService {
 
   /// Request notification permissions
   Future<bool> requestPermissions() async {
+    final android = _notifications.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    await android?.requestNotificationsPermission();
     final result = await _notifications
         .resolvePlatformSpecificImplementation<
             IOSFlutterLocalNotificationsPlugin>()
@@ -257,7 +262,8 @@ class NotificationService {
       await scheduleNotification(
         id: id,
         title: 'Upcoming Bill: $billName',
-        body: '\$${amount.toStringAsFixed(2)} due on ${dueDate.toNotificationShortDate()}',
+        body:
+            '${CurrencyFormatter.format(amount)} due on ${dueDate.toNotificationShortDate()}',
         scheduledDate: reminderDate,
         payload: 'bill:$id',
       );
@@ -267,7 +273,7 @@ class NotificationService {
     await scheduleNotification(
       id: id + 1000,
       title: 'Bill Due Today: $billName',
-      body: '\$${amount.toStringAsFixed(2)} is due today',
+      body: '${CurrencyFormatter.format(amount)} is due today',
       scheduledDate: dueDate,
       payload: 'bill:$id',
     );
@@ -298,7 +304,8 @@ class NotificationService {
 
   tz.TZDateTime _nextInstanceOfTime(int hour, int minute) {
     final now = tz.TZDateTime.now(tz.local);
-    var scheduled = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+    var scheduled =
+        tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
 
     if (scheduled.isBefore(now)) {
       scheduled = scheduled.add(const Duration(days: 1));
@@ -309,7 +316,8 @@ class NotificationService {
 
   tz.TZDateTime _nextInstanceOfDayAndTime(int day, int hour, int minute) {
     final now = tz.TZDateTime.now(tz.local);
-    var scheduled = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+    var scheduled =
+        tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
 
     // Adjust to the correct day of week
     while (scheduled.weekday != day) {

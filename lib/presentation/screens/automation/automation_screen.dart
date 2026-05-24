@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/services/smart_rules_engine.dart';
@@ -28,36 +29,36 @@ class _AutomationScreenState extends State<AutomationScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return AppScaffold(
-      title: 'Automation',
+      title: 'Automation'.tr(),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Smart Rules Section
-            _buildSectionTitle('Smart Rules', isDark),
+            _buildSectionTitle('Smart Rules'.tr(), isDark),
             const SizedBox(height: 12),
             _buildSmartRulesCard(isDark),
-            
+
             const SizedBox(height: 24),
-            
+
             // Auto-Transfer Section
-            _buildSectionTitle('Auto-Transfer', isDark),
+            _buildSectionTitle('Auto-Transfer'.tr(), isDark),
             const SizedBox(height: 12),
             _buildAutoTransferCard(isDark),
-            
+
             const SizedBox(height: 24),
-            
+
             // Round-Up Section
-            _buildSectionTitle('Round-Up Savings', isDark),
+            _buildSectionTitle('Round-Up Savings'.tr(), isDark),
             const SizedBox(height: 12),
             _buildRoundUpCard(isDark),
-            
+
             const SizedBox(height: 24),
-            
+
             // Savings Summary
             _buildSavingsSummaryCard(isDark),
-            
+
             const SizedBox(height: 100),
           ],
         ),
@@ -83,13 +84,15 @@ class _AutomationScreenState extends State<AutomationScreen> {
         children: [
           ListTile(
             contentPadding: EdgeInsets.zero,
-            title: Text('Auto-Categorization Rules', style: AppTypography.bodyMedium(fontWeight: FontWeight.w600)),
+            title: Text('Auto-Categorization Rules'.tr(),
+                style: AppTypography.bodyMedium(fontWeight: FontWeight.w600)),
             subtitle: Text(
-              '${rules.length} rules active',
-              style: AppTypography.bodySmall(color: AppColors.textSecondaryLight),
+              '{} rules active'.tr(args: [rules.length.toString()]),
+              style:
+                  AppTypography.bodySmall(color: AppColors.textSecondaryLight),
             ),
             trailing: AppButton.primary(
-              label: 'Add Rule',
+              label: 'Add Rule'.tr(),
               onPressed: () => _showAddRuleDialog(),
               size: AppButtonSize.small,
             ),
@@ -100,7 +103,8 @@ class _AutomationScreenState extends State<AutomationScreen> {
             if (rules.length > 3)
               TextButton(
                 onPressed: () => _showAllRules(),
-                child: Text('View all ${rules.length} rules'),
+                child: Text(
+                    'View all {} rules'.tr(args: [rules.length.toString()])),
               ),
           ],
         ],
@@ -140,13 +144,15 @@ class _AutomationScreenState extends State<AutomationScreen> {
         children: [
           ListTile(
             contentPadding: EdgeInsets.zero,
-            title: Text('Automatic Transfers', style: AppTypography.bodyMedium(fontWeight: FontWeight.w600)),
+            title: Text('Automatic Transfers'.tr(),
+                style: AppTypography.bodyMedium(fontWeight: FontWeight.w600)),
             subtitle: Text(
-              'Automatically move money based on triggers',
-              style: AppTypography.bodySmall(color: AppColors.textSecondaryLight),
+              'Automatically move money based on triggers'.tr(),
+              style:
+                  AppTypography.bodySmall(color: AppColors.textSecondaryLight),
             ),
             trailing: AppButton.primary(
-              label: 'Add',
+              label: 'Add'.tr(),
               onPressed: () => _showAddAutoTransferDialog(),
               size: AppButtonSize.small,
             ),
@@ -156,8 +162,9 @@ class _AutomationScreenState extends State<AutomationScreen> {
               padding: const EdgeInsets.symmetric(vertical: 16),
               child: Center(
                 child: Text(
-                  'No auto-transfer rules yet',
-                  style: AppTypography.bodySmall(color: AppColors.textSecondaryLight),
+                  'No auto-transfer rules yet'.tr(),
+                  style: AppTypography.bodySmall(
+                      color: AppColors.textSecondaryLight),
                 ),
               ),
             )
@@ -188,7 +195,8 @@ class _AutomationScreenState extends State<AutomationScreen> {
         value: rule.isActive,
         onChanged: (value) {
           setState(() {
-            _transferService.addAutoTransferRule(rule.copyWith(isActive: value));
+            _transferService
+                .addAutoTransferRule(rule.copyWith(isActive: value));
           });
         },
       ),
@@ -204,13 +212,15 @@ class _AutomationScreenState extends State<AutomationScreen> {
         children: [
           ListTile(
             contentPadding: EdgeInsets.zero,
-            title: Text('Round-Up Savings', style: AppTypography.bodyMedium(fontWeight: FontWeight.w600)),
+            title: Text('Round-Up Savings'.tr(),
+                style: AppTypography.bodyMedium(fontWeight: FontWeight.w600)),
             subtitle: Text(
-              'Round up purchases and save the change',
-              style: AppTypography.bodySmall(color: AppColors.textSecondaryLight),
+              'Round up purchases and save the change'.tr(),
+              style:
+                  AppTypography.bodySmall(color: AppColors.textSecondaryLight),
             ),
             trailing: AppButton.primary(
-              label: 'Add',
+              label: 'Add'.tr(),
               onPressed: () => _showAddRoundUpDialog(),
               size: AppButtonSize.small,
             ),
@@ -220,8 +230,9 @@ class _AutomationScreenState extends State<AutomationScreen> {
               padding: const EdgeInsets.symmetric(vertical: 16),
               child: Center(
                 child: Text(
-                  'No round-up rules yet',
-                  style: AppTypography.bodySmall(color: AppColors.textSecondaryLight),
+                  'No round-up rules yet'.tr(),
+                  style: AppTypography.bodySmall(
+                      color: AppColors.textSecondaryLight),
                 ),
               ),
             )
@@ -236,16 +247,16 @@ class _AutomationScreenState extends State<AutomationScreen> {
     String roundUpText;
     switch (rule.roundUpTo) {
       case RoundUpTo.nearestDollar:
-        roundUpText = 'Nearest \$1';
+        roundUpText = 'Nearest \$1'.tr();
         break;
       case RoundUpTo.nearestFive:
-        roundUpText = 'Nearest \$5';
+        roundUpText = 'Nearest \$5'.tr();
         break;
       case RoundUpTo.nearestTen:
-        roundUpText = 'Nearest \$10';
+        roundUpText = 'Nearest \$10'.tr();
         break;
       case RoundUpTo.custom:
-        roundUpText = 'Nearest \$${rule.customAmount}';
+        roundUpText = 'Nearest \${}'.tr(args: ['\$${rule.customAmount}']);
         break;
     }
 
@@ -295,27 +306,28 @@ class _AutomationScreenState extends State<AutomationScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Savings Summary (Last 30 Days)', style: AppTypography.bodyMedium(fontWeight: FontWeight.w600)),
+            Text('Savings Summary (Last 30 Days)'.tr(),
+                style: AppTypography.bodyMedium(fontWeight: FontWeight.w600)),
             const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
                   child: _buildSummaryStat(
-                    'Total Saved',
+                    'Total Saved'.tr(),
                     '\$${summary.totalSaved.toStringAsFixed(2)}',
                     AppColors.success,
                   ),
                 ),
                 Expanded(
                   child: _buildSummaryStat(
-                    'Transfers',
+                    'Transfers'.tr(),
                     '${summary.transferCount}',
                     AppColors.primary,
                   ),
                 ),
                 Expanded(
                   child: _buildSummaryStat(
-                    'Average',
+                    'Average'.tr(),
                     '\$${summary.averagePerTransfer.toStringAsFixed(2)}',
                     AppColors.secondary,
                   ),
@@ -351,12 +363,12 @@ class _AutomationScreenState extends State<AutomationScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Add Smart Rule'),
-        content: const Text('Rule creation dialog to be implemented'),
+        title: Text('Add Smart Rule'.tr()),
+        content: Text('Rule creation dialog to be implemented'.tr()),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+            child: Text('OK'.tr()),
           ),
         ],
       ),
@@ -375,12 +387,13 @@ class _AutomationScreenState extends State<AutomationScreen> {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Need More Wallets'),
-          content: const Text('You need at least 2 wallets to set up auto-transfers.'),
+          title: Text('Need More Wallets'.tr()),
+          content: Text(
+              'You need at least 2 wallets to set up auto-transfers.'.tr()),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('OK'),
+              child: Text('OK'.tr()),
             ),
           ],
         ),
@@ -409,12 +422,13 @@ class _AutomationScreenState extends State<AutomationScreen> {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Need More Wallets'),
-          content: const Text('You need at least 2 wallets to set up round-up savings.'),
+          title: Text('Need More Wallets'.tr()),
+          content: Text(
+              'You need at least 2 wallets to set up round-up savings.'.tr()),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('OK'),
+              child: Text('OK'.tr()),
             ),
           ],
         ),
@@ -499,7 +513,9 @@ class _AutoTransferDialogState extends State<_AutoTransferDialog> {
             TextField(
               controller: _amountController,
               decoration: InputDecoration(
-                labelText: _calcType == CalculationType.percentage ? 'Percentage (%)' : 'Amount (\$)',
+                labelText: _calcType == CalculationType.percentage
+                    ? 'Percentage (%)'
+                    : 'Amount (\$)',
               ),
               keyboardType: TextInputType.number,
             ),

@@ -71,70 +71,6 @@ class Currency {
 class SupportedCurrencies {
   static const List<Currency> all = [
     Currency(
-      code: 'USD',
-      name: 'US Dollar',
-      symbol: '\$',
-      flag: '🇺🇸',
-      decimalDigits: 2,
-      exchangeRate: 1.0,
-    ),
-    Currency(
-      code: 'EUR',
-      name: 'Euro',
-      symbol: '€',
-      flag: '🇪🇺',
-      decimalDigits: 2,
-      exchangeRate: 0.92,
-    ),
-    Currency(
-      code: 'GBP',
-      name: 'British Pound',
-      symbol: '£',
-      flag: '🇬🇧',
-      decimalDigits: 2,
-      exchangeRate: 0.79,
-    ),
-    Currency(
-      code: 'JPY',
-      name: 'Japanese Yen',
-      symbol: '¥',
-      flag: '🇯🇵',
-      decimalDigits: 0,
-      exchangeRate: 150.0,
-    ),
-    Currency(
-      code: 'CAD',
-      name: 'Canadian Dollar',
-      symbol: 'C\$',
-      flag: '🇨🇦',
-      decimalDigits: 2,
-      exchangeRate: 1.35,
-    ),
-    Currency(
-      code: 'AUD',
-      name: 'Australian Dollar',
-      symbol: 'A\$',
-      flag: '🇦🇺',
-      decimalDigits: 2,
-      exchangeRate: 1.52,
-    ),
-    Currency(
-      code: 'CHF',
-      name: 'Swiss Franc',
-      symbol: 'Fr',
-      flag: '🇨🇭',
-      decimalDigits: 2,
-      exchangeRate: 0.88,
-    ),
-    Currency(
-      code: 'CNY',
-      name: 'Chinese Yuan',
-      symbol: '¥',
-      flag: '🇨🇳',
-      decimalDigits: 2,
-      exchangeRate: 7.19,
-    ),
-    Currency(
       code: 'INR',
       name: 'Indian Rupee',
       symbol: '₹',
@@ -143,28 +79,12 @@ class SupportedCurrencies {
       exchangeRate: 83.0,
     ),
     Currency(
-      code: 'SGD',
-      name: 'Singapore Dollar',
-      symbol: 'S\$',
-      flag: '🇸🇬',
+      code: 'USD',
+      name: 'US Dollar',
+      symbol: '\$',
+      flag: '🇺🇸',
       decimalDigits: 2,
-      exchangeRate: 1.34,
-    ),
-    Currency(
-      code: 'AED',
-      name: 'UAE Dirham',
-      symbol: 'د.إ',
-      flag: '🇦🇪',
-      decimalDigits: 2,
-      exchangeRate: 3.67,
-    ),
-    Currency(
-      code: 'SAR',
-      name: 'Saudi Riyal',
-      symbol: '﷼',
-      flag: '🇸🇦',
-      decimalDigits: 2,
-      exchangeRate: 3.75,
+      exchangeRate: 1.0,
     ),
   ];
 
@@ -177,7 +97,7 @@ class SupportedCurrencies {
     }
   }
 
-  /// Get default currency (USD)
+  /// Get default currency (INR)
   static Currency get defaultCurrency => all.first;
 
   /// Get currency codes list
@@ -222,8 +142,8 @@ class CurrencyPreferences {
   final bool showConvertedAmounts;
 
   const CurrencyPreferences({
-    this.defaultCurrencyCode = 'USD',
-    this.enabledCurrencies = const ['USD'],
+    this.defaultCurrencyCode = 'INR',
+    this.enabledCurrencies = const ['INR', 'USD'],
     this.showConvertedAmounts = true,
   });
 
@@ -241,10 +161,10 @@ class CurrencyPreferences {
 
   factory CurrencyPreferences.fromJson(Map<String, dynamic> json) {
     return CurrencyPreferences(
-      defaultCurrencyCode: json['defaultCurrencyCode'] as String? ?? 'USD',
-      enabledCurrencies: (json['enabledCurrencies'] as List<dynamic>?)
-              ?.cast<String>() ??
-          const ['USD'],
+      defaultCurrencyCode: json['defaultCurrencyCode'] as String? ?? 'INR',
+      enabledCurrencies:
+          (json['enabledCurrencies'] as List<dynamic>?)?.cast<String>() ??
+              const ['INR', 'USD'],
       showConvertedAmounts: json['showConvertedAmounts'] as bool? ?? true,
     );
   }

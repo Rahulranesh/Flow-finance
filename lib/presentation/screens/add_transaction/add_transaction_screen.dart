@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/theme/theme.dart';
+import '../../../core/services/currency_formatter.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../../core/utils/extensions.dart';
 import '../../../core/validators/validators.dart';
@@ -19,8 +21,6 @@ class AddTransactionScreen extends StatefulWidget {
 
 class _AddTransactionScreenState extends State<AddTransactionScreen> {
   final TextEditingController _noteController = TextEditingController();
-  final TextEditingController _titleController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
   String _amount = '0';
   bool _isExpense = true;
   String _selectedCategory = 'Food';
@@ -43,13 +43,13 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   @override
   void dispose() {
     _noteController.dispose();
-    _titleController.dispose();
     super.dispose();
   }
 
   Future<void> _saveTransaction() async {
     // Validate amount
-    final amountError = FormValidators.positiveNumber(_amount, fieldName: 'Amount');
+    final amountError =
+        FormValidators.positiveNumber(_amount, fieldName: 'Amount');
     if (amountError != null) {
       context.showSnackBar(SnackBar(content: Text(amountError)));
       return;
@@ -57,7 +57,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
     final amount = double.parse(_amount);
     if (amount <= 0) {
-      context.showSnackBar(const SnackBar(content: Text('Please enter a valid amount')));
+      context.showSnackBar(
+        SnackBar(content: Text('Please enter a valid amount'.tr())),
+      );
       return;
     }
 
@@ -75,28 +77,29 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
       final transaction = Transaction(
         id: const Uuid().v4(),
-        title: _isExpense ? _selectedCategory : 'Income',
+        title: _isExpense ? _selectedCategory : 'Income'.tr(),
         amount: amount,
         type: _isExpense ? TransactionType.expense : TransactionType.income,
         category: _selectedCategory,
         date: _selectedDate,
         note: _noteController.text.isEmpty ? null : _noteController.text,
         walletId: selectedWallet?.id,
-        currency: selectedWallet?.currency ?? 'USD',
+        currency:
+            selectedWallet?.currency ?? CurrencyFormatter.currentCurrencyCode,
       );
 
       await context.read<TransactionBloc>().addTransaction(transaction);
 
       if (mounted) {
         context.showSnackBar(
-          const SnackBar(content: Text('Transaction saved successfully')),
+          SnackBar(content: Text('Transaction saved successfully'.tr())),
         );
         context.pop();
       }
     } catch (e) {
       if (mounted) {
         context.showSnackBar(
-          const SnackBar(content: Text('Failed to save transaction')),
+          SnackBar(content: Text('Failed to save transaction'.tr())),
         );
       }
     } finally {
@@ -140,73 +143,71 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
-      title: 'Add Transaction',
-      body: Column(
-        children: [
-          // Amount Display
-          _AmountDisplay(
-            amount: _amount,
-            isExpense: _isExpense,
-            onToggleType: () {
-              setState(() {
-                _isExpense = !_isExpense;
-              });
-            },
-          ),
-
-          // Category Selection
-          _CategorySelector(
-            categories: _categories,
-            selectedCategory: _selectedCategory,
-            onCategorySelected: (category) {
-              setState(() {
-                _selectedCategory = category;
-              });
-            },
-          ),
-
-          // Wallet Selector
-          _WalletSelector(
-            selectedWalletId: _selectedWalletId,
-            onWalletSelected: (walletId) {
-              setState(() {
-                _selectedWalletId = walletId;
-              });
-            },
-          ),
-
-          // Date and Note
-          _DateAndNoteSection(
-            selectedDate: _selectedDate,
-            onDateChanged: (date) {
-              setState(() {
-                _selectedDate = date;
-              });
-            },
-            noteController: _noteController,
-          ),
-
-          const Spacer(),
-
-          // Number Pad
-          _NumberPad(
-            onNumberPressed: _onNumberPressed,
-            onBackspace: _onBackspace,
-            onDecimal: _onDecimal,
-          ),
-
-          // Save Button
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: AppButton.primary(
-              label: _isLoading ? 'Saving...' : 'Save Transaction',
-              onPressed: _isLoading ? null : _saveTransaction,
-              expanded: true,
-              size: AppButtonSize.large,
-              icon: _isLoading ? null : Icons.check,
+      title: 'Add Transaction'.tr(),
+      body: SafeArea(
+        top: false,
+        child: Column(
+          children: [
+            _AmountDisplay(
+              amount: _amount,
+              isExpense: _isExpense,
+              onToggleType: () {
+                setState(() {
+                  _isExpense = !_isExpense;
+                });
+              },
             ),
-          ),
-        ],
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    _CategorySelector(
+                      categories: _categories,
+                      selectedCategory: _selectedCategory,
+                      onCategorySelected: (category) {
+                        setState(() {
+                          _selectedCategory = category;
+                        });
+                      },
+                    ),
+                    _WalletSelector(
+                      selectedWalletId: _selectedWalletId,
+                      onWalletSelected: (walletId) {
+                        setState(() {
+                          _selectedWalletId = walletId;
+                        });
+                      },
+                    ),
+                    _DateAndNoteSection(
+                      selectedDate: _selectedDate,
+                      onDateChanged: (date) {
+                        setState(() {
+                          _selectedDate = date;
+                        });
+                      },
+                      noteController: _noteController,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            _NumberPad(
+              onNumberPressed: _onNumberPressed,
+              onBackspace: _onBackspace,
+              onDecimal: _onDecimal,
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: AppButton.primary(
+                label: _isLoading ? 'Saving...'.tr() : 'Save Transaction'.tr(),
+                onPressed: _isLoading ? null : _saveTransaction,
+                expanded: true,
+                size: AppButtonSize.large,
+                icon: _isLoading ? null : Icons.check,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -241,14 +242,14 @@ class _AmountDisplay extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _TypeButton(
-                label: 'Expense',
+                label: 'Expense'.tr(),
                 isSelected: isExpense,
                 color: AppColors.expense,
                 onTap: onToggleType,
               ),
               const SizedBox(width: 12),
               _TypeButton(
-                label: 'Income',
+                label: 'Income'.tr(),
                 isSelected: !isExpense,
                 color: AppColors.income,
                 onTap: onToggleType,
@@ -263,7 +264,7 @@ class _AmountDisplay extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                '\$',
+                CurrencyFormatter.currentCurrency.symbol,
                 style: AppTypography.displayMedium(
                   color: AppColors.textSecondary(context),
                 ),
@@ -341,7 +342,7 @@ class _CategorySelector extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
           child: Text(
-            'Category',
+            'Category'.tr(),
             style: AppTypography.labelLarge(),
           ),
         ),
@@ -451,7 +452,7 @@ class _DateAndNoteSection extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Date',
+                          'Date'.tr(),
                           style: AppTypography.caption(
                             color: AppColors.textSecondary(context),
                           ),
@@ -480,7 +481,7 @@ class _DateAndNoteSection extends StatelessWidget {
           // Note Input
           AppInput(
             controller: noteController,
-            hint: 'Add a note...',
+            hint: 'Add a note...'.tr(),
             prefixIcon: Icons.edit_note,
             maxLines: 2,
           ),
@@ -491,8 +492,18 @@ class _DateAndNoteSection extends StatelessWidget {
 
   String _formatDate(DateTime date) {
     final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
     ];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }

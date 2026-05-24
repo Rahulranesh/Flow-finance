@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_animations.dart';
 import '../theme/app_typography.dart';
 import 'app_button.dart';
 
@@ -62,14 +63,45 @@ class AppScaffold extends StatelessWidget {
                   (showBackButton && Navigator.canPop(context)
                       ? AppIconButton(
                           icon: Icons.arrow_back,
-                          onPressed: onBackPressed ?? () => Navigator.pop(context),
+                          onPressed:
+                              onBackPressed ?? () => Navigator.pop(context),
                           variant: AppIconButtonVariant.filled,
                         )
                       : null),
               actions: actions,
             )
           : null,
-      body: body,
+      body: body == null
+          ? null
+          : Stack(
+              children: [
+                Positioned(
+                  top: -120,
+                  right: -40,
+                  child: IgnorePointer(
+                    child: Container(
+                      width: 240,
+                      height: 240,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: RadialGradient(
+                          colors: [
+                            AppColors.primary.withOpacity(isDark ? 0.08 : 0.12),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                AnimatedSwitcher(
+                  duration: AppAnimations.medium,
+                  switchInCurve: AppAnimations.easeOutCubic,
+                  switchOutCurve: AppAnimations.easeInOut,
+                  child: body!,
+                ),
+              ],
+            ),
       bottomNavigationBar: bottomNavigationBar,
       floatingActionButton: floatingActionButton,
     );
@@ -125,9 +157,20 @@ class AppScrollScaffold extends StatelessWidget {
                 ),
               ),
               centerTitle: centerTitle,
-              backgroundColor: isDark
-                  ? AppColors.backgroundDark
-                  : AppColors.backgroundLight,
+              backgroundColor:
+                  isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+              flexibleSpace: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      AppColors.primary.withOpacity(isDark ? 0.08 : 0.12),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
               elevation: 0,
               scrolledUnderElevation: 0,
               pinned: pinnedHeader,
@@ -135,7 +178,8 @@ class AppScrollScaffold extends StatelessWidget {
                   (showBackButton && Navigator.canPop(context)
                       ? AppIconButton(
                           icon: Icons.arrow_back,
-                          onPressed: onBackPressed ?? () => Navigator.pop(context),
+                          onPressed:
+                              onBackPressed ?? () => Navigator.pop(context),
                           variant: AppIconButtonVariant.filled,
                         )
                       : null),

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
+import '../../../core/services/currency_formatter.dart';
 import '../../../core/services/ai_insights_service.dart';
 import '../../../core/services/ai_assistant_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_scaffold.dart';
 import '../../../core/widgets/app_loading.dart';
-import '../../../data/models/transaction_model.dart';
 import '../../blocs/transaction_bloc.dart';
 
 /// AI Insights and Assistant screen
@@ -23,7 +23,7 @@ class _AIInsightsScreenState extends State<AIInsightsScreen> {
   final AIInsightsService _insightsService = AIInsightsService();
   final AIAssistantService _assistantService = AIAssistantService();
   final TextEditingController _queryController = TextEditingController();
-  
+
   FinancialHealthScore? _healthScore;
   List<SpendingAnomaly>? _anomalies;
   SpendingForecast? _forecast;
@@ -83,7 +83,7 @@ class _AIInsightsScreenState extends State<AIInsightsScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return AppScaffold(
-      title: 'AI Insights',
+      title: 'AI Insights'.tr(),
       actions: [
         IconButton(
           icon: const Icon(Icons.refresh),
@@ -96,7 +96,7 @@ class _AIInsightsScreenState extends State<AIInsightsScreen> {
               children: [
                 // AI Assistant Chat Section
                 _buildChatSection(isDark),
-                
+
                 // Insights List
                 Expanded(
                   child: SingleChildScrollView(
@@ -106,24 +106,24 @@ class _AIInsightsScreenState extends State<AIInsightsScreen> {
                       children: [
                         // Health Score Card
                         if (_healthScore != null) _buildHealthScoreCard(isDark),
-                        
+
                         const SizedBox(height: 20),
-                        
+
                         // Smart Alerts
                         if (_alerts != null && _alerts!.isNotEmpty)
                           _buildAlertsSection(isDark),
-                        
+
                         const SizedBox(height: 20),
-                        
+
                         // Spending Forecast
                         if (_forecast != null) _buildForecastCard(isDark),
-                        
+
                         const SizedBox(height: 20),
-                        
+
                         // Anomalies
                         if (_anomalies != null && _anomalies!.isNotEmpty)
                           _buildAnomaliesSection(isDark),
-                        
+
                         const SizedBox(height: 100),
                       ],
                     ),
@@ -169,7 +169,7 @@ class _AIInsightsScreenState extends State<AIInsightsScreen> {
                       Icon(Icons.smart_toy, color: AppColors.primary, size: 20),
                       const SizedBox(width: 8),
                       Text(
-                        'AI Assistant',
+                        'AI Assistant'.tr(),
                         style: AppTypography.labelMedium(
                           color: AppColors.primary,
                           fontWeight: FontWeight.w600,
@@ -200,7 +200,7 @@ class _AIInsightsScreenState extends State<AIInsightsScreen> {
                 ],
               ),
             ),
-          
+
           // Query Input
           Padding(
             padding: const EdgeInsets.all(16),
@@ -210,7 +210,7 @@ class _AIInsightsScreenState extends State<AIInsightsScreen> {
                   child: TextField(
                     controller: _queryController,
                     decoration: InputDecoration(
-                      hintText: 'Ask about your finances...',
+                      hintText: 'Ask about your finances...'.tr(),
                       prefixIcon: const Icon(Icons.chat_bubble_outline),
                       suffixIcon: IconButton(
                         icon: const Icon(Icons.send),
@@ -242,11 +242,12 @@ class _AIInsightsScreenState extends State<AIInsightsScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Financial Health Score',
+                  'Financial Health Score'.tr(),
                   style: AppTypography.titleMedium(),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
@@ -368,7 +369,7 @@ class _AIInsightsScreenState extends State<AIInsightsScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Smart Alerts',
+          'Smart Alerts'.tr(),
           style: AppTypography.titleMedium(),
         ),
         const SizedBox(height: 12),
@@ -382,7 +383,7 @@ class _AIInsightsScreenState extends State<AIInsightsScreen> {
   Widget _buildAlertCard(SmartAlert alert, bool isDark) {
     final color = _getAlertColor(alert.severity);
     IconData icon;
-    
+
     switch (alert.type) {
       case AlertType.unusualSpending:
         icon = Icons.trending_up;
@@ -409,7 +410,8 @@ class _AIInsightsScreenState extends State<AIInsightsScreen> {
           ),
           child: Icon(icon, color: color),
         ),
-        title: Text(alert.title, style: AppTypography.bodyMedium(fontWeight: FontWeight.w600)),
+        title: Text(alert.title,
+            style: AppTypography.bodyMedium(fontWeight: FontWeight.w600)),
         subtitle: Text(alert.message, style: AppTypography.bodySmall()),
         trailing: Container(
           width: 8,
@@ -434,17 +436,20 @@ class _AIInsightsScreenState extends State<AIInsightsScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '30-Day Spending Forecast',
+                  '30-Day Spending Forecast'.tr(),
                   style: AppTypography.titleMedium(),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: AppColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    '${(_forecast!.confidence * 100).toStringAsFixed(0)}% confidence',
+                    '{}% confidence'.tr(args: [
+                      (_forecast!.confidence * 100).toStringAsFixed(0)
+                    ]),
                     style: AppTypography.labelSmall(color: AppColors.primary),
                   ),
                 ),
@@ -452,13 +457,13 @@ class _AIInsightsScreenState extends State<AIInsightsScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Predicted: \$${_forecast!.predictedAmount.toStringAsFixed(2)}',
+              '${'Predicted'.tr()}: ${CurrencyFormatter.format(_forecast!.predictedAmount)}',
               style: AppTypography.titleLarge(
                 color: AppColors.primary,
               ).copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            Text('Breakdown:', style: AppTypography.labelMedium()),
+            Text('Breakdown'.tr() + ':', style: AppTypography.labelMedium()),
             const SizedBox(height: 8),
             ..._forecast!.breakdown.entries.take(5).map((entry) {
               return Padding(
@@ -469,7 +474,7 @@ class _AIInsightsScreenState extends State<AIInsightsScreen> {
                       child: Text(entry.key, style: AppTypography.bodySmall()),
                     ),
                     Text(
-                      '\$${entry.value.toStringAsFixed(2)}',
+                      CurrencyFormatter.format(entry.value),
                       style: AppTypography.bodySmall(
                         color: AppColors.textSecondaryLight,
                       ),
@@ -489,7 +494,7 @@ class _AIInsightsScreenState extends State<AIInsightsScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Spending Anomalies',
+          'Spending Anomalies'.tr(),
           style: AppTypography.titleMedium(),
         ),
         const SizedBox(height: 12),
@@ -506,7 +511,7 @@ class _AIInsightsScreenState extends State<AIInsightsScreen> {
               title: Text(anomaly.transaction.title),
               subtitle: Text(anomaly.reason, style: AppTypography.bodySmall()),
               trailing: Text(
-                '\$${anomaly.transaction.amount.toStringAsFixed(2)}',
+                CurrencyFormatter.format(anomaly.transaction.amount),
                 style: AppTypography.bodyMedium(
                   color: AppColors.error,
                   fontWeight: FontWeight.w600,

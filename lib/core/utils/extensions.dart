@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../services/currency_formatter.dart';
 
 /// Extension on BuildContext for easy access to theme and media query
 extension BuildContextExtension on BuildContext {
@@ -145,8 +146,10 @@ extension StringExtension on String {
   /// Convert to currency format
   String toCurrency({String symbol = '\$', int decimalDigits = 2}) {
     final value = double.tryParse(this) ?? 0;
+    final resolvedSymbol =
+        symbol == r'$' ? CurrencyFormatter.currentCurrency.symbol : symbol;
     return NumberFormat.currency(
-      symbol: symbol,
+      symbol: resolvedSymbol,
       decimalDigits: decimalDigits,
     ).format(value);
   }
@@ -156,6 +159,12 @@ extension StringExtension on String {
 extension NumExtension on num {
   /// Format as currency
   String toCurrency({String symbol = '\$', int decimalDigits = 2}) {
+    if (symbol == r'$') {
+      return CurrencyFormatter.format(
+        this,
+        decimalDigits: decimalDigits,
+      );
+    }
     return NumberFormat.currency(
       symbol: symbol,
       decimalDigits: decimalDigits,
@@ -169,8 +178,7 @@ extension NumExtension on num {
 
   /// Format as percentage
   String toPercent({int decimalDigits = 0}) {
-    return NumberFormat.percentPattern()
-        .format(this / 100);
+    return NumberFormat.percentPattern().format(this / 100);
   }
 
   /// Format with commas
@@ -226,7 +234,6 @@ extension DateTimeExtension on DateTime {
   /// Format as time (e.g., "2:30 PM")
   String toTime() {
     return DateFormat('h:mm a').format(this);
-
   }
 
   /// Format as date and time

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_scaffold.dart';
 import '../../../core/widgets/app_loading.dart';
+import '../../../core/utils/extensions.dart';
 import '../../../data/models/transaction_model.dart';
 import '../../blocs/transaction_bloc.dart';
 import '../../widgets/charts/trend_chart.dart';
@@ -46,7 +48,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return AppScaffold(
-      title: 'Analytics',
+      title: 'Analytics'.tr(),
       actions: [
         IconButton(
           icon: const Icon(Icons.calendar_today),
@@ -88,10 +90,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
               fontWeight: FontWeight.w600,
             ),
             unselectedLabelStyle: AppTypography.labelMedium(),
-            tabs: const [
-              Tab(text: 'Trends'),
-              Tab(text: 'Categories'),
-              Tab(text: 'Cash Flow'),
+            tabs: [
+              Tab(text: 'Trends'.tr()),
+              Tab(text: 'Categories'.tr()),
+              Tab(text: 'Cash Flow'.tr()),
             ],
           ),
 
@@ -103,7 +105,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                   return AppLoading.fullScreen();
                 }
 
-                final filteredTransactions = _getFilteredTransactions(bloc.transactions);
+                final filteredTransactions =
+                    _getFilteredTransactions(bloc.transactions);
 
                 if (filteredTransactions.isEmpty) {
                   return _buildEmptyState(isDark);
@@ -136,7 +139,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionTitle('Income & Expense Trends', isDark),
+          _buildSectionTitle('Income & Expense Trends'.tr(), isDark),
           const SizedBox(height: 16),
           AppCard(
             child: Padding(
@@ -161,7 +164,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionTitle('Expense Breakdown', isDark),
+          _buildSectionTitle('Expense Breakdown'.tr(), isDark),
           const SizedBox(height: 16),
           AppCard(
             child: Padding(
@@ -184,7 +187,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionTitle('Cash Flow Analysis', isDark),
+          _buildSectionTitle('Cash Flow Analysis'.tr(), isDark),
           const SizedBox(height: 16),
           AppCard(
             child: Padding(
@@ -229,14 +232,14 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle('Key Metrics', isDark),
+        _buildSectionTitle('Key Metrics'.tr(), isDark),
         const SizedBox(height: 16),
         Row(
           children: [
             Expanded(
               child: _buildMetricCard(
-                'Total Income',
-                '\$${totalIncome.toStringAsFixed(2)}',
+                'Total Income'.tr(),
+                totalIncome.toCurrency(),
                 AppColors.success,
                 Icons.arrow_upward,
               ),
@@ -244,8 +247,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
             const SizedBox(width: 12),
             Expanded(
               child: _buildMetricCard(
-                'Total Expense',
-                '\$${totalExpense.toStringAsFixed(2)}',
+                'Total Expense'.tr(),
+                totalExpense.toCurrency(),
                 AppColors.error,
                 Icons.arrow_downward,
               ),
@@ -257,8 +260,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
           children: [
             Expanded(
               child: _buildMetricCard(
-                'Net Balance',
-                '\$${balance.toStringAsFixed(2)}',
+                'Net Balance'.tr(),
+                balance.toCurrency(),
                 balance >= 0 ? AppColors.primary : AppColors.error,
                 Icons.account_balance_wallet,
               ),
@@ -266,7 +269,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
             const SizedBox(width: 12),
             Expanded(
               child: _buildMetricCard(
-                'Savings Rate',
+                'Savings Rate'.tr(),
                 '${savingsRate.toStringAsFixed(1)}%',
                 savingsRate >= 20 ? AppColors.success : AppColors.warning,
                 Icons.savings,
@@ -278,7 +281,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
     );
   }
 
-  Widget _buildMetricCard(String label, String value, Color color, IconData icon) {
+  Widget _buildMetricCard(
+      String label, String value, Color color, IconData icon) {
     return AppCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -329,12 +333,13 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
       return const SizedBox.shrink();
     }
 
-    final totalExpense = categoryTotals.values.fold(0.0, (sum, amount) => sum + amount);
+    final totalExpense =
+        categoryTotals.values.fold(0.0, (sum, amount) => sum + amount);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle('Top Spending Categories', isDark),
+        _buildSectionTitle('Top Spending Categories'.tr(), isDark),
         const SizedBox(height: 16),
         ...topCategories.map((entry) {
           final percentage = (entry.value / totalExpense) * 100;
@@ -344,7 +349,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
     );
   }
 
-  Widget _buildCategoryBar(String category, double amount, double percentage, bool isDark) {
+  Widget _buildCategoryBar(
+      String category, double amount, double percentage, bool isDark) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Column(
@@ -362,7 +368,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                 ),
               ),
               Text(
-                '\$${amount.toStringAsFixed(2)} (${percentage.toStringAsFixed(1)}%)',
+                '${amount.toCurrency()} (${percentage.toStringAsFixed(1)}%)',
                 style: AppTypography.bodySmall(
                   color: AppColors.textSecondaryLight,
                 ),
@@ -374,9 +380,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
               value: percentage / 100,
-              backgroundColor: isDark
-                  ? AppColors.borderDark
-                  : AppColors.borderLight,
+              backgroundColor:
+                  isDark ? AppColors.borderDark : AppColors.borderLight,
               valueColor: AlwaysStoppedAnimation<Color>(
                 _getCategoryColor(category),
               ),
@@ -402,7 +407,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
           ),
           const SizedBox(height: 16),
           Text(
-            'No transactions found',
+            'No transactions found'.tr(),
             style: AppTypography.titleMedium(
               color: isDark
                   ? AppColors.textSecondaryDark
@@ -411,7 +416,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
           ),
           const SizedBox(height: 8),
           Text(
-            'Add some transactions to see analytics',
+            'Add some transactions to see analytics'.tr(),
             style: AppTypography.bodyMedium(
               color: isDark
                   ? AppColors.textSecondaryDark
@@ -445,7 +450,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
 
   List<Transaction> _getFilteredTransactions(List<Transaction> transactions) {
     return transactions.where((t) {
-      return t.date.isAfter(_dateRange.start.subtract(const Duration(days: 1))) &&
+      return t.date
+              .isAfter(_dateRange.start.subtract(const Duration(days: 1))) &&
           t.date.isBefore(_dateRange.end.add(const Duration(days: 1)));
     }).toList();
   }

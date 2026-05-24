@@ -1,10 +1,8 @@
 import 'dart:io';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
-import 'package:drift_flutter/drift_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
-
 
 part 'database.g.dart';
 
@@ -21,7 +19,7 @@ class Transactions extends Table {
   BoolColumn get isRecurring => boolean().withDefault(const Constant(false))();
   TextColumn get recurringId => text().nullable()();
   TextColumn get walletId => text().nullable()();
-  TextColumn get currency => text().withDefault(const Constant('USD'))();
+  TextColumn get currency => text().withDefault(const Constant('INR'))();
   RealColumn get exchangeRate => real().nullable()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
@@ -35,7 +33,8 @@ class Budgets extends Table {
   TextColumn get id => text()();
   TextColumn get categoryId => text()();
   RealColumn get limit => real()();
-  TextColumn get period => text().withDefault(const Constant('monthly'))(); // 'daily', 'weekly', 'monthly', 'yearly'
+  TextColumn get period => text().withDefault(
+      const Constant('monthly'))(); // 'daily', 'weekly', 'monthly', 'yearly'
   DateTimeColumn get startDate => dateTime()();
   DateTimeColumn get endDate => dateTime().nullable()();
   BoolColumn get isActive => boolean().withDefault(const Constant(true))();
@@ -74,8 +73,9 @@ class Settings extends Table {
 class Wallets extends Table {
   TextColumn get id => text()();
   TextColumn get name => text()();
-  TextColumn get type => text()(); // 'cash', 'bank', 'creditCard', 'savings', 'investment', 'digital', 'other'
-  TextColumn get currency => text().withDefault(const Constant('USD'))();
+  TextColumn get type =>
+      text()(); // 'cash', 'bank', 'creditCard', 'savings', 'investment', 'digital', 'other'
+  TextColumn get currency => text().withDefault(const Constant('INR'))();
   RealColumn get balance => real().withDefault(const Constant(0.0))();
   IntColumn get colorValue => integer()();
   TextColumn get iconName => text().nullable()();
@@ -105,7 +105,14 @@ class WalletTransfers extends Table {
 }
 
 /// Main database class
-@DriftDatabase(tables: [Transactions, Budgets, Categories, Settings, Wallets, WalletTransfers])
+@DriftDatabase(tables: [
+  Transactions,
+  Budgets,
+  Categories,
+  Settings,
+  Wallets,
+  WalletTransfers
+])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
@@ -114,14 +121,14 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-    onCreate: (Migrator m) async {
-      await m.createAll();
-      await _insertDefaultCategories();
-    },
-    onUpgrade: (Migrator m, int from, int to) async {
-      // Handle migrations here
-    },
-  );
+        onCreate: (Migrator m) async {
+          await m.createAll();
+          await _insertDefaultCategories();
+        },
+        onUpgrade: (Migrator m, int from, int to) async {
+          // Handle migrations here
+        },
+      );
 
   /// Insert default categories on first run
   Future<void> _insertDefaultCategories() async {
@@ -209,7 +216,8 @@ class AppDatabase extends _$AppDatabase {
   Future<Transaction?> getTransactionById(String id) =>
       (select(transactions)..where((t) => t.id.equals(id))).getSingleOrNull();
 
-  Future<List<Transaction>> getTransactionsByDateRange(DateTime start, DateTime end) {
+  Future<List<Transaction>> getTransactionsByDateRange(
+      DateTime start, DateTime end) {
     return (select(transactions)
           ..where((t) => t.date.isBetweenValues(start, end)))
         .get();
@@ -220,10 +228,12 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<List<Transaction>> getTransactionsByCategory(String categoryId) {
-    return (select(transactions)..where((t) => t.category.equals(categoryId))).get();
+    return (select(transactions)..where((t) => t.category.equals(categoryId)))
+        .get();
   }
 
-  Stream<List<Transaction>> watchAllTransactions() => select(transactions).watch();
+  Stream<List<Transaction>> watchAllTransactions() =>
+      select(transactions).watch();
 
   Future<int> insertTransaction(TransactionsCompanion transaction) =>
       into(transactions).insert(transaction);
@@ -241,9 +251,11 @@ class AppDatabase extends _$AppDatabase {
     return (select(budgets)..where((b) => b.isActive.equals(true))).get();
   }
 
-  Future<int> insertBudget(BudgetsCompanion budget) => into(budgets).insert(budget);
+  Future<int> insertBudget(BudgetsCompanion budget) =>
+      into(budgets).insert(budget);
 
-  Future<bool> updateBudget(BudgetsCompanion budget) => update(budgets).replace(budget);
+  Future<bool> updateBudget(BudgetsCompanion budget) =>
+      update(budgets).replace(budget);
 
   Future<int> deleteBudget(String id) =>
       (delete(budgets)..where((b) => b.id.equals(id))).go();
@@ -265,7 +277,8 @@ class AppDatabase extends _$AppDatabase {
 
   // Settings queries
   Future<String?> getSetting(String key) async {
-    final result = await (select(settings)..where((s) => s.key.equals(key))).getSingleOrNull();
+    final result = await (select(settings)..where((s) => s.key.equals(key)))
+        .getSingleOrNull();
     return result?.value;
   }
 
@@ -305,9 +318,9 @@ class AppDatabase extends _$AppDatabase {
 
     return Map.fromEntries(
       result.map((row) => MapEntry(
-        row.data['category'] as String,
-        (row.data['total'] as num?)?.toDouble() ?? 0.0,
-      )),
+            row.data['category'] as String,
+            (row.data['total'] as num?)?.toDouble() ?? 0.0,
+          )),
     );
   }
 
@@ -319,16 +332,19 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<Wallet?> getDefaultWallet() {
-    return (select(wallets)..where((w) => w.isDefault.equals(true))).getSingleOrNull();
+    return (select(wallets)..where((w) => w.isDefault.equals(true)))
+        .getSingleOrNull();
   }
 
   Future<Wallet?> getWalletById(String id) {
     return (select(wallets)..where((w) => w.id.equals(id))).getSingleOrNull();
   }
 
-  Future<int> insertWallet(WalletsCompanion wallet) => into(wallets).insert(wallet);
+  Future<int> insertWallet(WalletsCompanion wallet) =>
+      into(wallets).insert(wallet);
 
-  Future<bool> updateWallet(WalletsCompanion wallet) => update(wallets).replace(wallet);
+  Future<bool> updateWallet(WalletsCompanion wallet) =>
+      update(wallets).replace(wallet);
 
   Future<int> deleteWallet(String id) =>
       (delete(wallets)..where((w) => w.id.equals(id))).go();
@@ -345,11 +361,13 @@ class AppDatabase extends _$AppDatabase {
   }
 
   // Wallet transfer queries
-  Future<List<WalletTransfer>> getAllWalletTransfers() => select(walletTransfers).get();
+  Future<List<WalletTransfer>> getAllWalletTransfers() =>
+      select(walletTransfers).get();
 
   Future<List<WalletTransfer>> getWalletTransfersByWallet(String walletId) {
     return (select(walletTransfers)
-          ..where((t) => t.fromWalletId.equals(walletId) | t.toWalletId.equals(walletId)))
+          ..where((t) =>
+              t.fromWalletId.equals(walletId) | t.toWalletId.equals(walletId)))
         .get();
   }
 

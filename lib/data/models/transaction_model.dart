@@ -31,7 +31,7 @@ class Transaction {
     this.isRecurring = false,
     this.recurringId,
     this.walletId,
-    this.currency = 'USD',
+    this.currency = 'INR',
     this.exchangeRate,
   });
 
@@ -108,7 +108,7 @@ class Transaction {
       isRecurring: json['isRecurring'] as bool? ?? false,
       recurringId: json['recurringId'] as String?,
       walletId: json['walletId'] as String?,
-      currency: json['currency'] as String? ?? 'USD',
+      currency: json['currency'] as String? ?? 'INR',
       exchangeRate: json['exchangeRate'] != null
           ? (json['exchangeRate'] as num).toDouble()
           : null,
@@ -362,7 +362,7 @@ class UserSettings {
   final String? userEmail;
 
   const UserSettings({
-    this.currency = 'USD',
+    this.currency = 'INR',
     this.language = 'en',
     this.themeMode = ThemeMode.system,
     this.notificationsEnabled = true,
@@ -405,7 +405,7 @@ class UserSettings {
 
   factory UserSettings.fromJson(Map<String, dynamic> json) {
     return UserSettings(
-      currency: json['currency'] as String? ?? 'USD',
+      currency: json['currency'] as String? ?? 'INR',
       language: json['language'] as String? ?? 'en',
       themeMode: ThemeMode.values.firstWhere(
         (e) => e.name == json['themeMode'],

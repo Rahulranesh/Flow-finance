@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/theme.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../../core/utils/extensions.dart';
+import '../../../data/models/transaction_model.dart';
 import '../../blocs/blocs.dart';
+import '../reports/reports_screen.dart';
 
 /// Budgets overview screen
 class BudgetsScreen extends StatelessWidget {
@@ -12,11 +15,16 @@ class BudgetsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppScrollScaffold(
-      title: 'Budgets',
+      title: 'Budgets'.tr(),
       actions: [
         AppIconButton(
           icon: Icons.add,
-          onPressed: () {},
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ReportsScreen()),
+            );
+          },
           variant: AppIconButtonVariant.filled,
         ),
         const SizedBox(width: 16),
@@ -35,7 +43,7 @@ class BudgetsScreen extends StatelessWidget {
 
                 // Budget Progress
                 Text(
-                  'Budget Progress',
+                  'Budget Progress'.tr(),
                   style: AppTypography.titleLarge(),
                 ),
                 const SizedBox(height: 16),
@@ -47,7 +55,7 @@ class BudgetsScreen extends StatelessWidget {
 
                 // Spending Insights
                 Text(
-                  'Spending Insights',
+                  'Spending Insights'.tr(),
                   style: AppTypography.titleLarge(),
                 ),
                 const SizedBox(height: 16),
@@ -77,7 +85,8 @@ class _MonthlyOverviewCard extends StatelessWidget {
           (sum, p) => sum + p.spent,
         );
         final remaining = totalBudget - totalSpent;
-        final double percentage = totalBudget > 0 ? totalSpent / totalBudget : 0.0;
+        final double percentage =
+            totalBudget > 0 ? totalSpent / totalBudget : 0.0;
 
         return AppCard(
           variant: AppCardVariant.highlighted,
@@ -90,7 +99,7 @@ class _MonthlyOverviewCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Total Budget',
+                          'Total Budget'.tr(),
                           style: AppTypography.bodyMedium(
                             color: AppColors.textSecondary(context),
                           ),
@@ -104,7 +113,8 @@ class _MonthlyOverviewCard extends StatelessWidget {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: percentage > 0.9
                           ? AppColors.error.withOpacity(0.1)
@@ -132,10 +142,10 @@ class _MonthlyOverviewCard extends StatelessWidget {
                         const SizedBox(width: 4),
                         Text(
                           percentage > 0.9
-                              ? 'Over Budget'
+                              ? 'Over Budget'.tr()
                               : percentage > 0.75
-                                  ? 'Near Limit'
-                                  : 'On Track',
+                                  ? 'Near Limit'.tr()
+                                  : 'On Track'.tr(),
                           style: AppTypography.labelSmall(
                             color: percentage > 0.9
                                 ? AppColors.error
@@ -152,7 +162,8 @@ class _MonthlyOverviewCard extends StatelessWidget {
               const SizedBox(height: 20),
               AppLinearProgress(
                 value: percentage.clamp(0.0, 1.0),
-                label: 'Spent: ${totalSpent.toCurrency()} / ${totalBudget.toCurrency()}',
+                label:
+                    'Spent: ${totalSpent.toCurrency()} / ${totalBudget.toCurrency()}',
                 showPercentage: true,
                 height: 12,
               ),
@@ -160,20 +171,21 @@ class _MonthlyOverviewCard extends StatelessWidget {
               Row(
                 children: [
                   _StatItem(
-                    label: 'Spent',
+                    label: 'Spent'.tr(),
                     value: totalSpent.toCurrency(),
                     color: AppColors.expense,
                   ),
                   const SizedBox(width: 24),
                   _StatItem(
-                    label: 'Remaining',
+                    label: 'Remaining'.tr(),
                     value: remaining.toCurrency(),
                     color: AppColors.income,
                   ),
                   const SizedBox(width: 24),
                   _StatItem(
-                    label: 'Days Left',
-                    value: '${DateTime.now().endOfMonth.difference(DateTime.now()).inDays}',
+                    label: 'Days Left'.tr(),
+                    value:
+                        '${DateTime.now().endOfMonth.difference(DateTime.now()).inDays}',
                     color: AppColors.primary,
                   ),
                 ],
@@ -250,7 +262,7 @@ class _BudgetList extends StatelessWidget {
                 Text(bloc.error!),
                 const SizedBox(height: 16),
                 AppButton.secondary(
-                  label: 'Retry',
+                  label: 'Retry'.tr(),
                   onPressed: () => bloc.loadBudgets(),
                 ),
               ],
@@ -261,10 +273,10 @@ class _BudgetList extends StatelessWidget {
         final progress = bloc.budgetProgress;
 
         if (progress.isEmpty) {
-          return const AppEmptyState(
+          return AppEmptyState(
             icon: Icons.pie_chart,
-            title: 'No budgets yet',
-            subtitle: 'Create your first budget to start tracking',
+            title: 'No budgets yet'.tr(),
+            subtitle: 'Create your first budget to start tracking'.tr(),
           );
         }
 
@@ -278,6 +290,7 @@ class _BudgetList extends StatelessWidget {
               variant: AppCardVariant.flat,
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(16),
+              onTap: () => _showBudgetDetails(context, p),
               child: Column(
                 children: [
                   Row(
@@ -308,7 +321,7 @@ class _BudgetList extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '${p.spent.toCurrency()} of ${p.budget.limit.toCurrency()}',
+                              '${p.spent.toCurrency()} ${'of'.tr()} ${p.budget.limit.toCurrency()}',
                               style: AppTypography.bodySmall(
                                 color: AppColors.textTertiary(context),
                               ),
@@ -331,7 +344,7 @@ class _BudgetList extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '${p.remaining.toCurrency()} left',
+                            '${p.remaining.toCurrency()} ${'left'.tr()}',
                             style: AppTypography.caption(
                               color: isOverBudget
                                   ? AppColors.error
@@ -382,93 +395,183 @@ class _BudgetList extends StatelessWidget {
     };
     return iconMap[iconName] ?? Icons.category;
   }
+
+  void _showBudgetDetails(BuildContext context, BudgetProgress progress) {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                progress.category.name,
+                style: AppTypography.headlineSmall(),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '${progress.spent.toCurrency()} ${'spent'.tr()}',
+                style: AppTypography.displaySmall(
+                  color: progress.category.color,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text('${'Limit'.tr()}: ${progress.budget.limit.toCurrency()}'),
+              const SizedBox(height: 8),
+              Text('${'Remaining'.tr()}: ${progress.remaining.toCurrency()}'),
+              const SizedBox(height: 8),
+              Text(
+                '${'Usage'.tr()}: ${(progress.percentage * 100).toStringAsFixed(1)}%',
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '${'Period'.tr()}: ${progress.budget.period.name.capitalize.tr()}',
+              ),
+              const SizedBox(height: 8),
+              Text(
+                  '${'Start'.tr()}: ${progress.budget.startDate.toLongDate()}'),
+              if (progress.budget.endDate != null) ...[
+                const SizedBox(height: 8),
+                Text('${'End'.tr()}: ${progress.budget.endDate!.toLongDate()}'),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 /// Spending insights section
 class _SpendingInsights extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        AppCard(
-          variant: AppCardVariant.flat,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Top Spending Categories',
-                style: AppTypography.titleMedium(),
-              ),
-              const SizedBox(height: 16),
-              _InsightItem(
-                rank: 1,
-                category: 'Food & Dining',
-                amount: '\$650',
-                percentage: 20,
-                color: const Color(0xFFF59E0B),
-              ),
-              const SizedBox(height: 12),
-              _InsightItem(
-                rank: 2,
-                category: 'Shopping',
-                amount: '\$580',
-                percentage: 18,
-                color: const Color(0xFFEC4899),
-              ),
-              const SizedBox(height: 12),
-              _InsightItem(
-                rank: 3,
-                category: 'Transportation',
-                amount: '\$420',
-                percentage: 13,
-                color: const Color(0xFF3B82F6),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        AppCard(
-          variant: AppCardVariant.flat,
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.warning.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.warning_amber,
-                  color: AppColors.warning,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+    return Consumer2<BudgetBloc, TransactionBloc>(
+      builder: (context, budgetBloc, transactionBloc, child) {
+        final expenses = <String, double>{};
+        for (final transaction in transactionBloc.transactions) {
+          if (transaction.type != TransactionType.expense) continue;
+          expenses[transaction.category] =
+              (expenses[transaction.category] ?? 0) + transaction.amount;
+        }
+
+        final ranked = expenses.entries.toList()
+          ..sort((a, b) => b.value.compareTo(a.value));
+        final totalExpense =
+            ranked.fold<double>(0, (sum, item) => sum + item.value);
+        final alertBudget = budgetBloc.budgetProgress.values
+            .where((item) => item.percentage >= 0.75)
+            .toList()
+          ..sort((a, b) => b.percentage.compareTo(a.percentage));
+
+        return Column(
+          children: [
+            AppCard(
+              variant: AppCardVariant.flat,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Top Spending Categories'.tr(),
+                    style: AppTypography.titleMedium(),
+                  ),
+                  const SizedBox(height: 16),
+                  if (ranked.isEmpty)
                     Text(
-                      'Budget Alert',
-                      style: AppTypography.bodyLarge(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Shopping budget is at 96%. Consider reducing expenses.',
+                      'Add expense transactions to see category insights.'.tr(),
                       style: AppTypography.bodySmall(
                         color: AppColors.textSecondary(context),
                       ),
                     ),
-                  ],
-                ),
+                  ...ranked.take(3).toList().asMap().entries.map((entry) {
+                    final percentage = totalExpense > 0
+                        ? ((entry.value.value / totalExpense) * 100).round()
+                        : 0;
+                    return Padding(
+                      padding: EdgeInsets.only(bottom: entry.key == 2 ? 0 : 12),
+                      child: _InsightItem(
+                        rank: entry.key + 1,
+                        category: entry.value.key,
+                        amount: entry.value.value.toCurrency(),
+                        percentage: percentage,
+                        color: _categoryColor(entry.value.key),
+                      ),
+                    );
+                  }),
+                ],
               ),
-            ],
-          ),
-        ),
-      ],
+            ),
+            const SizedBox(height: 12),
+            AppCard(
+              variant: AppCardVariant.flat,
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: (alertBudget.isNotEmpty
+                              ? AppColors.warning
+                              : AppColors.success)
+                          .withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      alertBudget.isNotEmpty
+                          ? Icons.warning_amber
+                          : Icons.check_circle,
+                      color: alertBudget.isNotEmpty
+                          ? AppColors.warning
+                          : AppColors.success,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          alertBudget.isNotEmpty
+                              ? 'Budget Alert'
+                              : 'Budgets Healthy',
+                          style: AppTypography.bodyLarge(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          alertBudget.isNotEmpty
+                              ? '${alertBudget.first.category.name} is at ${(alertBudget.first.percentage * 100).toStringAsFixed(0)}% of its limit.'
+                              : 'No budget categories are close to their limits right now.',
+                          style: AppTypography.bodySmall(
+                            color: AppColors.textSecondary(context),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
     );
+  }
+
+  Color _categoryColor(String category) {
+    final hash = category.codeUnits.fold<int>(0, (sum, value) => sum + value);
+    final colors = [
+      AppColors.primary,
+      AppColors.secondary,
+      AppColors.success,
+      AppColors.warning,
+      AppColors.error,
+    ];
+    return colors[hash % colors.length];
   }
 }
 

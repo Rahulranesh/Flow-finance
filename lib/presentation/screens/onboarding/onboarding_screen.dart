@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../core/theme/theme.dart';
 import '../../../core/widgets/widgets.dart';
-import '../home/home_screen.dart';
+import '../navigation/main_navigation_screen.dart';
 
 /// Onboarding flow for new users
 class OnboardingScreen extends StatefulWidget {
@@ -18,25 +19,29 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final List<_OnboardingPage> _pages = const [
     _OnboardingPage(
       title: 'Welcome to Flow Finance',
-      subtitle: 'Your personal finance companion for a brighter financial future.',
+      subtitle:
+          'Your personal finance companion for a brighter financial future.',
       icon: Icons.account_balance_wallet,
       color: AppColors.primary,
     ),
     _OnboardingPage(
       title: 'Track Your Expenses',
-      subtitle: 'Easily record and categorize your daily transactions in seconds.',
+      subtitle:
+          'Easily record and categorize your daily transactions in seconds.',
       icon: Icons.receipt_long,
       color: AppColors.secondary,
     ),
     _OnboardingPage(
       title: 'Set Budgets',
-      subtitle: 'Create monthly budgets and get alerts when you\'re close to limits.',
+      subtitle:
+          'Create monthly budgets and get alerts when you\'re close to limits.',
       icon: Icons.pie_chart,
       color: AppColors.warning,
     ),
     _OnboardingPage(
       title: 'Visualize Progress',
-      subtitle: 'Beautiful charts and insights to help you understand your spending.',
+      subtitle:
+          'Beautiful charts and insights to help you understand your spending.',
       icon: Icons.trending_up,
       color: AppColors.success,
     ),
@@ -63,7 +68,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => const HomeScreen(),
+        builder: (context) => const MainNavigationScreen(),
       ),
     );
   }
@@ -71,81 +76,94 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Skip button
-            Align(
-              alignment: Alignment.topRight,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: TextButton(
-                  onPressed: _finishOnboarding,
-                  child: Text(
-                    'Skip',
-                    style: AppTypography.bodyMedium(
-                      color: AppColors.textSecondary(context),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              AppColors.primary.withOpacity(0.08),
+              Theme.of(context).scaffoldBackgroundColor,
+              AppColors.secondary.withOpacity(0.05),
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Skip button
+              Align(
+                alignment: Alignment.topRight,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: TextButton(
+                    onPressed: _finishOnboarding,
+                    child: Text(
+                      'Skip'.tr(),
+                      style: AppTypography.bodyMedium(
+                        color: AppColors.textSecondary(context),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
 
-            // Page content
-            Expanded(
-              child: PageView.builder(
-                controller: _pageController,
-                onPageChanged: (index) {
-                  setState(() {
-                    _currentPage = index;
-                  });
-                },
-                itemCount: _pages.length,
-                itemBuilder: (context, index) {
-                  return _buildPage(_pages[index]);
-                },
+              // Page content
+              Expanded(
+                child: PageView.builder(
+                  controller: _pageController,
+                  onPageChanged: (index) {
+                    setState(() {
+                      _currentPage = index;
+                    });
+                  },
+                  itemCount: _pages.length,
+                  itemBuilder: (context, index) {
+                    return _buildPage(_pages[index]);
+                  },
+                ),
               ),
-            ),
 
-            // Bottom section
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                children: [
-                  // Page indicators
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(_pages.length, (index) {
-                      return AnimatedContainer(
-                        duration: AppAnimations.fast,
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        width: _currentPage == index ? 24 : 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: _currentPage == index
-                              ? AppColors.primary
-                              : AppColors.border(context),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      );
-                    }),
-                  ),
+              // Bottom section
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    // Page indicators
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(_pages.length, (index) {
+                        return AnimatedContainer(
+                          duration: AppAnimations.fast,
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          width: _currentPage == index ? 24 : 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: _currentPage == index
+                                ? AppColors.primary
+                                : AppColors.border(context),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        );
+                      }),
+                    ),
 
-                  const SizedBox(height: 32),
+                    const SizedBox(height: 32),
 
-                  // Next/Get Started button
-                  AppButton.primary(
-                    label: _currentPage == _pages.length - 1
-                        ? 'Get Started'
-                        : 'Next',
-                    onPressed: _nextPage,
-                    expanded: true,
-                    size: AppButtonSize.large,
-                  ),
-                ],
+                    // Next/Get Started button
+                    AppButton.primary(
+                      label: _currentPage == _pages.length - 1
+                          ? 'Get Started'.tr()
+                          : 'Next'.tr(),
+                      onPressed: _nextPage,
+                      expanded: true,
+                      size: AppButtonSize.large,
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -158,24 +176,57 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // Animated icon container
-          Container(
-            width: 200,
-            height: 200,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  page.color.withOpacity(0.2),
-                  page.color.withOpacity(0.05),
+          TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0.92, end: 1),
+            duration: AppAnimations.slower,
+            curve: AppAnimations.springLight,
+            builder: (context, value, child) => Transform.scale(
+              scale: value,
+              child: child,
+            ),
+            child: Container(
+              width: 220,
+              height: 220,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    page.color.withOpacity(0.2),
+                    page.color.withOpacity(0.05),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(44),
+                boxShadow: [
+                  BoxShadow(
+                    color: page.color.withOpacity(0.16),
+                    blurRadius: 36,
+                    offset: const Offset(0, 20),
+                  ),
                 ],
               ),
-              borderRadius: BorderRadius.circular(40),
-            ),
-            child: Icon(
-              page.icon,
-              size: 80,
-              color: page.color,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Positioned(
+                    top: 24,
+                    right: 24,
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.35),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    page.icon,
+                    size: 86,
+                    color: page.color,
+                  ),
+                ],
+              ),
             ),
           ),
 
@@ -183,7 +234,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
           // Title
           Text(
-            page.title,
+            page.title.tr(),
             style: AppTypography.headlineMedium(),
             textAlign: TextAlign.center,
           ),
@@ -192,7 +243,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
           // Subtitle
           Text(
-            page.subtitle,
+            page.subtitle.tr(),
             style: AppTypography.bodyLarge(
               color: AppColors.textSecondary(context),
             ),
@@ -228,16 +279,12 @@ class InitialSetupScreen extends StatefulWidget {
 
 class _InitialSetupScreenState extends State<InitialSetupScreen> {
   final _nameController = TextEditingController();
-  final _currencyController = TextEditingController(text: 'USD');
-  String _selectedCurrency = 'USD';
+  final _currencyController = TextEditingController(text: 'INR');
+  String _selectedCurrency = 'INR';
 
   final List<_Currency> _currencies = const [
+    _Currency('INR', '₹', 'Indian Rupee'),
     _Currency('USD', '\$', 'US Dollar'),
-    _Currency('EUR', '€', 'Euro'),
-    _Currency('GBP', '£', 'British Pound'),
-    _Currency('JPY', '¥', 'Japanese Yen'),
-    _Currency('CAD', 'C\$', 'Canadian Dollar'),
-    _Currency('AUD', 'A\$', 'Australian Dollar'),
   ];
 
   @override
@@ -251,7 +298,7 @@ class _InitialSetupScreenState extends State<InitialSetupScreen> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => const HomeScreen(),
+        builder: (context) => const MainNavigationScreen(),
       ),
     );
   }
@@ -268,14 +315,14 @@ class _InitialSetupScreenState extends State<InitialSetupScreen> {
               const SizedBox(height: 40),
 
               Text(
-                'Let\'s set you up',
+                'Let\'s set you up'.tr(),
                 style: AppTypography.headlineLarge(),
               ),
 
               const SizedBox(height: 8),
 
               Text(
-                'We just need a few details to get started.',
+                'We just need a few details to get started.'.tr(),
                 style: AppTypography.bodyLarge(
                   color: AppColors.textSecondary(context),
                 ),
@@ -286,8 +333,8 @@ class _InitialSetupScreenState extends State<InitialSetupScreen> {
               // Name input
               AppInput(
                 controller: _nameController,
-                label: 'Your Name',
-                hint: 'Enter your name',
+                label: 'Your Name'.tr(),
+                hint: 'Enter your name'.tr(),
                 prefixIcon: Icons.person_outline,
               ),
 
@@ -295,7 +342,7 @@ class _InitialSetupScreenState extends State<InitialSetupScreen> {
 
               // Currency selector
               Text(
-                'Currency',
+                'Currency'.tr(),
                 style: AppTypography.labelLarge(),
               ),
 
@@ -357,7 +404,7 @@ class _InitialSetupScreenState extends State<InitialSetupScreen> {
 
               // Complete button
               AppButton.primary(
-                label: 'Complete Setup',
+                label: 'Complete Setup'.tr(),
                 onPressed: _completeSetup,
                 expanded: true,
                 size: AppButtonSize.large,

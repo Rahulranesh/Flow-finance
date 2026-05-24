@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/theme.dart';
 import '../../../core/widgets/widgets.dart';
+import '../../../core/widgets/quick_settings_button.dart';
 import '../../../core/utils/extensions.dart';
-import '../../../core/utils/animations.dart';
 import '../../../data/models/models.dart';
 import '../../blocs/blocs.dart';
+import '../../widgets/transaction_details_sheet.dart';
+import '../settings/sms_sync_screen.dart';
+import '../settings/google_pay_sync_screen.dart';
+import '../add_transaction/add_transaction_screen.dart';
+import '../transactions/transactions_screen.dart';
+import '../reports/reports_screen.dart';
 
 /// Modern home screen with balance overview, quick actions, and recent transactions
 class HomeScreen extends StatefulWidget {
@@ -16,22 +23,21 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _selectedNavIndex = 0;
-
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
-      title: 'Flow Finance',
+      title: 'Flow Finance'.tr(),
       actions: [
-        AppIconButton(
-          icon: Icons.notifications_outlined,
-          onPressed: () {},
-          variant: AppIconButtonVariant.filled,
-        ),
+        const QuickSettingsButton(),
         const SizedBox(width: 8),
         AppIconButton(
-          icon: Icons.settings_outlined,
-          onPressed: () {},
+          icon: Icons.notifications_outlined,
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ReportsScreen()),
+            );
+          },
           variant: AppIconButtonVariant.filled,
         ),
         const SizedBox(width: 16),
@@ -57,9 +63,14 @@ class _HomeScreenState extends State<HomeScreen> {
           SliverPersistentHeader(
             pinned: true,
             delegate: _SectionHeaderDelegate(
-              title: 'Recent Transactions',
-              actionLabel: 'See All',
-              onAction: () {},
+              title: 'Recent Transactions'.tr(),
+              actionLabel: 'See All'.tr(),
+              onAction: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const TransactionsScreen()),
+                );
+              },
             ),
           ),
 
@@ -87,7 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Text(bloc.error!),
                         const SizedBox(height: 16),
                         AppButton.secondary(
-                          label: 'Retry',
+                          label: 'Retry'.tr(),
                           onPressed: () => bloc.loadTransactions(),
                         ),
                       ],
@@ -103,8 +114,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Center(
                     child: AppEmptyState(
                       icon: Icons.receipt_long,
-                      title: 'No transactions yet',
-                      subtitle: 'Add your first transaction to get started',
+                      title: 'No transactions yet'.tr(),
+                      subtitle:
+                          'Add your first transaction to get started'.tr(),
                     ),
                   ),
                 );
@@ -128,8 +140,13 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       floatingActionButton: AppFAB(
-        onPressed: () {},
-        label: 'Add',
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AddTransactionScreen()),
+          );
+        },
+        label: 'Add'.tr(),
       ),
     );
   }
@@ -143,104 +160,122 @@ class _BalanceHeroCard extends StatelessWidget {
     final balance = transactionBloc.balance;
     final income = transactionBloc.totalIncome;
     final expense = transactionBloc.totalExpense;
-
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final savingsRate = income > 0 ? ((balance / income) * 100) : 0.0;
 
     return Padding(
       padding: const EdgeInsets.all(20),
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              AppColors.primary,
-              AppColors.primaryDark,
+      child: GestureDetector(
+        onTap: () => _showBalanceDetailsSheet(
+          context,
+          balance: balance,
+          income: income,
+          expense: expense,
+          transactions: transactionBloc.transactions.take(5).toList(),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                AppColors.primary,
+                AppColors.primaryDark,
+              ],
+            ),
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withOpacity(0.3),
+                blurRadius: 24,
+                spreadRadius: -4,
+                offset: const Offset(0, 12),
+              ),
             ],
           ),
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primary.withOpacity(0.3),
-              blurRadius: 24,
-              spreadRadius: -4,
-              offset: const Offset(0, 12),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Total Balance',
-                  style: AppTypography.bodyMedium(
-                    color: Colors.white.withOpacity(0.8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Total Balance'.tr(),
+                    style: AppTypography.bodyMedium(
+                      color: Colors.white.withOpacity(0.8),
+                    ),
                   ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.arrow_upward,
-                        size: 12,
-                        color: Colors.white.withOpacity(0.9),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '12.5%',
-                        style: AppTypography.labelSmall(
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          savingsRate >= 0
+                              ? Icons.trending_up
+                              : Icons.trending_down,
+                          size: 12,
                           color: Colors.white.withOpacity(0.9),
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 4),
+                        Text(
+                          '${savingsRate.toStringAsFixed(1)}%',
+                          style: AppTypography.labelSmall(
+                            color: Colors.white.withOpacity(0.9),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                balance.toCurrency(),
+                style: AppTypography.displayLarge(color: Colors.white),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Tap for beautiful detailed money logs'.tr(),
+                style: AppTypography.bodySmall(
+                  color: Colors.white.withOpacity(0.78),
                 ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            AnimatedCounter(
-              value: balance,
-              prefix: '\$',
-              decimalPlaces: 2,
-              style: AppTypography.displayLarge(color: Colors.white),
-            ),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(
-                  child: _MiniStat(
-                    label: 'Income',
-                    amount: income.toCurrency(),
-                    icon: Icons.arrow_downward,
-                    iconColor: AppColors.income,
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: _MiniStat(
+                      label: 'Income'.tr(),
+                      amount: income.toCurrency(),
+                      icon: Icons.arrow_downward,
+                      iconColor: AppColors.income,
+                    ),
                   ),
-                ),
-                Container(
-                  width: 1,
-                  height: 40,
-                  color: Colors.white.withOpacity(0.2),
-                ),
-                Expanded(
-                  child: _MiniStat(
-                    label: 'Expense',
-                    amount: expense.toCurrency(),
-                    icon: Icons.arrow_upward,
-                    iconColor: AppColors.expense,
+                  Container(
+                    width: 1,
+                    height: 40,
+                    color: Colors.white.withOpacity(0.2),
                   ),
-                ),
-              ],
-            ),
-          ],
+                  Expanded(
+                    child: _MiniStat(
+                      label: 'Expense'.tr(),
+                      amount: expense.toCurrency(),
+                      icon: Icons.arrow_upward,
+                      iconColor: AppColors.expense,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -305,27 +340,54 @@ class _QuickActionsRow extends StatelessWidget {
     final actions = [
       _ActionItem(
         icon: Icons.add_circle,
-        label: 'Add',
+        label: 'Manual',
         color: AppColors.primary,
-        onTap: () {},
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const AddTransactionScreen(),
+            ),
+          );
+        },
       ),
       _ActionItem(
-        icon: Icons.swap_horiz,
-        label: 'Transfer',
+        icon: Icons.sms,
+        label: 'SMS Sync',
         color: AppColors.secondary,
-        onTap: () {},
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const SmsSyncScreen(),
+            ),
+          );
+        },
       ),
       _ActionItem(
-        icon: Icons.pie_chart,
-        label: 'Budget',
+        icon: Icons.payment,
+        label: 'Google Pay',
+        color: AppColors.success,
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const GooglePaySyncScreen(),
+            ),
+          );
+        },
+      ),
+      _ActionItem(
+        icon: Icons.auto_awesome,
+        label: 'Auto Sync',
         color: AppColors.warning,
-        onTap: () {},
-      ),
-      _ActionItem(
-        icon: Icons.flag,
-        label: 'Goals',
-        color: AppColors.info,
-        onTap: () {},
+        onTap: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Auto sync will run in background'),
+            ),
+          );
+        },
       ),
     ];
 
@@ -386,45 +448,106 @@ class _ActionItem {
 class _StatsOverview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Overview',
-            style: AppTypography.titleLarge(),
-          ),
-          const SizedBox(height: 16),
-          Row(
+    return Consumer2<BudgetBloc, TransactionBloc>(
+      builder: (context, budgetBloc, transactionBloc, child) {
+        final totalBudget = budgetBloc.totalBudgetLimit;
+        final spent = budgetBloc.budgetProgress.values.fold<double>(
+          0,
+          (sum, item) => sum + item.spent,
+        );
+        final remaining = (totalBudget - spent).clamp(0, double.infinity);
+        final balance = transactionBloc.balance;
+        final savingsRate = transactionBloc.totalIncome > 0
+            ? ((balance / transactionBloc.totalIncome) * 100)
+                .clamp(-999.0, 999.0)
+            : 0.0;
+
+        return Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: AppStatCard(
-                  title: 'Monthly Budget',
-                  value: '\$2,400',
-                  subtitle: 'Left: \$850',
-                  icon: Icons.account_balance_wallet,
-                  trend: '+12%',
-                  isPositive: true,
-                  color: AppColors.primary,
-                ),
+              Text(
+                'Overview',
+                style: AppTypography.titleLarge(),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: AppStatCard(
-                  title: 'Savings Goal',
-                  value: '\$12,000',
-                  subtitle: 'Target: \$20,000',
-                  icon: Icons.savings,
-                  trend: '60%',
-                  isPositive: true,
-                  color: AppColors.secondary,
-                ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: AppStatCard(
+                      title: 'Monthly Budget',
+                      value: totalBudget.toCurrency(),
+                      subtitle: 'Left: ${remaining.toCurrency()}',
+                      icon: Icons.account_balance_wallet,
+                      trend: totalBudget > 0
+                          ? '${((spent / totalBudget) * 100).toStringAsFixed(0)}% used'
+                          : 'No budgets',
+                      isPositive: remaining >= 0,
+                      color: AppColors.primary,
+                      onTap: () => _showMetricDetailsSheet(
+                        context,
+                        title: 'Budget Health',
+                        accent: AppColors.primary,
+                        headline: totalBudget.toCurrency(),
+                        items: [
+                          ('Allocated', totalBudget.toCurrency()),
+                          ('Spent', spent.toCurrency()),
+                          ('Remaining', remaining.toCurrency()),
+                          (
+                            'Status',
+                            totalBudget == 0
+                                ? 'No budgets created yet'
+                                : remaining >= 0
+                                    ? 'Within plan'
+                                    : 'Overspent',
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: AppStatCard(
+                      title: 'Net Savings',
+                      value: balance.toCurrency(),
+                      subtitle:
+                          'Income: ${transactionBloc.totalIncome.toCurrency()}',
+                      icon: Icons.savings,
+                      trend: '${savingsRate.toStringAsFixed(0)}%',
+                      isPositive: balance >= 0,
+                      color: AppColors.secondary,
+                      onTap: () => _showMetricDetailsSheet(
+                        context,
+                        title: 'Net Savings',
+                        accent: AppColors.secondary,
+                        headline: balance.toCurrency(),
+                        items: [
+                          ('Income', transactionBloc.totalIncome.toCurrency()),
+                          (
+                            'Expense',
+                            transactionBloc.totalExpense.toCurrency()
+                          ),
+                          (
+                            'Savings Rate',
+                            '${savingsRate.toStringAsFixed(1)}%'
+                          ),
+                          (
+                            'Insight',
+                            balance >= 0
+                                ? 'You are retaining more than you spend.'
+                                : 'Expenses are ahead of income right now.',
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -442,7 +565,8 @@ class _SectionHeaderDelegate extends SliverPersistentHeaderDelegate {
   });
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
@@ -487,7 +611,6 @@ class _TransactionListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isExpense = transaction.type == TransactionType.expense;
 
     // Get category icon and color
@@ -498,7 +621,7 @@ class _TransactionListItem extends StatelessWidget {
       child: AppCard(
         variant: AppCardVariant.flat,
         padding: const EdgeInsets.all(16),
-        onTap: () {},
+        onTap: () => showTransactionDetailsSheet(context, transaction),
         child: Row(
           children: [
             Container(
@@ -552,17 +675,203 @@ class _TransactionListItem extends StatelessWidget {
   (IconData, Color) _getCategoryData(String category) {
     final categoryMap = <String, (IconData, Color)>{
       'Food': (Icons.restaurant, const Color(0xFFF59E0B)),
+      'Food & Dining': (Icons.restaurant, const Color(0xFFF59E0B)),
       'Transport': (Icons.directions_car, const Color(0xFF3B82F6)),
+      'Transportation': (Icons.directions_car, const Color(0xFF3B82F6)),
       'Shopping': (Icons.shopping_bag, const Color(0xFFEC4899)),
       'Entertainment': (Icons.movie, const Color(0xFF8B5CF6)),
       'Bills': (Icons.receipt, const Color(0xFFEF4444)),
+      'Bills & Utilities': (Icons.receipt, const Color(0xFFEF4444)),
       'Health': (Icons.favorite, const Color(0xFF10B981)),
+      'Health & Fitness': (Icons.favorite, const Color(0xFF10B981)),
       'Education': (Icons.school, const Color(0xFF14B8A6)),
       'Salary': (Icons.work, const Color(0xFF22C55E)),
+      'Income': (Icons.arrow_downward, const Color(0xFF22C55E)),
+      'Refund': (Icons.replay, const Color(0xFF22C55E)),
+      'Interest': (Icons.savings, const Color(0xFF22C55E)),
       'Freelance': (Icons.laptop, const Color(0xFF6366F1)),
       'Investment': (Icons.trending_up, const Color(0xFF06B6D4)),
+      'Transfer': (Icons.swap_horiz, const Color(0xFF6366F1)),
+      'Cash Withdrawal': (Icons.money, const Color(0xFFEF4444)),
     };
 
     return categoryMap[category] ?? (Icons.category, AppColors.primary);
   }
+}
+
+void _showBalanceDetailsSheet(
+  BuildContext context, {
+  required double balance,
+  required double income,
+  required double expense,
+  required List<Transaction> transactions,
+}) {
+  showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    showDragHandle: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) => Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppColors.primary, AppColors.primaryDark],
+                  ),
+                  borderRadius: BorderRadius.circular(22),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Money Log',
+                      style: AppTypography.labelLarge(
+                        color: Colors.white.withOpacity(0.9),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      balance.toCurrency(),
+                      style: AppTypography.displayMedium(color: Colors.white),
+                    ),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: [
+                        _sheetPill('Income ${income.toCurrency()}'),
+                        _sheetPill('Expense ${expense.toCurrency()}'),
+                        _sheetPill(
+                          income > 0
+                              ? 'Savings ${(balance / income * 100).toStringAsFixed(1)}%'
+                              : 'Savings 0%',
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text('Recent detailed logs', style: AppTypography.titleMedium()),
+              const SizedBox(height: 12),
+              ...transactions.map(
+                (transaction) => Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
+                    tileColor: AppColors.surfaceVariant(context),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    title: Text(transaction.title),
+                    subtitle: Text(
+                      '${transaction.category} • ${transaction.date.toDateTime()}',
+                    ),
+                    trailing: Text(
+                      '${transaction.type == TransactionType.expense ? '-' : '+'}${transaction.amount.toCurrency()}',
+                      style: AppTypography.bodyLarge(
+                        fontWeight: FontWeight.w700,
+                        color: transaction.type == TransactionType.expense
+                            ? AppColors.expense
+                            : AppColors.income,
+                      ),
+                    ),
+                    onTap: () =>
+                        showTransactionDetailsSheet(context, transaction),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+void _showMetricDetailsSheet(
+  BuildContext context, {
+  required String title,
+  required Color accent,
+  required String headline,
+  required List<(String, String)> items,
+}) {
+  showModalBottomSheet<void>(
+    context: context,
+    showDragHandle: true,
+    builder: (context) => SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: AppTypography.headlineSmall()),
+            const SizedBox(height: 8),
+            Text(
+              headline,
+              style: AppTypography.displaySmall(color: accent),
+            ),
+            const SizedBox(height: 18),
+            ...items.map(
+              (item) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: 92,
+                      child: Text(
+                        item.$1,
+                        style: AppTypography.bodySmall(
+                          color: AppColors.textSecondary(context),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        item.$2,
+                        style: AppTypography.bodyMedium(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+Widget _sheetPill(String text) {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    decoration: BoxDecoration(
+      color: Colors.white.withOpacity(0.18),
+      borderRadius: BorderRadius.circular(999),
+    ),
+    child: Text(
+      text,
+      style: AppTypography.labelMedium(color: Colors.white),
+    ),
+  );
 }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
+import '../../../core/services/currency_formatter.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/app_button.dart';
@@ -37,7 +39,8 @@ class _FamilyScreenState extends State<FamilyScreen> {
       final repo = context.read<FamilyRepository>();
       // Get user ID from SharedPreferences or use a default for now
       final prefs = await SharedPreferences.getInstance();
-      _currentUserId = prefs.getString('user_id') ?? 'user_${DateTime.now().millisecondsSinceEpoch}';
+      _currentUserId = prefs.getString('user_id') ??
+          'user_${DateTime.now().millisecondsSinceEpoch}';
       // Save the user ID if it was generated
       if (!prefs.containsKey('user_id')) {
         await prefs.setString('user_id', _currentUserId!);
@@ -52,7 +55,7 @@ class _FamilyScreenState extends State<FamilyScreen> {
       setState(() => _isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to load families')),
+          SnackBar(content: Text('Failed to load families'.tr())),
         );
       }
     }
@@ -63,7 +66,7 @@ class _FamilyScreenState extends State<FamilyScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return AppScaffold(
-      title: 'Family Budget',
+      title: 'Family Budget'.tr(),
       actions: [
         IconButton(
           icon: const Icon(Icons.add),
@@ -92,7 +95,7 @@ class _FamilyScreenState extends State<FamilyScreen> {
           ),
           const SizedBox(height: 24),
           Text(
-            'No Family Groups',
+            'No Family Groups'.tr(),
             style: AppTypography.titleLarge(
               color: isDark
                   ? AppColors.textPrimaryDark
@@ -101,7 +104,7 @@ class _FamilyScreenState extends State<FamilyScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Create a family group to share budgets\nwith your loved ones',
+            'Create a family group to share budgets\nwith your loved ones'.tr(),
             textAlign: TextAlign.center,
             style: AppTypography.bodyMedium(
               color: isDark
@@ -111,7 +114,7 @@ class _FamilyScreenState extends State<FamilyScreen> {
           ),
           const SizedBox(height: 32),
           AppButton.primary(
-            label: 'Create Family Group',
+            label: 'Create Family Group'.tr(),
             onPressed: _createFamily,
             icon: Icons.add,
           ),
@@ -154,7 +157,7 @@ class _FamilyScreenState extends State<FamilyScreen> {
                 FamilyMember(
                   id: const Uuid().v4(),
                   userId: _currentUserId!,
-                  displayName: 'You',
+                  displayName: 'You'.tr(),
                   role: FamilyRole.owner,
                   joinedAt: DateTime.now(),
                 ),
@@ -170,7 +173,7 @@ class _FamilyScreenState extends State<FamilyScreen> {
           } catch (e) {
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Failed to create family')),
+                SnackBar(content: Text('Failed to create family'.tr())),
               );
             }
           }
@@ -268,7 +271,7 @@ class _FamilyCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      'Owner',
+                      'Owner'.tr(),
                       style: AppTypography.labelSmall(
                         color: AppColors.primary,
                       ),
@@ -282,19 +285,20 @@ class _FamilyCard extends StatelessWidget {
                 _buildStat(
                   Icons.people,
                   '${family.activeMembers.length}',
-                  'Members',
+                  'Members'.tr(),
                 ),
                 const SizedBox(width: 24),
                 _buildStat(
                   Icons.account_balance_wallet,
-                  '\$${family.totalAllocatedBudget.toStringAsFixed(0)}',
-                  'Budget',
+                  CurrencyFormatter.format(family.totalAllocatedBudget,
+                      decimalDigits: 0),
+                  'Budget'.tr(),
                 ),
                 const SizedBox(width: 24),
                 _buildStat(
                   Icons.trending_up,
-                  '\$${family.totalSpent.toStringAsFixed(0)}',
-                  'Spent',
+                  CurrencyFormatter.format(family.totalSpent, decimalDigits: 0),
+                  'Spent'.tr(),
                 ),
               ],
             ),
@@ -359,23 +363,23 @@ class _CreateFamilyDialogState extends State<_CreateFamilyDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Create Family Group'),
+      title: Text('Create Family Group'.tr()),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           TextField(
             controller: _nameController,
-            decoration: const InputDecoration(
-              labelText: 'Family Name',
-              hintText: 'e.g., Smith Family',
+            decoration: InputDecoration(
+              labelText: 'Family Name'.tr(),
+              hintText: 'e.g., Smith Family'.tr(),
             ),
           ),
           const SizedBox(height: 16),
           TextField(
             controller: _descriptionController,
-            decoration: const InputDecoration(
-              labelText: 'Description (Optional)',
-              hintText: 'e.g., Shared household budget',
+            decoration: InputDecoration(
+              labelText: 'Description (Optional)'.tr(),
+              hintText: 'e.g., Shared household budget'.tr(),
             ),
           ),
         ],
@@ -383,10 +387,10 @@ class _CreateFamilyDialogState extends State<_CreateFamilyDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text('Cancel'.tr()),
         ),
         AppButton.primary(
-          label: 'Create',
+          label: 'Create'.tr(),
           onPressed: () {
             if (_nameController.text.isNotEmpty) {
               widget.onCreate(
@@ -414,10 +418,9 @@ class _FamilyDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final currentMember = family.getMember(currentUserId);
     final canEdit = currentMember?.role.permissions == PermissionLevel.full ||
-                    currentMember?.role.permissions == PermissionLevel.edit;
+        currentMember?.role.permissions == PermissionLevel.edit;
 
     return AppScaffold(
       title: family.name,
@@ -426,10 +429,10 @@ class _FamilyDetailScreen extends StatelessWidget {
         child: Column(
           children: [
             TabBar(
-              tabs: const [
-                Tab(text: 'Overview'),
-                Tab(text: 'Members'),
-                Tab(text: 'Budgets'),
+              tabs: [
+                Tab(text: 'Overview'.tr()),
+                Tab(text: 'Members'.tr()),
+                Tab(text: 'Budgets'.tr()),
               ],
             ),
             Expanded(
@@ -526,7 +529,8 @@ class _FamilyDetailScreen extends StatelessWidget {
     );
   }
 
-  void _showChangeRoleDialog(BuildContext context, Family family, FamilyMember member) {
+  void _showChangeRoleDialog(
+      BuildContext context, Family family, FamilyMember member) {
     FamilyRole selectedRole = member.role;
 
     showDialog(
@@ -555,7 +559,8 @@ class _FamilyDetailScreen extends StatelessWidget {
             onPressed: () async {
               try {
                 final repo = context.read<FamilyRepository>();
-                await repo.updateMemberRole(family.id, member.userId, selectedRole);
+                await repo.updateMemberRole(
+                    family.id, member.userId, selectedRole);
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Role updated!')),
@@ -572,12 +577,14 @@ class _FamilyDetailScreen extends StatelessWidget {
     );
   }
 
-  void _showRemoveMemberDialog(BuildContext context, Family family, FamilyMember member) {
+  void _showRemoveMemberDialog(
+      BuildContext context, Family family, FamilyMember member) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Remove ${member.displayName}?'),
-        content: Text('Are you sure you want to remove ${member.displayName} from the family?'),
+        content: Text(
+            'Are you sure you want to remove ${member.displayName} from the family?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -643,7 +650,9 @@ class _FamilyDetailScreen extends StatelessWidget {
             label: 'Create',
             onPressed: () async {
               final amount = double.tryParse(amountController.text);
-              if (categoryController.text.isEmpty || amount == null || amount <= 0) {
+              if (categoryController.text.isEmpty ||
+                  amount == null ||
+                  amount <= 0) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Please fill in all fields')),
                 );
@@ -759,7 +768,8 @@ class _OverviewTab extends StatelessWidget {
     );
   }
 
-  Widget _buildSummaryRow(String label, double amount, Color color, {bool isBold = false}) {
+  Widget _buildSummaryRow(String label, double amount, Color color,
+      {bool isBold = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -869,7 +879,8 @@ class _MembersTab extends StatelessWidget {
                     ),
                     const PopupMenuItem(
                       value: 'remove',
-                      child: Text('Remove', style: TextStyle(color: AppColors.error)),
+                      child: Text('Remove',
+                          style: TextStyle(color: AppColors.error)),
                     ),
                   ],
                   onSelected: (value) {
@@ -886,7 +897,8 @@ class _MembersTab extends StatelessWidget {
     );
   }
 
-  void _showInviteDialog(BuildContext context, Family family, String currentUserId) {
+  void _showInviteDialog(
+      BuildContext context, Family family, String currentUserId) {
     final emailController = TextEditingController();
     FamilyRole selectedRole = FamilyRole.member;
 
@@ -958,7 +970,8 @@ class _MembersTab extends StatelessWidget {
     );
   }
 
-  void _showChangeRoleDialog(BuildContext context, Family family, FamilyMember member) {
+  void _showChangeRoleDialog(
+      BuildContext context, Family family, FamilyMember member) {
     FamilyRole selectedRole = member.role;
 
     showDialog(
@@ -987,7 +1000,8 @@ class _MembersTab extends StatelessWidget {
             onPressed: () async {
               try {
                 final repo = context.read<FamilyRepository>();
-                await repo.updateMemberRole(family.id, member.userId, selectedRole);
+                await repo.updateMemberRole(
+                    family.id, member.userId, selectedRole);
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Role updated!')),
@@ -1004,12 +1018,14 @@ class _MembersTab extends StatelessWidget {
     );
   }
 
-  void _showRemoveMemberDialog(BuildContext context, Family family, FamilyMember member) {
+  void _showRemoveMemberDialog(
+      BuildContext context, Family family, FamilyMember member) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Remove ${member.displayName}?'),
-        content: Text('Are you sure you want to remove ${member.displayName} from the family?'),
+        content: Text(
+            'Are you sure you want to remove ${member.displayName} from the family?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -1154,7 +1170,9 @@ class _BudgetsTab extends StatelessWidget {
             label: 'Create',
             onPressed: () async {
               final amount = double.tryParse(amountController.text);
-              if (categoryController.text.isEmpty || amount == null || amount <= 0) {
+              if (categoryController.text.isEmpty ||
+                  amount == null ||
+                  amount <= 0) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Please fill in all fields')),
                 );
@@ -1217,7 +1235,9 @@ class _BudgetCard extends StatelessWidget {
                 Text(
                   '\$${budget.spentAmount.toStringAsFixed(0)} / \$${budget.allocatedAmount.toStringAsFixed(0)}',
                   style: AppTypography.bodySmall(
-                    color: isOverBudget ? AppColors.error : AppColors.textSecondaryLight,
+                    color: isOverBudget
+                        ? AppColors.error
+                        : AppColors.textSecondaryLight,
                   ),
                 ),
               ],
@@ -1227,9 +1247,8 @@ class _BudgetCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(4),
               child: LinearProgressIndicator(
                 value: progress.clamp(0, 1),
-                backgroundColor: isDark
-                    ? AppColors.borderDark
-                    : AppColors.borderLight,
+                backgroundColor:
+                    isDark ? AppColors.borderDark : AppColors.borderLight,
                 valueColor: AlwaysStoppedAnimation<Color>(
                   isOverBudget
                       ? AppColors.error

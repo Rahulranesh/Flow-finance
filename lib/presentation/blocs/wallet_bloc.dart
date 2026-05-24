@@ -33,10 +33,11 @@ class WalletBloc extends ChangeNotifier {
   }
 
   Wallet? get defaultWallet {
-    return activeWallets.firstWhere(
-      (w) => w.isDefault,
-      orElse: () => activeWallets.isNotEmpty ? activeWallets.first : null as Wallet,
-    );
+    try {
+      return activeWallets.firstWhere((w) => w.isDefault);
+    } catch (e) {
+      return activeWallets.isNotEmpty ? activeWallets.first : null;
+    }
   }
 
   // Actions

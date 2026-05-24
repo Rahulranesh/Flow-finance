@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../core/models/upi_transaction.dart';
 import '../../../core/services/bank_integration/upi_transaction_service.dart';
 import '../../../core/theme/app_colors.dart';
@@ -17,13 +18,13 @@ class UPISetupScreen extends StatefulWidget {
 
 class _UPISetupScreenState extends State<UPISetupScreen> {
   final UPITransactionService _upiService = UPITransactionService();
-  
+
   bool _isLoading = false;
   bool _smsPermissionGranted = false;
   bool _notificationPermissionGranted = false;
   bool _autoSyncEnabled = true;
   int _scanDaysBack = 30;
-  
+
   UPITransactionSummary? _summary;
 
   @override
@@ -36,7 +37,8 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
     await _upiService.initialize();
     setState(() {
       _smsPermissionGranted = _upiService.isSmsPermissionGranted;
-      _notificationPermissionGranted = _upiService.isNotificationPermissionGranted;
+      _notificationPermissionGranted =
+          _upiService.isNotificationPermissionGranted;
       _autoSyncEnabled = _upiService.isAutoSyncEnabled;
       _summary = _upiService.getSummary();
     });
@@ -47,7 +49,7 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return AppScaffold(
-      title: 'UPI Transaction Tracking',
+      title: 'UPI Transaction Tracking'.tr(),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -55,42 +57,42 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
           children: [
             // Info card
             _buildInfoCard(isDark),
-            
+
             const SizedBox(height: 24),
-            
+
             // Permissions section
-            _buildSectionTitle('Permissions', isDark),
+            _buildSectionTitle('Permissions'.tr(), isDark),
             const SizedBox(height: 12),
             _buildPermissionCard(isDark),
-            
+
             const SizedBox(height: 24),
-            
+
             // UPI Apps section
-            _buildSectionTitle('UPI Apps', isDark),
+            _buildSectionTitle('UPI Apps'.tr(), isDark),
             const SizedBox(height: 12),
             _buildUPIAppsCard(isDark),
-            
+
             const SizedBox(height: 24),
-            
+
             // Settings section
-            _buildSectionTitle('Settings', isDark),
+            _buildSectionTitle('Settings'.tr(), isDark),
             const SizedBox(height: 12),
             _buildSettingsCard(isDark),
-            
+
             const SizedBox(height: 24),
-            
+
             // Statistics section
             if (_summary != null) ...[
-              _buildSectionTitle('Statistics', isDark),
+              _buildSectionTitle('Statistics'.tr(), isDark),
               const SizedBox(height: 12),
               _buildStatisticsCard(isDark),
             ],
-            
+
             const SizedBox(height: 24),
-            
+
             // Actions
             _buildActionsCard(isDark),
-            
+
             const SizedBox(height: 100),
           ],
         ),
@@ -112,15 +114,17 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Automatic UPI Tracking',
-                    style: AppTypography.bodyMedium(fontWeight: FontWeight.w600),
+                    'Automatic UPI Tracking'.tr(),
+                    style:
+                        AppTypography.bodyMedium(fontWeight: FontWeight.w600),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 8),
             Text(
-              'We automatically detect UPI transactions from your SMS and notifications. No manual entry needed!',
+              'We automatically detect UPI transactions from your SMS and notifications. No manual entry needed!'
+                  .tr(),
               style: AppTypography.bodySmall(
                 color: AppColors.textSecondaryLight,
               ),
@@ -154,9 +158,10 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('SMS Access', style: AppTypography.bodyMedium()),
+                      Text('SMS Access'.tr(),
+                          style: AppTypography.bodyMedium()),
                       Text(
-                        'Read UPI transaction SMS',
+                        'Read UPI transaction SMS'.tr(),
                         style: AppTypography.labelSmall(
                           color: AppColors.textSecondaryLight,
                         ),
@@ -169,9 +174,9 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
             value: _smsPermissionGranted,
             onChanged: (value) => _toggleSmsPermission(value),
           ),
-          
+
           const Divider(height: 1),
-          
+
           // Notification Permission
           SwitchListTile(
             title: Row(
@@ -182,9 +187,10 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Notifications', style: AppTypography.bodyMedium()),
+                      Text('Notifications'.tr(),
+                          style: AppTypography.bodyMedium()),
                       Text(
-                        'Read UPI app notifications',
+                        'Read UPI app notifications'.tr(),
                         style: AppTypography.labelSmall(
                           color: AppColors.textSecondaryLight,
                         ),
@@ -254,9 +260,9 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
         children: [
           // Auto-sync
           SwitchListTile(
-            title: Text('Auto-Sync', style: AppTypography.bodyMedium()),
+            title: Text('Auto-Sync'.tr(), style: AppTypography.bodyMedium()),
             subtitle: Text(
-              'Automatically add UPI transactions to your budget',
+              'Automatically add UPI transactions to your budget'.tr(),
               style: AppTypography.labelSmall(
                 color: AppColors.textSecondaryLight,
               ),
@@ -269,9 +275,9 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
               });
             },
           ),
-          
+
           const Divider(height: 1),
-          
+
           // Scan days back
           ListTile(
             title: Text('Scan History', style: AppTypography.bodyMedium()),
@@ -427,7 +433,7 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
     if (value) {
       final granted = await _upiService.requestSmsPermission();
       setState(() => _smsPermissionGranted = granted);
-      
+
       if (granted) {
         _upiService.startListening();
       }
@@ -456,7 +462,7 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
     if (value) {
       final granted = await _upiService.requestNotificationPermission();
       setState(() => _notificationPermissionGranted = granted);
-      
+
       if (granted) {
         _upiService.startListening();
       }
@@ -468,19 +474,19 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
 
   Future<void> _scanHistoricalSms() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final transactions = await _upiService.scanHistoricalSms(
         daysBack: _scanDaysBack,
       );
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Found ${transactions.length} UPI transactions'),
           ),
         );
-        
+
         setState(() {
           _summary = _upiService.getSummary();
         });
@@ -534,7 +540,7 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
 
   void _showPendingTransactions() {
     final pending = _upiService.getPendingTransactions();
-    
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,

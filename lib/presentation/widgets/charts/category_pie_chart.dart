@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../core/utils/extensions.dart';
 import '../../../data/models/transaction_model.dart';
 
 /// Pie chart showing expense breakdown by category
@@ -25,7 +27,7 @@ class CategoryPieChart extends StatelessWidget {
     if (categoryData.isEmpty) {
       return Center(
         child: Text(
-          'No data available',
+          'No data available'.tr(),
           style: AppTypography.bodyMedium(
             color: isDark
                 ? AppColors.textSecondaryDark
@@ -60,9 +62,8 @@ class CategoryPieChart extends StatelessWidget {
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                   ),
-                  badgeWidget: percentage > 10
-                      ? _buildBadge(entry.key, color)
-                      : null,
+                  badgeWidget:
+                      percentage > 10 ? _buildBadge(entry.key, color) : null,
                   badgePositionPercentageOffset: 1.2,
                 );
               }).toList(),
@@ -147,7 +148,7 @@ class CategoryPieChart extends StatelessWidget {
               ),
             ),
             Text(
-              '\$${amount.toStringAsFixed(0)} (${percentage.toStringAsFixed(1)}%)',
+              '${amount.toCurrency(decimalDigits: 0)} (${percentage.toStringAsFixed(1)}%)',
               style: AppTypography.labelSmall(
                 color: AppColors.textSecondaryLight,
               ),
@@ -218,7 +219,7 @@ class CategoryDonutChart extends StatelessWidget {
     if (categoryData.isEmpty) {
       return Center(
         child: Text(
-          'No data available',
+          'No data available'.tr(),
           style: AppTypography.bodyMedium(
             color: isDark
                 ? AppColors.textSecondaryDark
@@ -228,8 +229,6 @@ class CategoryDonutChart extends StatelessWidget {
       );
     }
 
-    final total = categoryData.values.fold(0.0, (sum, amount) => sum + amount);
-
     return Stack(
       alignment: Alignment.center,
       children: [
@@ -238,8 +237,6 @@ class CategoryDonutChart extends StatelessWidget {
             sectionsSpace: 2,
             centerSpaceRadius: 60,
             sections: categoryData.entries.map((entry) {
-              final percentage = (entry.value / total) * 100;
-
               return PieChartSectionData(
                 color: _getCategoryColor(entry.key),
                 value: entry.value,
@@ -262,7 +259,7 @@ class CategoryDonutChart extends StatelessWidget {
                 ),
               ),
               Text(
-                'Total',
+                'Total'.tr(),
                 style: AppTypography.bodySmall(
                   color: isDark
                       ? AppColors.textSecondaryDark
