@@ -21,11 +21,17 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
   bool _isLoading = false;
   bool _hasPermission = false;
   List<Transaction> _transactions = [];
+  DateTimeRange? _dateRange;
 
   @override
   void initState() {
     super.initState();
     _checkPermissions();
+    // Default to last 30 days
+    _dateRange = DateTimeRange(
+      start: DateTime.now().subtract(const Duration(days: 30)),
+      end: DateTime.now(),
+    );
   }
 
   Future<void> _checkPermissions() async {
@@ -61,15 +67,59 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
     }
   }
 
+  Future<void> _selectDateRange() async {
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+      initialDateRange: _dateRange,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: AppColors.primary,
+              onPrimary: Colors.white,
+              surface: Colors.white,
+              onSurface: Colors.black,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null && picked != _dateRange) {
+      setState(() {
+        _dateRange = picked;
+      });
+      // Auto-sync after date range selection
+      _syncTransactions();
+    }
+  }
+
   Future<void> _syncTransactions() async {
+    if (_dateRange == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please select a date range first'.tr()),
+          backgroundColor: AppColors.warning,
+        ),
+      );
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
 
     try {
-      final transactions = await _smsService.parseTransactions(limit: 100);
+      final allTransactions = await _smsService.parseTransactions(
+        startDate: _dateRange!.start,
+        endDate: _dateRange!.end,
+      );
+      
       setState(() {
-        _transactions = transactions;
+        _transactions = allTransactions;
         _isLoading = false;
       });
 
@@ -77,9 +127,14 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Found {} transactions'
-                  .tr(args: [transactions.length.toString()]),
+              'Found {} transactions from {} to {}'
+                  .tr(args: [
+                    allTransactions.length.toString(),
+                    _formatDate(_dateRange!.start),
+                    _formatDate(_dateRange!.end),
+                  ]),
             ),
+            duration: const Duration(seconds: 3),
           ),
         );
       }
@@ -99,17 +154,142 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
     }
   }
 
+  String _formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year}';
+  }
+
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
       title: 'SMS Sync'.tr(),
+      actions: _hasPermission
+          ? [
+              IconButton(
+                icon: const Icon(Icons.date_range),
+                onPressed: _selectDateRange,
+                tooltip: 'Select Date Range'.tr(),
+              ),
+            ]
+          : null,
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : !_hasPermission
               ? _buildPermissionRequest()
-              : _transactions.isEmpty
-                  ? _buildEmptyState()
-                  : _buildTransactionsList(),
+              : _buildMainContent(),
+    );
+  }
+
+  Widget _buildMainContent() {
+    return Column(
+      children: [
+        // Date Range Selector Card
+        Container(
+          margin: const EdgeInsets.all(16),
+          child: AppCard(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.calendar_month,
+                      color: AppColors.primary,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Transaction History Period'.tr(),
+                      style: AppTypography.titleSmall().copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                InkWell(
+                  onTap: _selectDateRange,
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: AppColors.primary.withOpacity(0.3),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'From'.tr(),
+                              style: AppTypography.labelSmall(
+                                color: AppColors.textSecondary(context),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _dateRange != null
+                                  ? _formatDate(_dateRange!.start)
+                                  : 'Select'.tr(),
+                              style: AppTypography.bodyLarge().copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Icon(
+                          Icons.arrow_forward,
+                          color: AppColors.primary,
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              'To'.tr(),
+                              style: AppTypography.labelSmall(
+                                color: AppColors.textSecondary(context),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _dateRange != null
+                                  ? _formatDate(_dateRange!.end)
+                                  : 'Select'.tr(),
+                              style: AppTypography.bodyLarge().copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                AppButton.primary(
+                  label: 'Sync Transactions'.tr(),
+                  onPressed: _syncTransactions,
+                  icon: Icons.sync,
+                  expanded: true,
+                ),
+              ],
+            ),
+          ),
+        ),
+        
+        // Transactions List or Empty State
+        Expanded(
+          child: _transactions.isEmpty
+              ? _buildEmptyState()
+              : _buildTransactionsList(),
+        ),
+      ],
     );
   }
 
@@ -162,13 +342,11 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
             AppEmptyState(
               icon: Icons.inbox,
               title: 'No transactions found'.tr(),
-              subtitle: 'Sync your SMS to find bank transactions'.tr(),
-            ),
-            const SizedBox(height: 24),
-            AppButton.primary(
-              label: 'Sync Now'.tr(),
-              onPressed: _syncTransactions,
-              icon: Icons.sync,
+              subtitle: _dateRange != null
+                  ? 'No SMS transactions found in the selected date range. Try a different period.'
+                      .tr()
+                  : 'Select a date range and sync to find bank transactions.'
+                      .tr(),
             ),
           ],
         ),
@@ -177,32 +355,85 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
   }
 
   Widget _buildTransactionsList() {
+    final totalAmount = _transactions.fold<double>(
+      0,
+      (sum, t) => sum + (t.type == TransactionType.expense ? t.amount : 0),
+    );
+    
     return Column(
       children: [
-        // Header
+        // Summary Header
         Container(
           padding: const EdgeInsets.all(20),
-          color: AppColors.surfaceVariant(context),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '${_transactions.length} ${'transactions found'.tr()}',
-                style: AppTypography.titleSmall(),
-              ),
-              AppButton.secondary(
-                label: 'Sync Again'.tr(),
-                onPressed: _syncTransactions,
-                icon: Icons.refresh,
-              ),
-            ],
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppColors.primary,
+                AppColors.primary.withOpacity(0.8),
+              ],
+            ),
+          ),
+          child: SafeArea(
+            bottom: false,
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Transactions Found'.tr(),
+                          style: AppTypography.labelMedium(
+                            color: Colors.white70,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${_transactions.length}',
+                          style: AppTypography.headlineMedium(
+                            color: Colors.white,
+                          ).copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          'Total Amount'.tr(),
+                          style: AppTypography.labelMedium(
+                            color: Colors.white70,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          CurrencyFormatter.format(totalAmount),
+                          style: AppTypography.headlineSmall(
+                            color: Colors.white,
+                          ).copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                AppButton.secondary(
+                  label: 'Refresh'.tr(),
+                  onPressed: _syncTransactions,
+                  icon: Icons.refresh,
+                  expanded: true,
+                ),
+              ],
+            ),
           ),
         ),
 
         // List
         Expanded(
           child: ListView.builder(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             itemCount: _transactions.length,
             itemBuilder: (context, index) {
               final transaction = _transactions[index];
@@ -218,7 +449,7 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
             color: Theme.of(context).scaffoldBackgroundColor,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withOpacity(0.1),
                 blurRadius: 10,
                 offset: const Offset(0, -5),
               ),
@@ -226,7 +457,7 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
           ),
           child: SafeArea(
             child: AppButton.primary(
-              label: 'Import All Transactions'.tr(),
+              label: 'Import {} Transactions'.tr(args: [_transactions.length.toString()]),
               onPressed: () async {
                 final imported =
                     await context.read<TransactionBloc>().addTransactions(
@@ -238,9 +469,10 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
                     content: Text(
                       imported == 0
                           ? 'No new SMS transactions to import'.tr()
-                          : 'Imported {} SMS transactions'
+                          : 'Successfully imported {} transactions!'
                               .tr(args: [imported.toString()]),
                     ),
+                    backgroundColor: imported > 0 ? AppColors.success : null,
                   ),
                 );
                 Navigator.pop(context);

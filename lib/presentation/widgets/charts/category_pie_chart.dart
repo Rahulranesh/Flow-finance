@@ -26,12 +26,28 @@ class CategoryPieChart extends StatelessWidget {
 
     if (categoryData.isEmpty) {
       return Center(
-        child: Text(
-          'No data available'.tr(),
-          style: AppTypography.bodyMedium(
-            color: isDark
-                ? AppColors.textSecondaryDark
-                : AppColors.textSecondaryLight,
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.pie_chart_outline,
+                size: 64,
+                color: isDark
+                    ? AppColors.textSecondaryDark.withOpacity(0.5)
+                    : AppColors.textSecondaryLight.withOpacity(0.5),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'No data available'.tr(),
+                style: AppTypography.bodyMedium(
+                  color: isDark
+                      ? AppColors.textSecondaryDark
+                      : AppColors.textSecondaryLight,
+                ),
+              ),
+            ],
           ),
         ),
       );
@@ -41,55 +57,117 @@ class CategoryPieChart extends StatelessWidget {
 
     return Column(
       children: [
-        SizedBox(
-          height: radius * 2 + 40,
-          child: PieChart(
-            PieChartData(
-              sectionsSpace: 2,
-              centerSpaceRadius: 40,
-              sections: categoryData.entries.map((entry) {
-                final percentage = (entry.value / total) * 100;
-                final color = _getCategoryColor(entry.key);
-
-                return PieChartSectionData(
-                  color: color,
-                  value: entry.value,
-                  title: showLabels && percentage > 5
-                      ? '${percentage.toStringAsFixed(0)}%'
-                      : '',
-                  radius: radius,
-                  titleStyle: AppTypography.labelSmall(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  badgeWidget:
-                      percentage > 10 ? _buildBadge(entry.key, color) : null,
-                  badgePositionPercentageOffset: 1.2,
-                );
-              }).toList(),
-              pieTouchData: PieTouchData(
-                touchCallback: (FlTouchEvent event, pieTouchResponse) {},
-                enabled: true,
+        // Enhanced Pie Chart with better spacing and shadows
+        Container(
+          height: radius * 2 + 60,
+          padding: const EdgeInsets.all(16),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Shadow effect
+              Container(
+                width: radius * 2,
+                height: radius * 2,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withOpacity(0.2),
+                      blurRadius: 20,
+                      spreadRadius: 5,
+                    ),
+                  ],
+                ),
               ),
-            ),
+              // Pie Chart
+              PieChart(
+                PieChartData(
+                  sectionsSpace: 3,
+                  centerSpaceRadius: 50,
+                  sections: categoryData.entries.map((entry) {
+                    final percentage = (entry.value / total) * 100;
+                    final color = _getCategoryColor(entry.key);
+
+                    return PieChartSectionData(
+                      color: color,
+                      value: entry.value,
+                      title: showLabels && percentage > 5
+                          ? '${percentage.toStringAsFixed(0)}%'
+                          : '',
+                      radius: radius,
+                      titleStyle: AppTypography.labelMedium(
+                        color: Colors.white,
+                      ).copyWith(fontWeight: FontWeight.bold),
+                      badgeWidget: percentage > 8
+                          ? _buildBadge(entry.key, color)
+                          : null,
+                      badgePositionPercentageOffset: 1.3,
+                      borderSide: BorderSide(
+                        color: isDark ? Colors.black : Colors.white,
+                        width: 2,
+                      ),
+                    );
+                  }).toList(),
+                  pieTouchData: PieTouchData(
+                    touchCallback: (FlTouchEvent event, pieTouchResponse) {},
+                    enabled: true,
+                  ),
+                ),
+              ),
+              // Center text
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Total'.tr(),
+                    style: AppTypography.labelSmall(
+                      color: isDark
+                          ? AppColors.textSecondaryDark
+                          : AppColors.textSecondaryLight,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    total.toCurrency(decimalDigits: 0),
+                    style: AppTypography.titleMedium(
+                      color: isDark
+                          ? AppColors.textPrimaryDark
+                          : AppColors.textPrimaryLight,
+                      
+                    ).copyWith(
+                      fontWeight: FontWeight.bold,
+                    )
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 24),
 
-        // Category Legend
-        Wrap(
-          spacing: 16,
-          runSpacing: 12,
-          alignment: WrapAlignment.center,
-          children: categoryData.entries.map((entry) {
-            final percentage = (entry.value / total) * 100;
-            return _buildLegendItem(
-              entry.key,
-              _getCategoryColor(entry.key),
-              entry.value,
-              percentage,
-            );
-          }).toList(),
+        // Enhanced Category Legend with better layout
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: isDark
+                ? AppColors.surfaceDark.withOpacity(0.5)
+                : AppColors.surfaceLight.withOpacity(0.5),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Wrap(
+            spacing: 20,
+            runSpacing: 16,
+            alignment: WrapAlignment.center,
+            children: categoryData.entries.map((entry) {
+              final percentage = (entry.value / total) * 100;
+              return _buildLegendItem(
+                entry.key,
+                _getCategoryColor(entry.key),
+                entry.value,
+                percentage,
+              );
+            }).toList(),
+          ),
         ),
       ],
     );
@@ -97,23 +175,27 @@ class CategoryPieChart extends StatelessWidget {
 
   Widget _buildBadge(String category, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: color.withValues(alpha: 0.3),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+            color: color.withValues(alpha: 0.4),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
         ],
+        border: Border.all(
+          color: Colors.white,
+          width: 2,
+        ),
       ),
       child: Text(
         category,
         style: AppTypography.labelSmall(
           color: Colors.white,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.bold,
         ),
       ),
     );
@@ -125,37 +207,60 @@ class CategoryPieChart extends StatelessWidget {
     double amount,
     double percentage,
   ) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 12,
-          height: 12,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
+    return Container(
+      constraints: const BoxConstraints(minWidth: 140),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: color.withOpacity(0.3),
+          width: 1.5,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 16,
+            height: 16,
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: color.withOpacity(0.4),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
           ),
-        ),
-        const SizedBox(width: 8),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              category,
-              style: AppTypography.bodySmall(
-                fontWeight: FontWeight.w500,
-              ),
+          const SizedBox(width: 10),
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  category,
+                  style: AppTypography.bodySmall(
+                    fontWeight: FontWeight.w600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '${amount.toCurrency(decimalDigits: 0)} (${percentage.toStringAsFixed(1)}%)',
+                  style: AppTypography.labelSmall(
+                    color: AppColors.textSecondaryLight,
+                  ),
+                ),
+              ],
             ),
-            Text(
-              '${amount.toCurrency(decimalDigits: 0)} (${percentage.toStringAsFixed(1)}%)',
-              style: AppTypography.labelSmall(
-                color: AppColors.textSecondaryLight,
-              ),
-            ),
-          ],
-        ),
-      ],
+          ),
+        ],
+      ),
     );
   }
 

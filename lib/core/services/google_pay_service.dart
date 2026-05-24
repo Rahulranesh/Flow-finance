@@ -8,7 +8,11 @@ class GooglePayService {
   final SmsTransactionService _smsParser = SmsTransactionService();
 
   /// Get all Google Pay SMS messages
-  Future<List<SmsMessage>> getGooglePaySms({int? limit}) async {
+  Future<List<SmsMessage>> getGooglePaySms({
+    int? limit,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
     try {
       final messages = await telephony.getInboxSms(
         columns: [
@@ -24,11 +28,29 @@ class GooglePayService {
         sortOrder: [OrderBy(SmsColumn.DATE, sort: Sort.DESC)],
       );
 
-      if (limit != null && messages.length > limit) {
-        return messages.sublist(0, limit);
+      // Filter by date range if provided
+      var filteredMessages = messages;
+      
+      if (startDate != null || endDate != null) {
+        filteredMessages = messages.where((msg) {
+          if (msg.date == null) return false;
+          final msgDate = DateTime.fromMillisecondsSinceEpoch(msg.date!);
+          
+          if (startDate != null && msgDate.isBefore(startDate)) {
+            return false;
+          }
+          if (endDate != null && msgDate.isAfter(endDate.add(const Duration(days: 1)))) {
+            return false;
+          }
+          return true;
+        }).toList();
       }
 
-      return messages;
+      if (limit != null && filteredMessages.length > limit) {
+        return filteredMessages.sublist(0, limit);
+      }
+
+      return filteredMessages;
     } catch (e) {
       print('Error getting Google Pay SMS: $e');
       return [];
@@ -36,13 +58,28 @@ class GooglePayService {
   }
 
   /// Parse Google Pay transactions
-  Future<List<Transaction>> parseGooglePayTransactions({int? limit}) async {
-    final messages = await getGooglePaySms(limit: limit);
+  Future<List<Transaction>> parseGooglePayTransactions({
+    int? limit,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    final messages = await getGooglePaySms(
+      limit: limit,
+      startDate: startDate,
+      endDate: endDate,
+    );
     final transactions = <Transaction>[];
 
     for (final message in messages) {
       final transaction = _smsParser.parseGooglePayMessage(message);
       if (transaction != null) {
+        // Additional date filtering if needed
+        if (startDate != null && transaction.date.isBefore(startDate)) {
+          continue;
+        }
+        if (endDate != null && transaction.date.isAfter(endDate.add(const Duration(days: 1)))) {
+          continue;
+        }
         transactions.add(transaction);
       }
     }

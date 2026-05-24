@@ -368,5 +368,20 @@
   "Last synced": "Last synced",
   "Incremental": "Incremental",
   "Full Sync": "Full Sync",
-  "Connected Accounts": "Connected Accounts"
+  "Connected Accounts": "Connected Accounts",
+  "Select Date Range": "Select Date Range",
+  "Transaction History Period": "Transaction History Period",
+  "From": "From",
+  "To": "To",
+  "Select": "Select",
+  "Sync Transactions": "Sync Transactions",
+  "Please select a date range first": "Please select a date range first",
+  "Found {} transactions from {} to {}": "Found {} transactions from {} to {}",
+  "No SMS transactions found in the selected date range. Try a different period.": "No SMS transactions found in the selected date range. Try a different period.",
+  "Select a date range and sync to find bank transactions.": "Select a date range and sync to find bank transactions.",
+  "Transactions Found": "Transactions Found",
+  "Total Amount": "Total Amount",
+  "Refresh": "Refresh",
+  "Import {} Transactions": "Import {} Transactions",
+  "Successfully imported {} transactions!": "Successfully imported {} transactions!"
 }

@@ -59,24 +59,44 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
         children: [
           // Date Range Display
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
-            child: Row(
-              children: [
-                Icon(
-                  Icons.date_range,
-                  size: 16,
-                  color: isDark
-                      ? AppColors.textSecondaryDark
-                      : AppColors.textSecondaryLight,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.primary.withOpacity(0.1),
+                  AppColors.secondary.withOpacity(0.1),
+                ],
+              ),
+              border: Border(
+                bottom: BorderSide(
+                  color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                  width: 1,
                 ),
-                const SizedBox(width: 8),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.date_range,
+                    size: 18,
+                    color: AppColors.primary,
+                  ),
+                ),
+                const SizedBox(width: 12),
                 Text(
                   '${_formatDate(_dateRange.start)} - ${_formatDate(_dateRange.end)}',
-                  style: AppTypography.bodySmall(
+                  style: AppTypography.bodyMedium(
                     color: isDark
-                        ? AppColors.textSecondaryDark
-                        : AppColors.textSecondaryLight,
+                        ? AppColors.textPrimaryDark
+                        : AppColors.textPrimaryLight,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -284,27 +304,47 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
   Widget _buildMetricCard(
       String label, String value, Color color, IconData icon) {
     return AppCard(
-      child: Padding(
+      child: Container(
         padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              color.withOpacity(0.1),
+              color.withOpacity(0.05),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(icon, color: color, size: 20),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, color: color, size: 20),
+                ),
                 const SizedBox(width: 8),
-                Text(
-                  label,
-                  style: AppTypography.labelSmall(
-                    color: AppColors.textSecondaryLight,
+                Expanded(
+                  child: Text(
+                    label,
+                    style: AppTypography.labelSmall(
+                      color: AppColors.textSecondaryLight,
+                    ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Text(
               value,
-              style: AppTypography.titleLarge(
+              style: AppTypography.headlineSmall(
                 color: color,
               ).copyWith(fontWeight: FontWeight.bold),
             ),
@@ -352,43 +392,111 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
   Widget _buildCategoryBar(
       String category, double amount, double percentage, bool isDark) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                category,
-                style: AppTypography.bodySmall(
-                  color: isDark
-                      ? AppColors.textPrimaryDark
-                      : AppColors.textPrimaryLight,
-                ),
-              ),
-              Text(
-                '${amount.toCurrency()} (${percentage.toStringAsFixed(1)}%)',
-                style: AppTypography.bodySmall(
-                  color: AppColors.textSecondaryLight,
-                ),
-              ),
-            ],
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isDark
+              ? AppColors.surfaceDark.withOpacity(0.5)
+              : AppColors.surfaceLight.withOpacity(0.5),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isDark ? AppColors.borderDark : AppColors.borderLight,
           ),
-          const SizedBox(height: 4),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: percentage / 100,
-              backgroundColor:
-                  isDark ? AppColors.borderDark : AppColors.borderLight,
-              valueColor: AlwaysStoppedAnimation<Color>(
-                _getCategoryColor(category),
-              ),
-              minHeight: 8,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: _getCategoryColor(category),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      category,
+                      style: AppTypography.bodyMedium(
+                        color: isDark
+                            ? AppColors.textPrimaryDark
+                            : AppColors.textPrimaryLight,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                Text(
+                  '${percentage.toStringAsFixed(1)}%',
+                  style: AppTypography.bodySmall(
+                    color: _getCategoryColor(category),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: Stack(
+                      children: [
+                        Container(
+                          height: 10,
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? AppColors.borderDark
+                                : AppColors.borderLight,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                        ),
+                        FractionallySizedBox(
+                          widthFactor: percentage / 100,
+                          child: Container(
+                            height: 10,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  _getCategoryColor(category),
+                                  _getCategoryColor(category).withOpacity(0.7),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(6),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: _getCategoryColor(category)
+                                      .withOpacity(0.3),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  amount.toCurrency(),
+                  style: AppTypography.bodySmall(
+                    color: AppColors.textSecondaryLight,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

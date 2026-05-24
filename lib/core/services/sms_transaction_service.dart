@@ -31,7 +31,11 @@ class SmsTransactionService {
   }
 
   /// Get all SMS messages from inbox
-  Future<List<SmsMessage>> getAllSms({int? limit}) async {
+  Future<List<SmsMessage>> getAllSms({
+    int? limit,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
     try {
       final messages = await telephony.getInboxSms(
         columns: [
@@ -43,11 +47,29 @@ class SmsTransactionService {
         sortOrder: [OrderBy(SmsColumn.DATE, sort: Sort.DESC)],
       );
 
-      if (limit != null && messages.length > limit) {
-        return messages.sublist(0, limit);
+      // Filter by date range if provided
+      var filteredMessages = messages;
+      
+      if (startDate != null || endDate != null) {
+        filteredMessages = messages.where((msg) {
+          if (msg.date == null) return false;
+          final msgDate = DateTime.fromMillisecondsSinceEpoch(msg.date!);
+          
+          if (startDate != null && msgDate.isBefore(startDate)) {
+            return false;
+          }
+          if (endDate != null && msgDate.isAfter(endDate.add(const Duration(days: 1)))) {
+            return false;
+          }
+          return true;
+        }).toList();
       }
 
-      return messages;
+      if (limit != null && filteredMessages.length > limit) {
+        return filteredMessages.sublist(0, limit);
+      }
+
+      return filteredMessages;
     } catch (e) {
       print('Error getting SMS messages: $e');
       return [];
@@ -55,13 +77,28 @@ class SmsTransactionService {
   }
 
   /// Parse SMS messages and extract transactions
-  Future<List<Transaction>> parseTransactions({int? limit}) async {
-    final messages = await getAllSms(limit: limit);
+  Future<List<Transaction>> parseTransactions({
+    int? limit,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    final messages = await getAllSms(
+      limit: limit,
+      startDate: startDate,
+      endDate: endDate,
+    );
     final transactions = <Transaction>[];
 
     for (final message in messages) {
       final transaction = _parseMessage(message);
       if (transaction != null) {
+        // Additional date filtering if needed
+        if (startDate != null && transaction.date.isBefore(startDate)) {
+          continue;
+        }
+        if (endDate != null && transaction.date.isAfter(endDate.add(const Duration(days: 1)))) {
+          continue;
+        }
         transactions.add(transaction);
       }
     }
