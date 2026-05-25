@@ -100,6 +100,15 @@ class TrendChart extends StatelessWidget {
               ),
               titlesData: FlTitlesData(
                 leftTitles: AxisTitles(
+                  axisNameWidget: Text(
+                    'Amount',
+                    style: AppTypography.labelSmall(
+                      color: isDark
+                          ? AppColors.textSecondaryDark
+                          : AppColors.textSecondaryLight,
+                    ),
+                  ),
+                  axisNameSize: 20,
                   sideTitles: SideTitles(
                     showTitles: true,
                     reservedSize: 60,
@@ -116,6 +125,15 @@ class TrendChart extends StatelessWidget {
                   ),
                 ),
                 bottomTitles: AxisTitles(
+                  axisNameWidget: Text(
+                    'Date',
+                    style: AppTypography.labelSmall(
+                      color: isDark
+                          ? AppColors.textSecondaryDark
+                          : AppColors.textSecondaryLight,
+                    ),
+                  ),
+                  axisNameSize: 20,
                   sideTitles: SideTitles(
                     showTitles: true,
                     reservedSize: 30,

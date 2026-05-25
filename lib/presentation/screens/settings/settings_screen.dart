@@ -130,6 +130,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
     if (selected != null) {
       await controller.updateLanguage(selected);
+      if (mounted) {
+        await context.setLocale(Locale(selected));
+      }
     }
   }
 

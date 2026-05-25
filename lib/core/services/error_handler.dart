@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 /// Custom exception for app-specific errors
 class AppException implements Exception {
@@ -71,7 +72,7 @@ class ErrorHandler {
   static ErrorInfo _mapToErrorInfo(dynamic error) {
     if (error is AppException) {
       return ErrorInfo(
-        title: 'Error',
+        title: 'Error'.tr(),
         message: error.message,
         type: _getErrorTypeFromCode(error.code),
       );
@@ -84,10 +85,10 @@ class ErrorHandler {
         errorString.contains('connection') ||
         errorString.contains('network')) {
       return ErrorInfo(
-        title: 'Network Error',
-        message: 'Please check your internet connection and try again.',
+        title: 'Network Error'.tr(),
+        message: 'Please check your internet connection and try again.'.tr(),
         type: ErrorType.network,
-        actionLabel: 'Retry',
+        actionLabel: 'Retry'.tr(),
       );
     }
 
@@ -96,8 +97,8 @@ class ErrorHandler {
         errorString.contains('sql') ||
         errorString.contains('drift')) {
       return ErrorInfo(
-        title: 'Database Error',
-        message: 'Failed to access local data. Please restart the app.',
+        title: 'Database Error'.tr(),
+        message: 'Failed to access local data. Please restart the app.'.tr(),
         type: ErrorType.database,
       );
     }
@@ -107,8 +108,8 @@ class ErrorHandler {
         errorString.contains('invalid') ||
         errorString.contains('required')) {
       return ErrorInfo(
-        title: 'Validation Error',
-        message: 'Please check your input and try again.',
+        title: 'Validation Error'.tr(),
+        message: 'Please check your input and try again.'.tr(),
         type: ErrorType.validation,
       );
     }
@@ -118,17 +119,17 @@ class ErrorHandler {
         errorString.contains('denied') ||
         errorString.contains('access')) {
       return ErrorInfo(
-        title: 'Permission Required',
-        message: 'This feature requires additional permissions.',
+        title: 'Permission Required'.tr(),
+        message: 'This feature requires additional permissions.'.tr(),
         type: ErrorType.permission,
-        actionLabel: 'Open Settings',
+        actionLabel: 'Open Settings'.tr(),
       );
     }
 
     // Default unknown error
     return ErrorInfo(
-      title: 'Something Went Wrong',
-      message: 'An unexpected error occurred. Please try again.',
+      title: 'Something Went Wrong'.tr(),
+      message: 'An unexpected error occurred. Please try again.'.tr(),
       type: ErrorType.unknown,
     );
   }

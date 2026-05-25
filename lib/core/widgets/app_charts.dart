@@ -41,6 +41,13 @@ class AppCharts {
               rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
               topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
               bottomTitles: AxisTitles(
+                axisNameWidget: Text(
+                  'Date',
+                  style: AppTypography.caption(
+                    color: AppColors.textTertiary(context),
+                  ),
+                ),
+                axisNameSize: 18,
                 sideTitles: SideTitles(
                   showTitles: true,
                   reservedSize: 30,
@@ -63,6 +70,13 @@ class AppCharts {
                 ),
               ),
               leftTitles: AxisTitles(
+                axisNameWidget: Text(
+                  'Amount',
+                  style: AppTypography.caption(
+                    color: AppColors.textTertiary(context),
+                  ),
+                ),
+                axisNameSize: 18,
                 sideTitles: SideTitles(
                   showTitles: true,
                   reservedSize: 40,
@@ -195,6 +209,13 @@ class AppCharts {
               rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
               topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
               bottomTitles: AxisTitles(
+                axisNameWidget: Text(
+                  'Category',
+                  style: AppTypography.caption(
+                    color: AppColors.textTertiary(context),
+                  ),
+                ),
+                axisNameSize: 18,
                 sideTitles: SideTitles(
                   showTitles: true,
                   getTitlesWidget: (value, meta) {
@@ -216,6 +237,13 @@ class AppCharts {
                 ),
               ),
               leftTitles: AxisTitles(
+                axisNameWidget: Text(
+                  'Amount',
+                  style: AppTypography.caption(
+                    color: AppColors.textTertiary(context),
+                  ),
+                ),
+                axisNameSize: 18,
                 sideTitles: SideTitles(
                   showTitles: true,
                   reservedSize: 40,

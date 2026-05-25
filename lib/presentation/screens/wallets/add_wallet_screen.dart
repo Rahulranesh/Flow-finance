@@ -5,7 +5,7 @@ import '../../../core/services/currency_formatter.dart';
 import '../../../core/theme/theme.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../../data/models/wallet_model.dart';
-import 'package:flow_finance/core/utils/extensions.dart';
+import '../../../core/utils/extensions.dart';
 import '../../blocs/wallet_bloc.dart';
 
 /// Add/Edit wallet screen
@@ -109,7 +109,7 @@ class _AddWalletScreenState extends State<AddWalletScreen> {
               controller: _balanceController,
               decoration: InputDecoration(
                 labelText: 'Initial Balance'.tr(),
-                hintText: '0.00',
+                hintText: '0.00'.tr(),
                 prefixIcon: Icon(Icons.attach_money),
               ),
               keyboardType: TextInputType.number,

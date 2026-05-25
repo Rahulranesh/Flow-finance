@@ -212,9 +212,9 @@ class _GoalsScreenState extends State<GoalsScreen> {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
                   child: FlowMascotBubble(
-                    message: 'Let\'s make one goal feel exciting.',
-                    subtitle: 'I\'ll celebrate when you get close.',
-                    actionLabel: 'Create goal',
+                    message: 'Let\'s make one goal feel exciting.'.tr(),
+                    subtitle: 'I\'ll celebrate when you get close.'.tr(),
+                    actionLabel: 'Create Goal'.tr(),
                     onAction: () => _showGoalEditor(),
                   ),
                 ),
@@ -293,6 +293,8 @@ class _GoalCard extends StatelessWidget {
                     Text(
                       goal.name,
                       style: AppTypography.titleMedium(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -408,7 +410,7 @@ class _GoalCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(goal.name, style: AppTypography.headlineSmall()),
+              Text(goal.name, style: AppTypography.headlineSmall(), maxLines: 2, overflow: TextOverflow.ellipsis),
               const SizedBox(height: 8),
               Text(
                 '${goal.currentAmount.toCurrency()} of ${goal.targetAmount.toCurrency()}',

@@ -391,9 +391,6 @@ class TrueLayerService {
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
 
-  Exception _handleError(dynamic e) {
-    return Exception('Network error: $e');
-  }
 }
 
 enum TrueLayerEnvironment {

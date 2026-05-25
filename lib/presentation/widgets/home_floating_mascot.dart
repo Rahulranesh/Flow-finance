@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
@@ -35,7 +34,7 @@ class _HomeFloatingMascotState extends State<HomeFloatingMascot> {
     if (!_isVisible) return const SizedBox.shrink();
 
     return Positioned(
-      right: 16,
+      left: 16,
       bottom: 16,
       child: GestureDetector(
         onTap: _showFeatureAssistant,
@@ -56,12 +55,7 @@ class _HomeFloatingMascotState extends State<HomeFloatingMascot> {
                   )
                 ],
               ),
-              child: Lottie.asset(
-                'assets/mascot.json',
-                fit: BoxFit.contain,
-                repeat: true,
-                animate: true,
-              ),
+              child: const FlowMascotAvatar(size: 110),
             ),
             Positioned(
               top: 5,
@@ -124,12 +118,7 @@ class AppFeatureAssistantSheet extends StatelessWidget {
           SizedBox(
             width: 120,
             height: 120,
-            child: Lottie.asset(
-              'assets/mascot.json',
-              fit: BoxFit.contain,
-              repeat: true,
-              animate: true,
-            ),
+            child: const FlowMascotAvatar(size: 120),
           ),
           const SizedBox(height: 16),
           Text(

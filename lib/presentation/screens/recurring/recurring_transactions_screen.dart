@@ -355,7 +355,7 @@ class _RecurringTransactionsScreenState
       builder: (context) => AlertDialog(
         title: Text('Delete Recurring Transaction'.tr()),
         content:
-            Text('Are you sure you want to delete "${transaction.title}"?'),
+            Text('Are you sure you want to delete "{title}"?'.tr(namedArgs: {'title': transaction.title})),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -401,7 +401,6 @@ class _RecurringTransactionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isIncome = transaction.type == TransactionType.income;
     final color = isIncome ? AppColors.success : AppColors.error;
 

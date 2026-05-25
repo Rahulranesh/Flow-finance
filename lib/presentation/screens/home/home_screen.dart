@@ -13,8 +13,8 @@ import '../settings/google_pay_sync_screen.dart';
 import '../add_transaction/add_transaction_screen.dart';
 import '../transactions/transactions_screen.dart';
 import '../reports/reports_screen.dart';
-import '../ai_insights/ai_insights_screen.dart';
 import '../../widgets/home_floating_mascot.dart';
+import '../wallets/wallets_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -51,10 +51,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
                   child: FlowMascotBubble(
-                    message: 'Welcome back. I\'ll keep your money simple today.',
+                    message: 'Welcome back. I\'ll keep your money simple today.'.tr(),
                     subtitle:
-                        'Check your balance, log spending, or ask for a quick insight.',
-                    actionLabel: 'Add expense',
+                        'Check your balance, log spending, or ask for a quick insight.'.tr(),
+                    actionLabel: 'Add expense'.tr(),
                     onAction: () {
                       Navigator.push(
                         context,
@@ -404,14 +404,14 @@ class _QuickActionsRow extends StatelessWidget {
         },
       ),
       _ActionItem(
-        icon: Icons.auto_awesome,
-        label: 'AI Insights',
+        icon: Icons.account_balance_wallet,
+        label: 'Wallets',
         color: AppColors.warning,
         onTap: () {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => const AIInsightsScreen(),
+              builder: (context) => const WalletsScreen(),
             ),
           );
         },
@@ -448,7 +448,7 @@ class _QuickActionsRow extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            action.label,
+            action.label.tr(),
             style: AppTypography.labelMedium(),
           ),
         ],
@@ -495,7 +495,7 @@ class _StatsOverview extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Overview',
+                'Overview'.tr(),
                 style: AppTypography.titleLarge(),
               ),
               const SizedBox(height: 16),
@@ -503,31 +503,31 @@ class _StatsOverview extends StatelessWidget {
                 children: [
                   Expanded(
                     child: AppStatCard(
-                      title: 'Monthly Budget',
+                      title: 'Monthly Budget'.tr(),
                       value: totalBudget.toCurrency(),
-                      subtitle: 'Left: ${remaining.toCurrency()}',
+                      subtitle: 'Left: {amount}'.tr(namedArgs: {'amount': remaining.toCurrency()}),
                       icon: Icons.account_balance_wallet,
                       trend: totalBudget > 0
-                          ? '${((spent / totalBudget) * 100).toStringAsFixed(0)}% used'
-                          : 'No budgets',
+                          ? '{}% used'.tr(args: [((spent / totalBudget) * 100).toStringAsFixed(0)])
+                          : 'No budgets'.tr(),
                       isPositive: remaining >= 0,
                       color: AppColors.primary,
                       onTap: () => _showMetricDetailsSheet(
                         context,
-                        title: 'Budget Health',
+                        title: 'Budget Health'.tr(),
                         accent: AppColors.primary,
                         headline: totalBudget.toCurrency(),
                         items: [
-                          ('Allocated', totalBudget.toCurrency()),
-                          ('Spent', spent.toCurrency()),
-                          ('Remaining', remaining.toCurrency()),
+                          ('Allocated'.tr(), totalBudget.toCurrency()),
+                          ('Spent'.tr(), spent.toCurrency()),
+                          ('Remaining'.tr(), remaining.toCurrency()),
                           (
-                            'Status',
+                            'Status'.tr(),
                             totalBudget == 0
-                                ? 'No budgets created yet'
+                                ? 'No budgets created yet'.tr()
                                 : remaining >= 0
-                                    ? 'Within plan'
-                                    : 'Overspent',
+                                    ? 'Within plan'.tr()
+                                    : 'Overspent'.tr(),
                           ),
                         ],
                       ),
@@ -536,34 +536,34 @@ class _StatsOverview extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: AppStatCard(
-                      title: 'Net Savings',
+                      title: 'Net Savings'.tr(),
                       value: balance.toCurrency(),
                       subtitle:
-                          'Income: ${transactionBloc.totalIncome.toCurrency()}',
+                          'Income: {amount}'.tr(namedArgs: {'amount': transactionBloc.totalIncome.toCurrency()}),
                       icon: Icons.savings,
                       trend: '${savingsRate.toStringAsFixed(0)}%',
                       isPositive: balance >= 0,
                       color: AppColors.secondary,
                       onTap: () => _showMetricDetailsSheet(
                         context,
-                        title: 'Net Savings',
+                        title: 'Net Savings'.tr(),
                         accent: AppColors.secondary,
                         headline: balance.toCurrency(),
                         items: [
-                          ('Income', transactionBloc.totalIncome.toCurrency()),
+                          ('Income'.tr(), transactionBloc.totalIncome.toCurrency()),
                           (
-                            'Expense',
+                            'Expense'.tr(),
                             transactionBloc.totalExpense.toCurrency()
                           ),
                           (
-                            'Savings Rate',
+                            'Savings Rate'.tr(),
                             '${savingsRate.toStringAsFixed(1)}%'
                           ),
                           (
-                            'Insight',
+                            'Insight'.tr(),
                             balance >= 0
-                                ? 'You are retaining more than you spend.'
-                                : 'Expenses are ahead of income right now.',
+                                ? 'You are retaining more than you spend.'.tr()
+                                : 'Expenses are ahead of income right now.'.tr(),
                           ),
                         ],
                       ),
@@ -791,7 +791,7 @@ void _showBalanceDetailsSheet(
                 ),
               ),
               const SizedBox(height: 20),
-              Text('Recent detailed logs', style: AppTypography.titleMedium()),
+              Text('Recent detailed logs'.tr(), style: AppTypography.titleMedium()),
               const SizedBox(height: 12),
               ...transactions.map(
                 (transaction) => Padding(

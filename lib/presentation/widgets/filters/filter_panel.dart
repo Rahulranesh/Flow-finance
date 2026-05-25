@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/app_button.dart';
-import '../../../core/widgets/app_card.dart';
 import '../../../data/models/transaction_model.dart';
 import '../../../data/models/wallet_model.dart';
 
@@ -225,32 +225,32 @@ class _FilterPanelState extends State<FilterPanel> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Date Range
-                  _buildSectionTitle('Date Range'),
+                  _buildSectionTitle('Date Range'.tr()),
                   const SizedBox(height: 12),
                   _buildDateRangeFilter(),
                   const SizedBox(height: 24),
 
                   // Amount Range
-                  _buildSectionTitle('Amount Range'),
+                  _buildSectionTitle('Amount Range'.tr()),
                   const SizedBox(height: 12),
                   _buildAmountRangeFilter(),
                   const SizedBox(height: 24),
 
                   // Transaction Type
-                  _buildSectionTitle('Transaction Type'),
+                  _buildSectionTitle('Transaction Type'.tr()),
                   const SizedBox(height: 12),
                   _buildTypeFilter(),
                   const SizedBox(height: 24),
 
                   // Categories
-                  _buildSectionTitle('Categories'),
+                  _buildSectionTitle('Categories'.tr()),
                   const SizedBox(height: 12),
                   _buildCategoryFilter(),
                   const SizedBox(height: 24),
 
                   // Wallets
                   if (widget.wallets.isNotEmpty) ...[
-                    _buildSectionTitle('Wallets'),
+                    _buildSectionTitle('Wallets'.tr()),
                     const SizedBox(height: 12),
                     _buildWalletFilter(),
                     const SizedBox(height: 24),
@@ -277,7 +277,7 @@ class _FilterPanelState extends State<FilterPanel> {
             ),
             child: SafeArea(
               child: AppButton.primary(
-                label: 'Apply Filters',
+                label: 'Apply Filters'.tr(),
                 onPressed: () {
                   widget.onFilterChanged(_filter);
                   Navigator.pop(context);

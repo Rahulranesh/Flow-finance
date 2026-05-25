@@ -3,3 +3,4 @@ export 'budget_repository.dart';
 export 'settings_repository.dart';
 export 'wallet_repository.dart';
 export 'goal_repository.dart';
+export 'recurring_transaction_repository.dart';

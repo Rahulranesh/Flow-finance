@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import '../../models/bank_account.dart' as bank;
 import '../../models/bank_transaction.dart' as bank;
-import '../../models/upi_transaction.dart' as upi;
 import '../bank_integration/plaid_service.dart';
 import '../bank_integration/truelayer_service.dart';
 import '../bank_integration/upi_transaction_service.dart';
@@ -108,9 +107,6 @@ class TransactionSyncEngine extends ChangeNotifier {
 
   /// Incremental sync (last 24 hours)
   Future<SyncResult> incrementalSync(String userId) async {
-    final startDate = DateTime.now().subtract(const Duration(hours: 24));
-    final endDate = DateTime.now();
-
     return syncAllSources(userId).then((result) {
       if (result.success) {
         return SyncResult(

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/theme/theme.dart';
 import '../../../core/services/currency_formatter.dart';
+import '../../../core/widgets/mascot_snackbar.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../../core/utils/extensions.dart';
 import '../../../core/validators/validators.dart';
@@ -51,15 +52,13 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     final amountError =
         FormValidators.positiveNumber(_amount, fieldName: 'Amount');
     if (amountError != null) {
-      context.showSnackBar(SnackBar(content: Text(amountError)));
+      context.showMascotSnackBar(amountError, type: MascotSnackBarType.error);
       return;
     }
 
     final amount = double.parse(_amount);
     if (amount <= 0) {
-      context.showSnackBar(
-        SnackBar(content: Text('Please enter a valid amount'.tr())),
-      );
+      context.showMascotSnackBar('Please enter a valid amount'.tr(), type: MascotSnackBarType.error);
       return;
     }
 
@@ -89,18 +88,18 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       );
 
       await context.read<TransactionBloc>().addTransaction(transaction);
+      // Refresh wallet balances
+      if (mounted) {
+        context.read<WalletBloc>().refreshBalances();
+      }
 
       if (mounted) {
-        context.showSnackBar(
-          SnackBar(content: Text('Transaction saved successfully'.tr())),
-        );
+        context.showMascotSnackBar('Transaction saved successfully'.tr(), type: MascotSnackBarType.success);
         context.pop();
       }
     } catch (e) {
       if (mounted) {
-        context.showSnackBar(
-          SnackBar(content: Text('Failed to save transaction'.tr())),
-        );
+        context.showMascotSnackBar('Failed to save transaction'.tr(), type: MascotSnackBarType.error);
       }
     } finally {
       if (mounted) {
@@ -152,9 +151,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
               child: FlowMascotBubble(
                 message: _isExpense
-                    ? 'What did you spend on?'
-                    : 'Nice. Let\'s log your income.',
-                subtitle: 'One step at a time. No forms, no pressure.',
+                    ? 'What did you spend on?'.tr()
+                    : 'Nice. Let\'s log your income.'.tr(),
+                subtitle: 'One step at a time. No forms, no pressure.'.tr(),
               ),
             ),
             _AmountDisplay(
@@ -182,9 +181,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: FlowMascotBubble(
-                        message: 'Smart pick: $_selectedCategory',
+                        message: 'Smart pick: {category}'.tr(namedArgs: {'category': _selectedCategory}),
                         subtitle:
-                            'Tap a category above or keep moving if this is correct.',
+                            'Tap a category above or keep moving if this is correct.'.tr(),
                       ),
                     ),
                     _WalletSelector(

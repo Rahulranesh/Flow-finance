@@ -63,11 +63,6 @@ class SmartCategorizationService {
     'cashback', 'dividend', 'interest', 'return', 'reimbursement',
   ];
 
-  final List<String> _expenseKeywords = [
-    'purchase', 'payment', 'charge', 'debit', 'withdrawal',
-    'bill', 'subscription', 'order', 'checkout',
-  ];
-
   /// Learn from user corrections to improve future categorizations
   final Map<String, String> _learnedPatterns = {};
 

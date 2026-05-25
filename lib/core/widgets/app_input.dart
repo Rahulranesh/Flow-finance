@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import '../theme/app_animations.dart';
@@ -135,7 +136,7 @@ class _AppInputState extends State<AppInput> {
                   : AppColors.textPrimaryLight,
             ),
             decoration: InputDecoration(
-              hintText: widget.hint,
+              hintText: widget.hint?.tr() ?? '',
               hintStyle: AppTypography.bodyMedium(
                 color: isDark
                     ? AppColors.textTertiaryDark
@@ -274,7 +275,7 @@ class _AppSearchInputState extends State<AppSearchInput> {
               : AppColors.textPrimaryLight,
         ),
         decoration: InputDecoration(
-          hintText: widget.hint,
+          hintText: widget.hint.tr(),
           hintStyle: AppTypography.bodyMedium(
             color: isDark
                 ? AppColors.textTertiaryDark
@@ -438,7 +439,7 @@ class _AppAmountInputState extends State<AppAmountInput> {
                     color: _isExpense ? AppColors.expense : AppColors.income,
                   ),
                   decoration: InputDecoration(
-                    hintText: widget.hint,
+              hintText: widget.hint?.tr() ?? '',
                     hintStyle: AppTypography.amountMedium(
                       color: isDark
                           ? AppColors.textTertiaryDark

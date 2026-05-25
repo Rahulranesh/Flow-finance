@@ -19,8 +19,6 @@ class SyncStatusScreen extends StatefulWidget {
 class _SyncStatusScreenState extends State<SyncStatusScreen> {
   final TransactionSyncEngine _syncEngine = TransactionSyncEngine();
 
-  bool _isLoading = false;
-
   @override
   void initState() {
     super.initState();
@@ -396,16 +394,16 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
                   .copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            _buildDetailRow('Type', account['type'] as String),
-            _buildDetailRow('Status', account['status'] as String),
-            _buildDetailRow('Last Sync', account['lastSync'] as String),
-            _buildDetailRow('Balance', account['balance'] as String),
+            _buildDetailRow('Type'.tr(), account['type'] as String),
+            _buildDetailRow('Status'.tr(), account['status'] as String),
+            _buildDetailRow('Last Sync'.tr(), account['lastSync'] as String),
+            _buildDetailRow('Balance'.tr(), account['balance'] as String),
             const SizedBox(height: 24),
             Row(
               children: [
                 Expanded(
                   child: AppButton.primary(
-                    label: 'Sync Now',
+                    label: 'Sync Now'.tr(),
                     onPressed: () {
                       Navigator.pop(context);
                       _syncNow();
@@ -455,17 +453,17 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Disconnect Account?'),
+        title: Text('Disconnect Account?'.tr()),
         content: Text(
           'Are you sure you want to disconnect ${account['name']}? Your existing transactions will be preserved.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('Cancel'.tr()),
           ),
           AppButton.primary(
-            label: 'Disconnect',
+            label: 'Disconnect'.tr(),
             onPressed: () {
               Navigator.pop(context);
               // Implement disconnect logic
@@ -480,12 +478,12 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Sync Error'),
+        title: Text('Sync Error'.tr()),
         content: Text(error),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+            child: Text('OK'.tr()),
           ),
         ],
       ),
@@ -494,7 +492,7 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
 
   String _getLastSyncText() {
     // In real implementation, get from sync engine
-    return 'Just now';
+    return 'Just now'.tr();
   }
 
   String _formatTime(DateTime time) {
@@ -502,13 +500,13 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
     final diff = now.difference(time);
 
     if (diff.inMinutes < 1) {
-      return 'Just now';
+      return 'Just now'.tr();
     } else if (diff.inHours < 1) {
-      return '${diff.inMinutes}m ago';
+      return '{}m ago'.tr(args: [diff.inMinutes.toString()]);
     } else if (diff.inDays < 1) {
-      return '${diff.inHours}h ago';
+      return '{}h ago'.tr(args: [diff.inHours.toString()]);
     } else {
-      return '${diff.inDays}d ago';
+      return '{}d ago'.tr(args: [diff.inDays.toString()]);
     }
   }
 }

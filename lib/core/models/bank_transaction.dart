@@ -1,5 +1,4 @@
 import 'package:uuid/uuid.dart';
-import 'bank_account.dart';
 
 /// Model representing a transaction from a bank
 class BankTransaction {

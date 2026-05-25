@@ -318,6 +318,8 @@ class _BudgetList extends StatelessWidget {
                               style: AppTypography.bodyLarge(
                                 fontWeight: FontWeight.w600,
                               ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 4),
                             Text(
@@ -410,6 +412,8 @@ class _BudgetList extends StatelessWidget {
               Text(
                 progress.category.name,
                 style: AppTypography.headlineSmall(),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 8),
               Text(

@@ -1,10 +1,15 @@
-import 'dart:math';
+import 'dart:convert';
 import 'package:uuid/uuid.dart';
 import '../../data/models/transaction_model.dart';
-import '../../data/models/wallet_model.dart';
+import '../../data/repositories/settings_repository.dart';
 
 /// Service for automated transfers and savings features
 class AutoTransferService {
+  final SettingsRepository _settingsRepository;
+  AutoTransferService(this._settingsRepository) {
+    _loadData();
+  }
+
   final List<AutoTransferRule> _rules = [];
   final List<RoundUpRule> _roundUpRules = [];
   final List<TransferRecord> _transferHistory = [];
@@ -14,24 +19,98 @@ class AutoTransferService {
   List<RoundUpRule> get roundUpRules => List.unmodifiable(_roundUpRules);
   List<TransferRecord> get transferHistory => List.unmodifiable(_transferHistory);
 
+  void _loadData() async {
+    try {
+      final rulesString = await _settingsRepository.getString('auto_transfer_rules');
+      if (rulesString != null) {
+        final decoded = jsonDecode(rulesString);
+        if (decoded is List) {
+          _rules.clear();
+          for (final item in decoded) {
+            if (item is Map<String, dynamic>) {
+              _rules.add(AutoTransferRule.fromJson(item));
+            }
+          }
+        }
+      }
+
+      final roundUpsString = await _settingsRepository.getString('auto_transfer_roundups');
+      if (roundUpsString != null) {
+        final decoded = jsonDecode(roundUpsString);
+        if (decoded is List) {
+          _roundUpRules.clear();
+          for (final item in decoded) {
+            if (item is Map<String, dynamic>) {
+              _roundUpRules.add(RoundUpRule.fromJson(item));
+            }
+          }
+        }
+      }
+
+      final historyString = await _settingsRepository.getString('auto_transfer_history');
+      if (historyString != null) {
+        final decoded = jsonDecode(historyString);
+        if (decoded is List) {
+          _transferHistory.clear();
+          for (final item in decoded) {
+            if (item is Map<String, dynamic>) {
+              _transferHistory.add(TransferRecord.fromJson(item));
+            }
+          }
+        }
+      }
+    } catch (e) {
+      print('Error loading AutoTransferService data: $e');
+    }
+  }
+
+  void _saveRules() async {
+    final jsonString = jsonEncode(_rules.map((r) => r.toJson()).toList());
+    await _settingsRepository.setString('auto_transfer_rules', jsonString);
+  }
+
+  void _saveRoundUpRules() async {
+    final jsonString = jsonEncode(_roundUpRules.map((r) => r.toJson()).toList());
+    await _settingsRepository.setString('auto_transfer_roundups', jsonString);
+  }
+
+  void _saveHistory() async {
+    final jsonString = jsonEncode(_transferHistory.map((r) => r.toJson()).toList());
+    await _settingsRepository.setString('auto_transfer_history', jsonString);
+  }
+
   /// Add an auto-transfer rule
   void addAutoTransferRule(AutoTransferRule rule) {
-    _rules.add(rule);
+    final index = _rules.indexWhere((r) => r.id == rule.id);
+    if (index >= 0) {
+      _rules[index] = rule;
+    } else {
+      _rules.add(rule);
+    }
+    _saveRules();
   }
 
   /// Remove an auto-transfer rule
   void removeAutoTransferRule(String ruleId) {
     _rules.removeWhere((r) => r.id == ruleId);
+    _saveRules();
   }
 
   /// Add a round-up rule
   void addRoundUpRule(RoundUpRule rule) {
-    _roundUpRules.add(rule);
+    final index = _roundUpRules.indexWhere((r) => r.id == rule.id);
+    if (index >= 0) {
+      _roundUpRules[index] = rule;
+    } else {
+      _roundUpRules.add(rule);
+    }
+    _saveRoundUpRules();
   }
 
   /// Remove a round-up rule
   void removeRoundUpRule(String ruleId) {
     _roundUpRules.removeWhere((r) => r.id == ruleId);
+    _saveRoundUpRules();
   }
 
   /// Process a transaction and check for auto-transfers
@@ -79,12 +158,6 @@ class AutoTransferService {
 
   /// Execute a transfer recommendation
   Future<TransferRecord> executeTransfer(TransferRecommendation recommendation) async {
-    // In a real implementation, this would:
-    // 1. Check if source wallet has sufficient funds
-    // 2. Create the transfer transaction
-    // 3. Update wallet balances
-    // 4. Record the transfer
-
     final record = TransferRecord(
       id: recommendation.id,
       sourceWalletId: recommendation.sourceWalletId,
@@ -98,6 +171,7 @@ class AutoTransferService {
     );
 
     _transferHistory.add(record);
+    _saveHistory();
     return record;
   }
 
@@ -114,14 +188,17 @@ class AutoTransferService {
     // Calculate by rule type
     final byRuleType = <String, double>{};
     for (final transfer in recentTransfers) {
-      final rule = _rules.firstWhere(
-        (r) => r.id == transfer.ruleId,
-        orElse: () => _roundUpRules.firstWhere(
-          (r) => r.id == transfer.ruleId,
-          orElse: () => throw Exception('Rule not found'),
-        ) as AutoTransferRule,
-      );
-      byRuleType[rule.name] = (byRuleType[rule.name] ?? 0) + transfer.amount;
+      String ruleName = 'Unknown';
+      final autoRuleIndex = _rules.indexWhere((r) => r.id == transfer.ruleId);
+      if (autoRuleIndex >= 0) {
+        ruleName = _rules[autoRuleIndex].name;
+      } else {
+        final roundRuleIndex = _roundUpRules.indexWhere((r) => r.id == transfer.ruleId);
+        if (roundRuleIndex >= 0) {
+          ruleName = _roundUpRules[roundRuleIndex].name;
+        }
+      }
+      byRuleType[ruleName] = (byRuleType[ruleName] ?? 0) + transfer.amount;
     }
 
     return SavingsSummary(
@@ -173,6 +250,7 @@ class AutoTransferService {
   /// Clear transfer history
   void clearHistory() {
     _transferHistory.clear();
+    _saveHistory();
   }
 
   // Private methods
@@ -218,7 +296,6 @@ class AutoTransferService {
       case CalculationType.percentage:
         return transaction.amount * (rule.amount / 100);
       case CalculationType.remaining:
-        // Would need access to wallet balance
         return rule.amount;
     }
   }
@@ -294,6 +371,39 @@ class AutoTransferRule {
       createdAt: createdAt ?? this.createdAt,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'description': description,
+      'trigger': trigger.toJson(),
+      'sourceWalletId': sourceWalletId,
+      'destinationWalletId': destinationWalletId,
+      'calculationType': calculationType.name,
+      'amount': amount,
+      'isActive': isActive,
+      'createdAt': createdAt.toIso8601String(),
+    };
+  }
+
+  factory AutoTransferRule.fromJson(Map<String, dynamic> json) {
+    return AutoTransferRule(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      description: json['description'] as String?,
+      trigger: TransferTrigger.fromJson(json['trigger'] as Map<String, dynamic>),
+      sourceWalletId: json['sourceWalletId'] as String,
+      destinationWalletId: json['destinationWalletId'] as String,
+      calculationType: CalculationType.values.firstWhere(
+        (e) => e.name == json['calculationType'],
+        orElse: () => CalculationType.fixedAmount,
+      ),
+      amount: (json['amount'] as num).toDouble(),
+      isActive: json['isActive'] as bool? ?? true,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+    );
+  }
 }
 
 /// Round-up rule
@@ -317,6 +427,35 @@ class RoundUpRule {
     this.isActive = true,
     required this.createdAt,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'roundUpTo': roundUpTo.name,
+      'customAmount': customAmount,
+      'sourceWalletId': sourceWalletId,
+      'savingsWalletId': savingsWalletId,
+      'isActive': isActive,
+      'createdAt': createdAt.toIso8601String(),
+    };
+  }
+
+  factory RoundUpRule.fromJson(Map<String, dynamic> json) {
+    return RoundUpRule(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      roundUpTo: RoundUpTo.values.firstWhere(
+        (e) => e.name == json['roundUpTo'],
+        orElse: () => RoundUpTo.nearestDollar,
+      ),
+      customAmount: json['customAmount'] != null ? (json['customAmount'] as num).toDouble() : null,
+      sourceWalletId: json['sourceWalletId'] as String,
+      savingsWalletId: json['savingsWalletId'] as String,
+      isActive: json['isActive'] as bool? ?? true,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+    );
+  }
 }
 
 enum RoundUpTo {
@@ -339,6 +478,29 @@ class TransferTrigger {
     this.category,
     this.schedule,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'type': type.name,
+      'minAmount': minAmount,
+      'category': category,
+      'schedule': schedule?.toJson(),
+    };
+  }
+
+  factory TransferTrigger.fromJson(Map<String, dynamic> json) {
+    return TransferTrigger(
+      type: TriggerType.values.firstWhere(
+        (e) => e.name == json['type'],
+        orElse: () => TriggerType.incomeReceived,
+      ),
+      minAmount: json['minAmount'] != null ? (json['minAmount'] as num).toDouble() : null,
+      category: json['category'] as String?,
+      schedule: json['schedule'] != null
+          ? Schedule.fromJson(json['schedule'] as Map<String, dynamic>)
+          : null,
+    );
+  }
 }
 
 enum TriggerType {
@@ -367,6 +529,27 @@ class Schedule {
     this.dayOfMonth,
     this.month,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'frequency': frequency.name,
+      'dayOfWeek': dayOfWeek,
+      'dayOfMonth': dayOfMonth,
+      'month': month,
+    };
+  }
+
+  factory Schedule.fromJson(Map<String, dynamic> json) {
+    return Schedule(
+      frequency: ScheduleFrequency.values.firstWhere(
+        (e) => e.name == json['frequency'],
+        orElse: () => ScheduleFrequency.daily,
+      ),
+      dayOfWeek: json['dayOfWeek'] as int?,
+      dayOfMonth: json['dayOfMonth'] as int?,
+      month: json['month'] as int?,
+    );
+  }
 }
 
 enum ScheduleFrequency {
@@ -420,6 +603,37 @@ class TransferRecord {
     this.ruleId,
     this.triggeredBy,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'sourceWalletId': sourceWalletId,
+      'destinationWalletId': destinationWalletId,
+      'amount': amount,
+      'reason': reason,
+      'timestamp': timestamp.toIso8601String(),
+      'status': status.name,
+      'ruleId': ruleId,
+      'triggeredBy': triggeredBy,
+    };
+  }
+
+  factory TransferRecord.fromJson(Map<String, dynamic> json) {
+    return TransferRecord(
+      id: json['id'] as String,
+      sourceWalletId: json['sourceWalletId'] as String,
+      destinationWalletId: json['destinationWalletId'] as String,
+      amount: (json['amount'] as num).toDouble(),
+      reason: json['reason'] as String,
+      timestamp: DateTime.parse(json['timestamp'] as String),
+      status: TransferStatus.values.firstWhere(
+        (e) => e.name == json['status'],
+        orElse: () => TransferStatus.completed,
+      ),
+      ruleId: json['ruleId'] as String?,
+      triggeredBy: json['triggeredBy'] as String?,
+    );
+  }
 }
 
 enum TransferStatus {

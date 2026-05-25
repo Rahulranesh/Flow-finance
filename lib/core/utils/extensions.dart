@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../services/currency_formatter.dart';
 import '../widgets/mascot_snackbar.dart';
 
@@ -236,17 +237,17 @@ extension DateTimeExtension on DateTime {
     final difference = now.difference(this);
 
     if (difference.inDays > 365) {
-      return '${(difference.inDays / 365).floor()} years ago';
+      return '{} years ago'.tr(args: [(difference.inDays / 365).floor().toString()]);
     } else if (difference.inDays > 30) {
-      return '${(difference.inDays / 30).floor()} months ago';
+      return '{} months ago'.tr(args: [(difference.inDays / 30).floor().toString()]);
     } else if (difference.inDays > 0) {
-      return '${difference.inDays} days ago';
+      return '{} days ago'.tr(args: [difference.inDays.toString()]);
     } else if (difference.inHours > 0) {
-      return '${difference.inHours} hours ago';
+      return '{} hours ago'.tr(args: [difference.inHours.toString()]);
     } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes} minutes ago';
+      return '{} minutes ago'.tr(args: [difference.inMinutes.toString()]);
     } else {
-      return 'Just now';
+      return 'Just now'.tr();
     }
   }
 

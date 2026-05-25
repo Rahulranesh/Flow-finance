@@ -61,8 +61,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
             child: FlowMascotBubble(
-              message: 'I\'ll translate the charts into plain language.',
-              subtitle: 'Slow scroll, clear insights, no finance jargon.',
+              message: 'I\'ll translate the charts into plain language.'.tr(),
+              subtitle: 'Slow scroll, clear insights, no finance jargon.'.tr(),
             ),
           ),
 

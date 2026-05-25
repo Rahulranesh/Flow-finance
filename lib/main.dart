@@ -10,6 +10,8 @@ import 'core/services/notification_service.dart';
 import 'core/services/firebase_notification_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/app_colors.dart';
+import 'core/services/smart_rules_engine.dart';
+import 'core/services/auto_transfer_service.dart';
 
 // Data
 import 'data/database/database_exports.dart';
@@ -93,11 +95,26 @@ class FlowFinanceApp extends StatelessWidget {
         ProxyProvider<SharedPreferences, FamilyRepository>(
           update: (_, prefs, __) => FamilyRepository(prefs),
         ),
+        ProxyProvider<SharedPreferences, RecurringTransactionRepository>(
+          update: (_, prefs, __) => RecurringTransactionRepository(prefs),
+        ),
+
+        // Repositories and Services
+        ProxyProvider<SettingsRepository, SmartRulesEngine>(
+          update: (_, settingsRepo, __) => SmartRulesEngine(settingsRepo),
+        ),
+        ProxyProvider<SettingsRepository, AutoTransferService>(
+          update: (_, settingsRepo, __) => AutoTransferService(settingsRepo),
+        ),
 
         // BLoCs
         ChangeNotifierProvider(
           create: (context) => TransactionBloc(
             context.read<TransactionRepository>(),
+            context.read<WalletRepository>(),
+            context.read<SmartRulesEngine>(),
+            context.read<AutoTransferService>(),
+            context.read<RecurringTransactionRepository>(),
           ),
         ),
         ChangeNotifierProvider(
@@ -119,7 +136,7 @@ class FlowFinanceApp extends StatelessWidget {
       ],
       child: Consumer<SettingsController>(
         builder: (context, settings, child) => MaterialApp(
-          title: 'Flow Finance',
+          title: 'Flow Finance'.tr(),
           debugShowCheckedModeBanner: false,
           theme: AppTheme.light,
           darkTheme: AppTheme.dark,
@@ -179,6 +196,12 @@ class _AppInitializerState extends State<AppInitializer> {
         settings.isLoading ? settings.load() : Future<void>.value(),
       ]);
 
+      // Process due recurring transactions
+      final recurringCount = await transactionBloc.processDueRecurringTransactions();
+      if (recurringCount > 0) {
+        debugPrint('Processed $recurringCount due recurring transactions');
+      }
+
       if (settings.settings.notificationsEnabled) {
         try {
           await notifications.requestPermissions();
@@ -209,6 +232,7 @@ class _AppInitializerState extends State<AppInitializer> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<SettingsController>();
     if (_isLoading) {
       return Scaffold(
         body: Container(
@@ -333,6 +357,6 @@ class _AppInitializerState extends State<AppInitializer> {
     }
 
     final seenOnboarding = widget.sharedPreferences.getBool('seen_onboarding') ?? false;
-    return seenOnboarding ? const MainNavigationScreen() : const OnboardingScreen();
+    return seenOnboarding ? MainNavigationScreen() : OnboardingScreen();
   }
 }

@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
-import 'package:uuid/uuid.dart';
 
 // Stub implementations for missing dependencies
 class FlutterSecureStorage {

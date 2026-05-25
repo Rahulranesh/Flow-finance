@@ -1,0 +1,172 @@
+Analyzing budget...                                             
+
+warning • The include file 'package:flutter_lints/flutter.yaml' in '/Users/ranesh/Cashew/budget/analysis_options.yaml' can't be found when analyzing '/Users/ranesh/Cashew/budget' • analysis_options.yaml:4:10 • include_file_not_found
+warning • Unused import: 'bank_account.dart' • lib/core/models/bank_transaction.dart:2:8 • unused_import
+   info • Don't invoke 'print' in production code • lib/core/services/admob_service.dart:20:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/admob_service.dart:71:29 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/admob_service.dart:72:29 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/admob_service.dart:89:11 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/admob_service.dart:109:11 • avoid_print
+   info • Unnecessary use of double quotes • lib/core/services/ai_assistant_service.dart:24:9 • prefer_single_quotes
+   info • Unnecessary use of double quotes • lib/core/services/ai_assistant_service.dart:26:9 • prefer_single_quotes
+   info • Unnecessary use of double quotes • lib/core/services/ai_assistant_service.dart:126:12 • prefer_single_quotes
+   info • Unnecessary use of double quotes • lib/core/services/ai_assistant_service.dart:127:9 • prefer_single_quotes
+   info • Unnecessary use of double quotes • lib/core/services/ai_assistant_service.dart:128:9 • prefer_single_quotes
+   info • Unnecessary use of double quotes • lib/core/services/ai_assistant_service.dart:129:9 • prefer_single_quotes
+   info • Unnecessary use of double quotes • lib/core/services/ai_assistant_service.dart:256:21 • prefer_single_quotes
+   info • Unnecessary use of double quotes • lib/core/services/ai_assistant_service.dart:258:21 • prefer_single_quotes
+   info • Unnecessary use of double quotes • lib/core/services/ai_assistant_service.dart:282:20 • prefer_single_quotes
+   info • Unnecessary use of double quotes • lib/core/services/ai_assistant_service.dart:327:22 • prefer_single_quotes
+   info • Unnecessary use of double quotes • lib/core/services/ai_assistant_service.dart:344:22 • prefer_single_quotes
+   info • Unnecessary use of double quotes • lib/core/services/ai_assistant_service.dart:351:22 • prefer_single_quotes
+   info • Unnecessary use of double quotes • lib/core/services/ai_assistant_service.dart:380:21 • prefer_single_quotes
+   info • Unnecessary use of double quotes • lib/core/services/ai_assistant_service.dart:382:21 • prefer_single_quotes
+  error • Undefined class 'SettingsRepository' • lib/core/services/auto_transfer_service.dart:8:9 • undefined_class
+warning • The value of the field '_settingsRepository' isn't used • lib/core/services/auto_transfer_service.dart:8:28 • unused_field
+  error • The method '_loadData' isn't defined for the type 'AutoTransferService' • lib/core/services/auto_transfer_service.dart:10:5 • undefined_method
+warning • The value of the field '_transferHistory' isn't used • lib/core/services/auto_transfer_service.dart:16:30 • unused_field
+  error • The name '_transferHistory' is already defined • lib/core/services/auto_transfer_service.dart:16:30 • duplicate_definition
+warning • The value of the field '_environment' isn't used • lib/core/services/bank_integration/plaid_service.dart:23:20 • unused_field
+warning • The declaration '_handleError' isn't referenced • lib/core/services/bank_integration/plaid_service.dart:509:13 • unused_element
+warning • The declaration '_handleError' isn't referenced • lib/core/services/bank_integration/truelayer_service.dart:394:13 • unused_element
+warning • Unused import: 'dart:convert' • lib/core/services/bank_integration/upi_sms_parser.dart:1:8 • unused_import
+warning • The operand can't be 'null', so the condition is always 'false' • lib/core/services/bank_integration/upi_transaction_service.dart:106:19 • unnecessary_null_comparison
+warning • The value of the local variable 'cutoffDate' isn't used • lib/core/services/bank_integration/upi_transaction_service.dart:142:11 • unused_local_variable
+   info • Don't invoke 'print' in production code • lib/core/services/error_handler.dart:172:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/error_handler.dart:174:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/firebase_notification_service.dart:34:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/firebase_notification_service.dart:36:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/firebase_notification_service.dart:60:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/firebase_notification_service.dart:64:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/firebase_notification_service.dart:79:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/firebase_notification_service.dart:85:5 • avoid_print
+warning • The value of the local variable 'android' isn't used • lib/core/services/firebase_notification_service.dart:88:11 • unused_local_variable
+   info • Don't invoke 'print' in production code • lib/core/services/firebase_notification_service.dart:101:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/firebase_notification_service.dart:142:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/firebase_notification_service.dart:153:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/firebase_notification_service.dart:183:3 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/google_pay_service.dart:55:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/core/services/pdf_export_service.dart:205:7 • avoid_print
+warning • Unused import: 'package:uuid/uuid.dart' • lib/core/services/secure/encryption_service.dart:5:8 • unused_import
+warning • The value of the field '_expenseKeywords' isn't used • lib/core/services/smart_categorization_service.dart:66:22 • unused_field
+warning • Unused import: '../../data/models/wallet_model.dart' • lib/core/services/smart_rules_engine.dart:4:8 • unused_import
+  error • A value of type 'dynamic' can't be assigned to a variable of type 'List<dynamic>' • lib/core/services/smart_rules_engine.dart:20:38 • invalid_assignment
+warning • Unused import: 'package:flutter/foundation.dart' • lib/core/services/sync/reconciliation_engine.dart:1:8 • unused_import
+warning • The value of the local variable 'suggestedCategory' isn't used • lib/core/services/sync/reconciliation_engine.dart:303:15 • unused_local_variable
+warning • Unused import: '../../models/upi_transaction.dart' • lib/core/services/sync/transaction_sync_engine.dart:6:8 • unused_import
+warning • The value of the local variable 'startDate' isn't used • lib/core/services/sync/transaction_sync_engine.dart:111:11 • unused_local_variable
+warning • The value of the local variable 'endDate' isn't used • lib/core/services/sync/transaction_sync_engine.dart:112:11 • unused_local_variable
+   info • Use 'const' with the constructor to improve performance • lib/core/theme/app_shadows.dart:232:19 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/core/widgets/app_charts.dart:41:28 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/core/widgets/app_charts.dart:41:51 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/core/widgets/app_charts.dart:42:26 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/core/widgets/app_charts.dart:42:49 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/core/widgets/app_charts.dart:195:28 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/core/widgets/app_charts.dart:195:51 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/core/widgets/app_charts.dart:196:26 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/core/widgets/app_charts.dart:196:49 • prefer_const_constructors
+   info • Don't invoke 'print' in production code • lib/core/widgets/banner_ad_widget.dart:37:9 • avoid_print
+warning • Unused import: '../theme/app_animations.dart' • lib/core/widgets/flow_mascot.dart:6:8 • unused_import
+   info • Use 'const' with the constructor to improve performance • lib/core/widgets/quick_settings_button.dart:58:15 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/core/widgets/quick_settings_button.dart:68:15 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/core/widgets/quick_settings_button.dart:78:15 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/core/widgets/quick_settings_button.dart:127:11 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/data/database/database.dart:298:19 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/data/database/database.dart:307:19 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/data/database/database.dart:316:19 • prefer_const_constructors
+warning • Unused import: 'package:flutter/material.dart' • lib/data/models/family_model.dart:1:8 • unused_import
+warning • Unused import: 'package:flutter/material.dart' • lib/data/models/recurring_transaction_model.dart:1:8 • unused_import
+   info • Don't invoke 'print' in production code • lib/data/repositories/recurring_transaction_repository.dart:187:9 • avoid_print
+  error • 1 positional argument expected by 'AutoTransferService.new', but 0 found • lib/main.dart:104:46 • not_enough_positional_arguments
+   info • Use 'const' with the constructor to improve performance • lib/main.dart:306:15 • prefer_const_constructors
+  error • The returned type 'Null' isn't returnable from a 'Transaction' function, as required by the closure's context • lib/presentation/blocs/transaction_bloc.dart:150:83 • return_of_invalid_type_from_closure
+warning • The operand can't be 'null', so the condition is always 'true' • lib/presentation/blocs/transaction_bloc.dart:151:21 • unnecessary_null_comparison
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/ai_insights/ai_insights_screen.dart:169:23 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/ai_insights/ai_insights_screen.dart:344:23 • prefer_const_constructors
+   info • The import of '../../../core/widgets/app_card.dart' is unnecessary because all of the used elements are also provided by the import of '../../../core/widgets/widgets.dart' • lib/presentation/screens/analytics/analytics_screen.dart:6:8 • unnecessary_import
+   info • The import of '../../../core/widgets/app_scaffold.dart' is unnecessary because all of the used elements are also provided by the import of '../../../core/widgets/widgets.dart' • lib/presentation/screens/analytics/analytics_screen.dart:7:8 • unnecessary_import
+   info • The import of '../../../core/widgets/app_loading.dart' is unnecessary because all of the used elements are also provided by the import of '../../../core/widgets/widgets.dart' • lib/presentation/screens/analytics/analytics_screen.dart:8:8 • unnecessary_import
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/analytics/analytics_screen.dart:61:11 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/analytics/analytics_screen.dart:63:20 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/analytics/analytics_screen.dart:95:26 • prefer_const_constructors
+  error • 1 positional argument expected by 'SmartRulesEngine.new', but 0 found • lib/presentation/screens/automation/automation_screen.dart:24:58 • not_enough_positional_arguments
+  error • 1 positional argument expected by 'AutoTransferService.new', but 0 found • lib/presentation/screens/automation/automation_screen.dart:25:68 • not_enough_positional_arguments
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/automation/automation_screen.dart:187:16 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/automation/automation_screen.dart:271:16 • prefer_const_constructors
+   info • Use relative imports for files in the 'lib' directory • lib/presentation/screens/bank_integration/bank_connect_screen.dart:11:8 • prefer_relative_imports
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/bank_integration/bank_connect_screen.dart:127:17 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/bank_integration/bank_connect_screen.dart:219:19 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/bank_integration/bank_connect_screen.dart:281:15 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/bank_integration/bank_connect_screen.dart:343:14 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/bank_integration/bank_connect_screen.dart:360:19 • prefer_const_constructors
+warning • The value of the local variable 'selectedWalletId' isn't used • lib/presentation/screens/bank_integration/bank_connect_screen.dart:446:13 • unused_local_variable
+   info • Use relative imports for files in the 'lib' directory • lib/presentation/screens/bank_integration/sync_status_screen.dart:8:8 • prefer_relative_imports
+warning • The value of the field '_isLoading' isn't used • lib/presentation/screens/bank_integration/sync_status_screen.dart:22:8 • unused_field
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/bank_integration/sync_status_screen.dart:141:29 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/bank_integration/sync_status_screen.dart:252:18 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/bank_integration/sync_status_screen.dart:297:17 • prefer_const_constructors
+   info • Use relative imports for files in the 'lib' directory • lib/presentation/screens/bank_integration/upi_setup_screen.dart:9:8 • prefer_relative_imports
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/bank_integration/upi_setup_screen.dart:114:17 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/bank_integration/upi_setup_screen.dart:156:17 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/bank_integration/upi_setup_screen.dart:185:17 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/bank_integration/upi_setup_screen.dart:226:26 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/bank_integration/upi_setup_screen.dart:250:19 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/bank_integration/upi_setup_screen.dart:364:37 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/budgets/budgets_screen.dart:260:17 • prefer_const_constructors
+   info • Use relative imports for files in the 'lib' directory • lib/presentation/screens/family/family_screen.dart:14:8 • prefer_relative_imports
+warning • The declaration '_showInviteDialog' isn't referenced • lib/presentation/screens/family/family_screen.dart:461:8 • unused_element
+warning • The declaration '_showChangeRoleDialog' isn't referenced • lib/presentation/screens/family/family_screen.dart:533:8 • unused_element
+warning • The declaration '_showRemoveMemberDialog' isn't referenced • lib/presentation/screens/family/family_screen.dart:581:8 • unused_element
+warning • The declaration '_showCreateBudgetDialog' isn't referenced • lib/presentation/screens/family/family_screen.dart:616:8 • unused_element
+warning • The value of the local variable 'isDark' isn't used • lib/presentation/screens/family/family_screen.dart:834:11 • unused_local_variable
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/home/home_screen.dart:115:25 • prefer_const_constructors
+   info • Use relative imports for files in the 'lib' directory • lib/presentation/screens/recurring/recurring_transactions_screen.dart:14:8 • prefer_relative_imports
+warning • The value of the local variable 'isDark' isn't used • lib/presentation/screens/recurring/recurring_transactions_screen.dart:404:11 • unused_local_variable
+   info • Use relative imports for files in the 'lib' directory • lib/presentation/screens/settings/google_pay_sync_screen.dart:9:8 • prefer_relative_imports
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/settings/settings_screen.dart:534:24 • prefer_const_constructors
+   info • Use 'const' for final variables initialized to a constant value • lib/presentation/screens/settings/settings_screen.dart:748:5 • prefer_const_declarations
+   info • Use relative imports for files in the 'lib' directory • lib/presentation/screens/settings/sms_sync_screen.dart:9:8 • prefer_relative_imports
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/settings/sms_sync_screen.dart:95:26 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/settings/sms_sync_screen.dart:229:38 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/settings/sms_sync_screen.dart:386:21 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/settings/sms_sync_screen.dart:414:23 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/settings/sms_sync_screen.dart:469:25 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/settings/sms_sync_screen.dart:591:23 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/settings/sms_sync_screen.dart:592:23 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/transactions/transactions_screen.dart:127:25 • prefer_const_constructors
+   info • Use relative imports for files in the 'lib' directory • lib/presentation/screens/wallets/add_wallet_screen.dart:8:8 • prefer_relative_imports
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/wallets/add_wallet_screen.dart:96:29 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/presentation/screens/wallets/add_wallet_screen.dart:113:29 • prefer_const_constructors
+   info • Use relative imports for files in the 'lib' directory • lib/presentation/screens/wallets/wallets_screen.dart:13:8 • prefer_relative_imports
+warning • Unused import: '../../../core/widgets/app_card.dart' • lib/presentation/widgets/filters/filter_panel.dart:5:8 • unused_import
+   info • Use 'const' with the constructor to improve performance • lib/presentation/widgets/home_floating_mascot.dart:147:11 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/presentation/widgets/home_floating_mascot.dart:148:20 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/presentation/widgets/home_floating_mascot.dart:149:22 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/presentation/widgets/home_floating_mascot.dart:151:19 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/presentation/widgets/home_floating_mascot.dart:157:19 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/presentation/widgets/home_floating_mascot.dart:163:19 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/presentation/widgets/home_floating_mascot.dart:169:19 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/presentation/widgets/home_floating_mascot.dart:175:19 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/presentation/widgets/home_floating_mascot.dart:181:19 • prefer_const_constructors
+   info • 'bool' parameters should be named parameters • packages/implicitly_animated_reorderable_list-0.4.2-modified/lib/src/reorderable.dart:8:3 • avoid_positional_boolean_parameters
+   info • Dependencies not sorted alphabetically • packages/implicitly_animated_reorderable_list-0.4.2-modified/pubspec.yaml:13:3 • sort_pub_dependencies
+   info • 'tolerance' is deprecated and shouldn't be used. Call toleranceFor instead. This feature was deprecated after v3.7.0-13.0.pre • packages/sliding_sheet-0.5.2-modified/lib/src/scrolling.dart:418:26 • deprecated_member_use
+   info • 'tolerance' is deprecated and shouldn't be used. Call toleranceFor instead. This feature was deprecated after v3.7.0-13.0.pre • packages/sliding_sheet-0.5.2-modified/lib/src/scrolling.dart:444:22 • deprecated_member_use
+   info • Missing documentation for a public member • packages/sliding_sheet-0.5.2-modified/lib/src/sheet.dart:15:9 • public_member_api_docs
+   info • Missing documentation for a public member • packages/sliding_sheet-0.5.2-modified/lib/src/sheet.dart:17:9 • public_member_api_docs
+   info • Missing documentation for a public member • packages/sliding_sheet-0.5.2-modified/lib/src/sheet.dart:20:9 • public_member_api_docs
+   info • Missing documentation for a public member • packages/sliding_sheet-0.5.2-modified/lib/src/sheet.dart:22:9 • public_member_api_docs
+   info • 'bool' parameters should be named parameters • packages/sliding_sheet-0.5.2-modified/lib/src/sheet.dart:23:5 • avoid_positional_boolean_parameters
+warning • Doc directive is missing a closing tag • packages/sliding_sheet-0.5.2-modified/lib/src/sheet.dart:187:7 • doc_directive_missing_closing_tag
+warning • Doc directive 'endTemplate' is unknown • packages/sliding_sheet-0.5.2-modified/lib/src/sheet.dart:194:9 • doc_directive_unknown
+warning • Doc directive is missing a closing tag • packages/sliding_sheet-0.5.2-modified/lib/src/sheet.dart:197:7 • doc_directive_missing_closing_tag
+warning • Doc directive 'endTemplate' is unknown • packages/sliding_sheet-0.5.2-modified/lib/src/sheet.dart:200:9 • doc_directive_unknown
+warning • Doc directive is missing a closing tag • packages/sliding_sheet-0.5.2-modified/lib/src/sheet.dart:203:7 • doc_directive_missing_closing_tag
+warning • Doc directive 'endTemplate' is unknown • packages/sliding_sheet-0.5.2-modified/lib/src/sheet.dart:205:9 • doc_directive_unknown
+warning • Doc directive is missing a closing tag • packages/sliding_sheet-0.5.2-modified/lib/src/sheet.dart:208:7 • doc_directive_missing_closing_tag
+warning • Doc directive 'endTemplate' is unknown • packages/sliding_sheet-0.5.2-modified/lib/src/sheet.dart:210:9 • doc_directive_unknown
+   info • 'WillPopScope' is deprecated and shouldn't be used. Use PopScope instead. The Android predictive back feature will not work with WillPopScope. This feature was deprecated after v3.12.0-1.0.pre • packages/sliding_sheet-0.5.2-modified/lib/src/sheet.dart:902:12 • deprecated_member_use
+   info • Missing documentation for a public member • packages/sliding_sheet-0.5.2-modified/lib/src/sheet.dart:1384:17 • public_member_api_docs
+   info • 'dialogBackgroundColor' is deprecated and shouldn't be used. Use DialogThemeData.backgroundColor instead. This feature was deprecated after v3.27.0-0.1.pre • packages/sliding_sheet-0.5.2-modified/lib/src/sheet_dialog.dart:68:25 • deprecated_member_use
+   info • 'dialogBackgroundColor' is deprecated and shouldn't be used. Use DialogThemeData.backgroundColor instead. This feature was deprecated after v3.27.0-0.1.pre • packages/sliding_sheet-0.5.2-modified/lib/src/sheet_dialog.dart:107:33 • deprecated_member_use
+

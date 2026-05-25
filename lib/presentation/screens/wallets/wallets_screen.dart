@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../../../core/services/currency_formatter.dart';
@@ -9,8 +10,9 @@ import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_scaffold.dart';
 import '../../../core/widgets/app_loading.dart';
 import '../../../data/models/wallet_model.dart';
+import '../../../data/models/currency_model.dart';
 import '../../blocs/wallet_bloc.dart';
-import 'package:flow_finance/core/utils/extensions.dart';
+import '../../../core/utils/extensions.dart';
 import 'add_wallet_screen.dart';
 
 class WalletsScreen extends StatefulWidget {
@@ -155,7 +157,7 @@ class _WalletsScreenState extends State<WalletsScreen> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      '${entry.key}: ${entry.value.toStringAsFixed(2)}',
+                      '${_currencySymbol(entry.key)}${entry.value.toStringAsFixed(2)}',
                       style: AppTypography.bodySmall(
                         color: Colors.white,
                       ),
@@ -185,7 +187,7 @@ class _WalletsScreenState extends State<WalletsScreen> {
         padding: const EdgeInsets.only(right: 20),
         child: const Icon(Icons.delete, color: Colors.white),
       ),
-      onDismissed: (_) => bloc.deleteWallet(wallet.id),
+      onDismissed: (_) => _confirmAndDeleteWallet(context, bloc, wallet),
       child: AppCard(
         margin: const EdgeInsets.only(bottom: 12),
         onTap: () => _showEditWalletDialog(context, wallet, bloc),
@@ -259,7 +261,7 @@ class _WalletsScreenState extends State<WalletsScreen> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '${wallet.currency} ${wallet.balance.toStringAsFixed(2)}',
+                  '${_currencySymbol(wallet.currency)}${wallet.balance.toStringAsFixed(2)}',
                   style: AppTypography.titleSmall(
                     color: wallet.balance >= 0
                         ? AppColors.success
@@ -315,6 +317,30 @@ class _WalletsScreenState extends State<WalletsScreen> {
     });
   }
 
+  void _confirmAndDeleteWallet(BuildContext context, WalletBloc bloc, Wallet wallet) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Delete Wallet'.tr()),
+        content: Text('Are you sure you want to delete "${wallet.name}"?'.tr()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Cancel'.tr()),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              bloc.deleteWallet(wallet.id);
+            },
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            child: Text('Delete'.tr()),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showTransferDialog(BuildContext context, WalletBloc bloc) {
     showDialog(
       context: context,
@@ -356,13 +382,33 @@ class _WalletTransferDialogState extends State<WalletTransferDialog> {
   String? _fromWalletId;
   String? _toWalletId;
   final TextEditingController _amountController = TextEditingController();
+  final TextEditingController _exchangeRateController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
+  bool _isCrossCurrency = false;
+  double? _exchangeRate;
 
   @override
   void dispose() {
     _amountController.dispose();
+    _exchangeRateController.dispose();
     _noteController.dispose();
     super.dispose();
+  }
+
+  void _onWalletsChanged() {
+    if (_fromWalletId == null || _toWalletId == null) return;
+    final from = widget.bloc.wallets.firstWhere((w) => w.id == _fromWalletId);
+    final to = widget.bloc.wallets.firstWhere((w) => w.id == _toWalletId);
+    final cross = from.currency != to.currency;
+    if (cross != _isCrossCurrency) {
+      setState(() {
+        _isCrossCurrency = cross;
+        if (cross) {
+          _exchangeRateController.text = '';
+          _exchangeRate = null;
+        }
+      });
+    }
   }
 
   @override
@@ -382,10 +428,14 @@ class _WalletTransferDialogState extends State<WalletTransferDialog> {
                 return DropdownMenuItem(
                   value: wallet.id,
                   child: Text(
-                      '${wallet.name} (${wallet.currency} ${wallet.balance.toStringAsFixed(2)})'),
+                      '${wallet.name} (${_currencySymbol(wallet.currency)}${wallet.balance.toStringAsFixed(2)})'),
                 );
               }).toList(),
-              onChanged: (value) => setState(() => _fromWalletId = value),
+              onChanged: (value) => setState(() {
+                _fromWalletId = value;
+                if (_toWalletId == value) _toWalletId = null;
+                _onWalletsChanged();
+              }),
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
@@ -394,10 +444,13 @@ class _WalletTransferDialogState extends State<WalletTransferDialog> {
               items: wallets.where((w) => w.id != _fromWalletId).map((wallet) {
                 return DropdownMenuItem(
                   value: wallet.id,
-                  child: Text('${wallet.name} (${wallet.currency})'),
+                  child: Text('${wallet.name} (${_currencySymbol(wallet.currency)})'),
                 );
               }).toList(),
-              onChanged: (value) => setState(() => _toWalletId = value),
+              onChanged: (value) => setState(() {
+                _toWalletId = value;
+                _onWalletsChanged();
+              }),
             ),
             const SizedBox(height: 16),
             TextField(
@@ -406,8 +459,66 @@ class _WalletTransferDialogState extends State<WalletTransferDialog> {
                 labelText: 'Amount'.tr(),
                 prefixText: CurrencyFormatter.currentCurrency.symbol,
               ),
-              keyboardType: TextInputType.number,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[\d.]'))],
+              onChanged: (_) => setState(() {}),
             ),
+            if (_isCrossCurrency && _fromWalletId != null && _toWalletId != null) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.warning.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.warning.withOpacity(0.3)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.swap_horiz, size: 16, color: AppColors.warning),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Cross-Currency Transfer'.tr(),
+                          style: AppTypography.labelMedium(
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.warning,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '1 ${_fromWalletId != null ? (widget.bloc.wallets.firstWhere((w) => w.id == _fromWalletId).currency) : ''} = ? ${_toWalletId != null ? (widget.bloc.wallets.firstWhere((w) => w.id == _toWalletId).currency) : ''}'.tr(),
+                      style: AppTypography.bodySmall(),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _exchangeRateController,
+                      decoration: InputDecoration(
+                        labelText: 'Exchange Rate'.tr(),
+                        hintText: 'e.g., 83.50'.tr(),
+                        prefixText: '1 ${_currencySymbol(widget.bloc.wallets.firstWhere((w) => w.id == _fromWalletId).currency)} = ',
+                        suffixText: _currencySymbol(widget.bloc.wallets.firstWhere((w) => w.id == _toWalletId).currency),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        isDense: true,
+                      ),
+                      keyboardType: TextInputType.number,
+                      onChanged: (v) {
+                        setState(() {
+                          _exchangeRate = double.tryParse(v);
+                        });
+                      },
+                    ),
+                    if (_exchangeRate != null && _exchangeRate! > 0 && (_amountController.text.isNotEmpty)) ...[
+                      const SizedBox(height: 8),
+                      _buildConversionPreview(context),
+                    ],
+                  ],
+                ),
+              ),
+            ],
             const SizedBox(height: 16),
             TextField(
               controller: _noteController,
@@ -425,15 +536,26 @@ class _WalletTransferDialogState extends State<WalletTransferDialog> {
           child: Text('Cancel'.tr()),
         ),
         FilledButton(
-          onPressed:
-              _fromWalletId != null && _toWalletId != null ? _transfer : null,
+          onPressed: _fromWalletId != null && _toWalletId != null && _amountController.text.isNotEmpty
+              ? _transfer
+              : null,
           child: Text('Transfer'.tr()),
         ),
       ],
     );
   }
 
-  void _transfer() {
+  Widget _buildConversionPreview(BuildContext context) {
+    final amount = double.tryParse(_amountController.text) ?? 0.0;
+    final to = widget.bloc.wallets.firstWhere((w) => w.id == _toWalletId);
+    final converted = amount * _exchangeRate!;
+    return Text(
+      '→ ${CurrencyFormatter.format(converted, currencyCode: to.currency)}',
+      style: AppTypography.bodySmall(color: AppColors.success),
+    );
+  }
+
+  Future<void> _transfer() async {
     final amount = double.tryParse(_amountController.text) ?? 0.0;
     if (amount <= 0) {
       context.showSnackBar(
@@ -442,15 +564,49 @@ class _WalletTransferDialogState extends State<WalletTransferDialog> {
       return;
     }
 
-    widget.bloc.transferBetweenWallets(
+    if (_fromWalletId == _toWalletId) {
+      context.showSnackBar(
+        SnackBar(content: Text('Source and destination wallets must be different'.tr())),
+      );
+      return;
+    }
+
+    final fromWallet = widget.bloc.wallets.firstWhere((w) => w.id == _fromWalletId);
+    final toWallet = widget.bloc.wallets.firstWhere((w) => w.id == _toWalletId);
+
+    if (fromWallet.balance < amount) {
+      context.showSnackBar(
+        SnackBar(content: Text('Insufficient balance in source wallet'.tr())),
+      );
+      return;
+    }
+
+    double? exchangeRate;
+    if (fromWallet.currency != toWallet.currency) {
+      final rate = double.tryParse(_exchangeRateController.text);
+      if (rate == null || rate <= 0) {
+        context.showSnackBar(
+          SnackBar(content: Text('Please enter a valid exchange rate'.tr())),
+        );
+        return;
+      }
+      exchangeRate = rate;
+    }
+
+    await widget.bloc.transferBetweenWallets(
       fromWalletId: _fromWalletId!,
       toWalletId: _toWalletId!,
       amount: amount,
+      exchangeRate: exchangeRate,
       note: _noteController.text.trim().isEmpty
           ? null
           : _noteController.text.trim(),
     );
 
+    if (!context.mounted) return;
     Navigator.pop(context);
   }
 }
+
+String _currencySymbol(String code) =>
+    SupportedCurrencies.getByCode(code)?.symbol ?? code;

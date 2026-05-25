@@ -173,6 +173,18 @@ class WalletBloc extends ChangeNotifier {
     }
   }
 
+  /// Refresh all wallet balances from the database without showing loading state.
+  Future<void> refreshBalances() async {
+    try {
+      _wallets = await _repository.getAllWallets();
+      if (_selectedWallet != null) {
+        final updated = _wallets.where((w) => w.id == _selectedWallet!.id);
+        _selectedWallet = updated.isNotEmpty ? updated.first : defaultWallet;
+      }
+      notifyListeners();
+    } catch (_) {}
+  }
+
   void selectWallet(Wallet? wallet) {
     _selectedWallet = wallet;
     notifyListeners();

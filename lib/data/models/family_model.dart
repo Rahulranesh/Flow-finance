@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 /// Member role in a family group
 enum FamilyRole {
   owner,

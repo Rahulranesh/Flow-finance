@@ -20,8 +20,7 @@ class PlaidService {
   // Configuration - Replace with your actual Plaid credentials
   String _clientId = '';
   String _secret = '';
-  PlaidEnvironment _environment = PlaidEnvironment.sandbox;
-  
+
   // Base URLs for different environments
   static const Map<PlaidEnvironment, String> _baseUrls = {
     PlaidEnvironment.sandbox: 'https://sandbox.plaid.com',
@@ -37,7 +36,7 @@ class PlaidService {
   }) {
     _clientId = clientId;
     _secret = secret;
-    _environment = environment;
+   
     
     _baseUrl = _baseUrls[environment]!;
   }
@@ -506,9 +505,6 @@ class PlaidService {
     // Handle item errors, pending expiration, etc.
   }
 
-  Exception _handleError(dynamic e) {
-    return Exception('Network error: $e');
-  }
 }
 
 enum PlaidEnvironment {

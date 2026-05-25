@@ -1,21 +1,44 @@
+import 'dart:convert';
 import 'package:uuid/uuid.dart';
 import '../../data/models/transaction_model.dart';
-import '../../data/models/wallet_model.dart';
+import '../../data/repositories/settings_repository.dart';
 
 /// Smart rules engine for automatic transaction processing
 class SmartRulesEngine {
+  final SettingsRepository _settingsRepository;
   final List<SmartRule> _rules = [];
   final List<RuleExecution> _executionHistory = [];
+
+  SmartRulesEngine(this._settingsRepository) {
+    _loadRules();
+  }
+
+  void _loadRules() async {
+    final jsonString = await _settingsRepository.getString('smart_rules');
+    if (jsonString != null) {
+      final decoded = jsonDecode(jsonString);
+      if (decoded is List) {
+        importRules(decoded.map((e) => e as Map<String, dynamic>).toList());
+      }
+    }
+  }
+
+  void _saveRules() async {
+    final jsonString = jsonEncode(exportRules());
+    await _settingsRepository.setString('smart_rules', jsonString);
+  }
 
   /// Add a new rule
   void addRule(SmartRule rule) {
     _rules.add(rule);
     _sortRules();
+    _saveRules();
   }
 
   /// Remove a rule
   void removeRule(String ruleId) {
     _rules.removeWhere((r) => r.id == ruleId);
+    _saveRules();
   }
 
   /// Update an existing rule
@@ -24,6 +47,7 @@ class SmartRulesEngine {
     if (index >= 0) {
       _rules[index] = rule;
       _sortRules();
+      _saveRules();
     }
   }
 

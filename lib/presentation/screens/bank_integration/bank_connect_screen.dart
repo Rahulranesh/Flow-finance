@@ -285,13 +285,13 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                'Search for your bank',
+                'Search for your bank'.tr(),
                 style: AppTypography.bodyMedium(),
               ),
               const SizedBox(height: 12),
               TextField(
                 decoration: InputDecoration(
-                  hintText: 'Bank name...',
+                  hintText: 'Bank name...'.tr(),
                   prefixIcon: const Icon(Icons.search),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -411,7 +411,7 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
       }
     } catch (e) {
       context.showSnackBar(
-        SnackBar(content: Text('Error loading banks: $e')),
+        SnackBar(content: Text('${'Error loading banks'.tr()}: $e')),
       );
     } finally {
       setState(() => _isLoading = false);
@@ -443,13 +443,11 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
     final walletBloc = context.read<WalletBloc>();
     final wallets = walletBloc.wallets;
 
-    String? selectedWalletId;
-
     if (wallets.isNotEmpty) {
-      selectedWalletId = await showDialog<String>(
+      await showDialog<String>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Link to Wallet'),
+          title: Text('Link to Wallet'.tr()),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: wallets.map((wallet) {
@@ -468,7 +466,7 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
     if (mounted) {
       context.showSnackBar(
         SnackBar(
-          content: Text('Connecting to ${institution.name}...'),
+          content: Text('Connecting to {institution}...'.tr(namedArgs: {'institution': institution.name})),
           duration: const Duration(seconds: 2),
         ),
       );

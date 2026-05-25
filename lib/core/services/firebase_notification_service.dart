@@ -85,7 +85,6 @@ class FirebaseNotificationService {
     print('Received foreground message: ${message.messageId}');
 
     final notification = message.notification;
-    final android = message.notification?.android;
 
     if (notification != null) {
       _showLocalNotification(

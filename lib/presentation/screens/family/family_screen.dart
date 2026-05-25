@@ -458,232 +458,6 @@ class _FamilyDetailScreen extends StatelessWidget {
     );
   }
 
-  void _showInviteDialog(BuildContext context, Family family) {
-    final emailController = TextEditingController();
-    FamilyRole selectedRole = FamilyRole.member;
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Invite Member'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: emailController,
-              decoration: const InputDecoration(
-                labelText: 'Email Address',
-                hintText: 'member@example.com',
-              ),
-              keyboardType: TextInputType.emailAddress,
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<FamilyRole>(
-              value: selectedRole,
-              decoration: const InputDecoration(labelText: 'Role'),
-              items: FamilyRole.values.map((role) {
-                return DropdownMenuItem(
-                  value: role,
-                  child: Text(role.displayName),
-                );
-              }).toList(),
-              onChanged: (value) {
-                if (value != null) selectedRole = value;
-              },
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          AppButton.primary(
-            label: 'Send Invite',
-            onPressed: () async {
-              if (emailController.text.isEmpty) return;
-
-              try {
-                final repo = context.read<FamilyRepository>();
-                await repo.createInvitation(
-                  id: const Uuid().v4(),
-                  familyId: family.id,
-                  familyName: family.name,
-                  invitedBy: currentUserId,
-                  invitedByName: 'You', // TODO: Get actual user name
-                  email: emailController.text,
-                  role: selectedRole,
-                );
-                Navigator.pop(context);
-                context.showSnackBar(
-                  const SnackBar(content: Text('Invitation sent!')),
-                );
-              } catch (e) {
-                context.showSnackBar(
-                  const SnackBar(content: Text('Failed to send invitation')),
-                );
-              }
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showChangeRoleDialog(
-      BuildContext context, Family family, FamilyMember member) {
-    FamilyRole selectedRole = member.role;
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Change Role for ${member.displayName}'),
-        content: DropdownButtonFormField<FamilyRole>(
-          value: selectedRole,
-          items: FamilyRole.values.map((role) {
-            return DropdownMenuItem(
-              value: role,
-              child: Text(role.displayName),
-            );
-          }).toList(),
-          onChanged: (value) {
-            if (value != null) selectedRole = value;
-          },
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          AppButton.primary(
-            label: 'Update',
-            onPressed: () async {
-              try {
-                final repo = context.read<FamilyRepository>();
-                await repo.updateMemberRole(
-                    family.id, member.userId, selectedRole);
-                Navigator.pop(context);
-                context.showSnackBar(
-                  const SnackBar(content: Text('Role updated!')),
-                );
-              } catch (e) {
-                context.showSnackBar(
-                  const SnackBar(content: Text('Failed to update role')),
-                );
-              }
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showRemoveMemberDialog(
-      BuildContext context, Family family, FamilyMember member) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Remove ${member.displayName}?'),
-        content: Text(
-            'Are you sure you want to remove ${member.displayName} from the family?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          AppButton.primary(
-            label: 'Remove',
-            onPressed: () async {
-              try {
-                final repo = context.read<FamilyRepository>();
-                await repo.removeMember(family.id, member.userId);
-                Navigator.pop(context);
-                context.showSnackBar(
-                  const SnackBar(content: Text('Member removed')),
-                );
-              } catch (e) {
-                context.showSnackBar(
-                  const SnackBar(content: Text('Failed to remove member')),
-                );
-              }
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showCreateBudgetDialog(BuildContext context, Family family) {
-    final categoryController = TextEditingController();
-    final amountController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Create Budget'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: categoryController,
-              decoration: const InputDecoration(
-                labelText: 'Category',
-                hintText: 'e.g., Groceries, Utilities',
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: amountController,
-              decoration: const InputDecoration(
-                labelText: 'Budget Amount',
-                prefixText: '\$',
-              ),
-              keyboardType: TextInputType.number,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          AppButton.primary(
-            label: 'Create',
-            onPressed: () async {
-              final amount = double.tryParse(amountController.text);
-              if (categoryController.text.isEmpty ||
-                  amount == null ||
-                  amount <= 0) {
-                context.showSnackBar(
-                  const SnackBar(content: Text('Please fill in all fields')),
-                );
-                return;
-              }
-
-              try {
-                final repo = context.read<FamilyRepository>();
-                await repo.setBudget(
-                  family.id,
-                  FamilyBudget(
-                    category: categoryController.text,
-                    allocatedAmount: amount,
-                  ),
-                );
-                Navigator.pop(context);
-                context.showSnackBar(
-                  const SnackBar(content: Text('Budget created!')),
-                );
-              } catch (e) {
-                context.showSnackBar(
-                  const SnackBar(content: Text('Failed to create budget')),
-                );
-              }
-            },
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 class _OverviewTab extends StatelessWidget {
@@ -831,18 +605,18 @@ class _MembersTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return ListView.builder(
       padding: const EdgeInsets.all(20),
       itemCount: family.activeMembers.length + (canEdit ? 1 : 0),
       itemBuilder: (context, index) {
         if (canEdit && index == family.activeMembers.length) {
-          return AppButton.secondary(
-            label: 'Invite Member',
-            onPressed: () => _showInviteDialog(context, family, currentUserId),
-            icon: Icons.person_add,
-            expanded: true,
+          return Padding(
+            padding: const EdgeInsets.only(top: 16),
+            child: AppButton.secondary(
+              label: 'Invite Member'.tr(),
+              icon: Icons.person_add,
+              onPressed: () => _showInviteDialog(context, family, currentUserId),
+            ),
           );
         }
 
@@ -851,16 +625,14 @@ class _MembersTab extends StatelessWidget {
 
         return ListTile(
           leading: CircleAvatar(
-            backgroundColor: AppColors.primary.withValues(alpha: 0.1),
             child: Text(
-              member.displayName.substring(0, 1).toUpperCase(),
-              style: AppTypography.bodyMedium(
-                color: AppColors.primary,
-              ),
+              member.displayName.isNotEmpty
+                  ? member.displayName[0].toUpperCase()
+                  : 'U'.tr(),
             ),
           ),
           title: Text(
-            member.displayName + (isCurrentUser ? ' (You)' : ''),
+            member.displayName + (isCurrentUser ? ' (You)'.tr() : ''),
             style: AppTypography.bodyMedium(
               fontWeight: isCurrentUser ? FontWeight.w600 : null,
             ),
@@ -874,13 +646,13 @@ class _MembersTab extends StatelessWidget {
           trailing: canEdit && !isCurrentUser
               ? PopupMenuButton<String>(
                   itemBuilder: (context) => [
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'role',
-                      child: Text('Change Role'),
+                      child: Text('Change Role'.tr()),
                     ),
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'remove',
-                      child: Text('Remove',
+                      child: Text('Remove'.tr(),
                           style: TextStyle(color: AppColors.error)),
                     ),
                   ],
@@ -906,22 +678,22 @@ class _MembersTab extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Invite Member'),
+        title: Text('Invite Member'.tr()),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: emailController,
-              decoration: const InputDecoration(
-                labelText: 'Email Address',
-                hintText: 'member@example.com',
+              decoration: InputDecoration(
+                labelText: 'Email Address'.tr(),
+                hintText: 'member@example.com'.tr(),
               ),
               keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<FamilyRole>(
               value: selectedRole,
-              decoration: const InputDecoration(labelText: 'Role'),
+              decoration: InputDecoration(labelText: 'Role'.tr()),
               items: FamilyRole.values.map((role) {
                 return DropdownMenuItem(
                   value: role,
@@ -937,10 +709,10 @@ class _MembersTab extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('Cancel'.tr()),
           ),
           AppButton.primary(
-            label: 'Send Invite',
+            label: 'Send Invite'.tr(),
             onPressed: () async {
               if (emailController.text.isEmpty) return;
 
@@ -957,11 +729,11 @@ class _MembersTab extends StatelessWidget {
                 );
                 Navigator.pop(context);
                 context.showSnackBar(
-                  const SnackBar(content: Text('Invitation sent!')),
+                  SnackBar(content: Text('Invitation sent!'.tr())),
                 );
               } catch (e) {
                 context.showSnackBar(
-                  const SnackBar(content: Text('Failed to send invitation')),
+                  SnackBar(content: Text('Failed to send invitation'.tr())),
                 );
               }
             },
@@ -978,7 +750,7 @@ class _MembersTab extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Change Role for ${member.displayName}'),
+        title: Text('Change Role for {memberName}'.tr(namedArgs: {'memberName': member.displayName})),
         content: DropdownButtonFormField<FamilyRole>(
           value: selectedRole,
           items: FamilyRole.values.map((role) {
@@ -994,10 +766,10 @@ class _MembersTab extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('Cancel'.tr()),
           ),
           AppButton.primary(
-            label: 'Update',
+            label: 'Update'.tr(),
             onPressed: () async {
               try {
                 final repo = context.read<FamilyRepository>();
@@ -1005,11 +777,11 @@ class _MembersTab extends StatelessWidget {
                     family.id, member.userId, selectedRole);
                 Navigator.pop(context);
                 context.showSnackBar(
-                  const SnackBar(content: Text('Role updated!')),
+                  SnackBar(content: Text('Role updated!'.tr())),
                 );
               } catch (e) {
                 context.showSnackBar(
-                  const SnackBar(content: Text('Failed to update role')),
+                  SnackBar(content: Text('Failed to update role'.tr())),
                 );
               }
             },
@@ -1024,27 +796,27 @@ class _MembersTab extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Remove ${member.displayName}?'),
+        title: Text('Remove {memberName}?'.tr(namedArgs: {'memberName': member.displayName})),
         content: Text(
-            'Are you sure you want to remove ${member.displayName} from the family?'),
+            'Are you sure you want to remove {memberName} from the family?'.tr(namedArgs: {'memberName': member.displayName})),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('Cancel'.tr()),
           ),
           AppButton.primary(
-            label: 'Remove',
+            label: 'Remove'.tr(),
             onPressed: () async {
               try {
                 final repo = context.read<FamilyRepository>();
                 await repo.removeMember(family.id, member.userId);
                 Navigator.pop(context);
                 context.showSnackBar(
-                  const SnackBar(content: Text('Member removed')),
+                  SnackBar(content: Text('Member removed'.tr())),
                 );
               } catch (e) {
                 context.showSnackBar(
-                  const SnackBar(content: Text('Failed to remove member')),
+                  SnackBar(content: Text('Failed to remove member'.tr())),
                 );
               }
             },
@@ -1082,7 +854,7 @@ class _BudgetsTab extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'No Budgets Yet',
+              'No Budgets Yet'.tr(),
               style: AppTypography.titleMedium(
                 color: isDark
                     ? AppColors.textPrimaryDark
@@ -1091,7 +863,7 @@ class _BudgetsTab extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Create budgets to track family spending',
+              'Create budgets to track family spending'.tr(),
               style: AppTypography.bodyMedium(
                 color: isDark
                     ? AppColors.textSecondaryDark
@@ -1101,7 +873,7 @@ class _BudgetsTab extends StatelessWidget {
             if (canEdit) ...[
               const SizedBox(height: 24),
               AppButton.primary(
-                label: 'Create Budget',
+                label: 'Create Budget'.tr(),
                 onPressed: () => _showCreateBudgetDialog(context, family),
                 icon: Icons.add,
               ),
@@ -1119,7 +891,7 @@ class _BudgetsTab extends StatelessWidget {
           return Padding(
             padding: const EdgeInsets.only(top: 16),
             child: AppButton.secondary(
-              label: 'Add Budget',
+              label: 'Add Budget'.tr(),
               onPressed: () => _showCreateBudgetDialog(context, family),
               icon: Icons.add,
               expanded: true,
@@ -1140,22 +912,22 @@ class _BudgetsTab extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Create Budget'),
+        title: Text('Create Budget'.tr()),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: categoryController,
-              decoration: const InputDecoration(
-                labelText: 'Category',
-                hintText: 'e.g., Groceries, Utilities',
+              decoration: InputDecoration(
+                labelText: 'Category'.tr(),
+                hintText: 'e.g., Groceries, Utilities'.tr(),
               ),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: amountController,
-              decoration: const InputDecoration(
-                labelText: 'Budget Amount',
+              decoration: InputDecoration(
+                labelText: 'Budget Amount'.tr(),
                 prefixText: '\$',
               ),
               keyboardType: TextInputType.number,
@@ -1165,17 +937,17 @@ class _BudgetsTab extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('Cancel'.tr()),
           ),
           AppButton.primary(
-            label: 'Create',
+            label: 'Create'.tr(),
             onPressed: () async {
               final amount = double.tryParse(amountController.text);
               if (categoryController.text.isEmpty ||
                   amount == null ||
                   amount <= 0) {
                 context.showSnackBar(
-                  const SnackBar(content: Text('Please fill in all fields')),
+                  SnackBar(content: Text('Please fill in all fields'.tr())),
                 );
                 return;
               }
@@ -1191,11 +963,11 @@ class _BudgetsTab extends StatelessWidget {
                 );
                 Navigator.pop(context);
                 context.showSnackBar(
-                  const SnackBar(content: Text('Budget created!')),
+                  SnackBar(content: Text('Budget created!'.tr())),
                 );
               } catch (e) {
                 context.showSnackBar(
-                  const SnackBar(content: Text('Failed to create budget')),
+                  SnackBar(content: Text('Failed to create budget'.tr())),
                 );
               }
             },

@@ -281,9 +281,9 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
 
           // Scan days back
           ListTile(
-            title: Text('Scan History', style: AppTypography.bodyMedium()),
+            title: Text('Scan History'.tr(), style: AppTypography.bodyMedium()),
             subtitle: Text(
-              'Scan SMS from last $_scanDaysBack days',
+              'Scan SMS from last {} days'.tr(args: [_scanDaysBack.toString()]),
               style: AppTypography.labelSmall(
                 color: AppColors.textSecondaryLight,
               ),
@@ -294,7 +294,7 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
               items: [7, 30, 60, 90, 180].map((days) {
                 return DropdownMenuItem(
                   value: days,
-                  child: Text('$days days'),
+                  child: Text('{} days'.tr(args: [days.toString()])),
                 );
               }).toList(),
               onChanged: (value) {
@@ -319,21 +319,21 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
               children: [
                 Expanded(
                   child: _buildStatItem(
-                    'Total',
+                    'Total'.tr(),
                     '${_summary!.totalTransactions}',
                     AppColors.primary,
                   ),
                 ),
                 Expanded(
                   child: _buildStatItem(
-                    'Debits',
+                    'Debits'.tr(),
                     '₹${_summary!.totalDebit.toStringAsFixed(0)}',
                     AppColors.error,
                   ),
                 ),
                 Expanded(
                   child: _buildStatItem(
-                    'Credits',
+                    'Credits'.tr(),
                     '₹${_summary!.totalCredit.toStringAsFixed(0)}',
                     AppColors.success,
                   ),
@@ -407,20 +407,20 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             AppButton.primary(
-              label: 'Scan Historical SMS',
+              label: 'Scan Historical SMS'.tr(),
               icon: Icons.history,
               onPressed: _isLoading ? null : _scanHistoricalSms,
               isLoading: _isLoading,
             ),
             const SizedBox(height: 12),
             AppButton.secondary(
-              label: 'Test SMS Parser',
+              label: 'Test SMS Parser'.tr(),
               icon: Icons.bug_report,
               onPressed: _showTestParser,
             ),
             const SizedBox(height: 12),
             AppButton.secondary(
-              label: 'View Pending Transactions',
+              label: 'View Pending Transactions'.tr(),
               icon: Icons.list,
               onPressed: _showPendingTransactions,
             ),
@@ -444,14 +444,14 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Revoke Permission'),
-          content: const Text(
-            'To revoke SMS permission, please go to Settings > Apps > Cashew > Permissions',
+          title: Text('Revoke Permission'.tr()),
+          content: Text(
+            'To revoke SMS permission, please go to Settings > Apps > Cashew > Permissions'.tr(),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('OK'),
+              child: Text('OK'.tr()),
             ),
           ],
         ),
@@ -484,7 +484,7 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
       if (mounted) {
         context.showSnackBar(
           SnackBar(
-            content: Text('Found ${transactions.length} UPI transactions'),
+            content: Text('Found {} UPI transactions'.tr(args: [transactions.length.toString()])),
           ),
         );
 
@@ -495,7 +495,7 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
     } catch (e) {
       if (mounted) {
         context.showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(content: Text('${'Error'.tr()}: $e')),
         );
       }
     } finally {
@@ -507,14 +507,14 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Test SMS Parser'),
+        title: Text('Test SMS Parser'.tr()),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
-              decoration: const InputDecoration(
-                hintText: 'Paste UPI SMS here...',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                hintText: 'Paste UPI SMS here...'.tr(),
+                border: const OutlineInputBorder(),
               ),
               maxLines: 5,
               onSubmitted: (value) => _testParser(value),
@@ -524,10 +524,10 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('Cancel'.tr()),
           ),
           AppButton.primary(
-            label: 'Test',
+            label: 'Test'.tr(),
             onPressed: () {},
           ),
         ],
@@ -556,7 +556,7 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Text(
-                  'Pending Transactions (${pending.length})',
+                  'Pending Transactions ({count})'.tr(namedArgs: {'count': pending.length.toString()}),
                   style: AppTypography.titleMedium(),
                 ),
               ),

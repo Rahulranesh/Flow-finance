@@ -103,7 +103,6 @@ class UPITransactionService extends ChangeNotifier {
   void processNotification(String packageName, String title, String content) {
     // Map package names to source apps
     final sourceApp = _getSourceAppFromPackage(packageName);
-    if (sourceApp == null) return;
 
     // Try to extract transaction details from notification
     final amount = _smsParser.extractAmount(content);
@@ -139,8 +138,7 @@ class UPITransactionService extends ChangeNotifier {
     }
 
     final transactions = <UPITransaction>[];
-    final cutoffDate = DateTime.now().subtract(Duration(days: daysBack));
-    
+
     // In real implementation:
     // - Query SMS inbox using telephony plugin
     // - Filter by date and sender

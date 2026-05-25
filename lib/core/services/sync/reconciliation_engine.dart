@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import '../../models/bank_account.dart' as bank;
 import '../../models/bank_transaction.dart' as bank_tx;
@@ -300,7 +299,6 @@ class ReconciliationEngine {
   Future<void> applySmartCategorization(List<bank_tx.BankTransaction> transactions) async {
     for (final tx in transactions) {
       if (tx.categories.isEmpty) {
-        final suggestedCategory = suggestCategory(tx);
         // Update transaction with suggested category
         // Implementation would update in database
       }

@@ -73,34 +73,36 @@ class AppScaffold extends StatelessWidget {
           : null,
       body: body == null
           ? null
-          : Stack(
-              children: [
-                Positioned(
-                  top: -120,
-                  right: -40,
-                  child: IgnorePointer(
-                    child: Container(
-                      width: 240,
-                      height: 240,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: RadialGradient(
-                          colors: [
-                            AppColors.primary.withOpacity(isDark ? 0.08 : 0.12),
-                            Colors.transparent,
-                          ],
+          : SafeArea(
+              child: Stack(
+                children: [
+                  Positioned(
+                    top: -120,
+                    right: -40,
+                    child: IgnorePointer(
+                      child: Container(
+                        width: 240,
+                        height: 240,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: RadialGradient(
+                            colors: [
+                              AppColors.primary.withOpacity(isDark ? 0.08 : 0.12),
+                              Colors.transparent,
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                AnimatedSwitcher(
-                  duration: AppAnimations.medium,
-                  switchInCurve: AppAnimations.easeOutCubic,
-                  switchOutCurve: AppAnimations.easeInOut,
-                  child: body!,
-                ),
-              ],
+                  AnimatedSwitcher(
+                    duration: AppAnimations.medium,
+                    switchInCurve: AppAnimations.easeOutCubic,
+                    switchOutCurve: AppAnimations.easeInOut,
+                    child: body!,
+                  ),
+                ],
+              ),
             ),
       bottomNavigationBar: bottomNavigationBar,
       floatingActionButton: floatingActionButton,
