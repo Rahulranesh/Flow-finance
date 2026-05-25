@@ -22,6 +22,7 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
   bool _hasPermission = false;
   List<Transaction> _transactions = [];
   DateTimeRange? _dateRange;
+  bool _didShowImportPrompt = false;
 
   @override
   void initState() {
@@ -36,9 +37,13 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
 
   Future<void> _checkPermissions() async {
     final hasPermission = await _smsService.hasPermissions();
+    if (!mounted) return;
     setState(() {
       _hasPermission = hasPermission;
     });
+    if (hasPermission) {
+      _showImportSetupIfNeeded();
+    }
   }
 
   Future<void> _requestPermissions() async {
@@ -54,7 +59,7 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
     });
 
     if (granted) {
-      _syncTransactions();
+      _showImportSetupIfNeeded(force: true);
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -65,6 +70,16 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
         );
       }
     }
+  }
+
+  void _showImportSetupIfNeeded({bool force = false}) {
+    if (!_hasPermission || !mounted) return;
+    if (_didShowImportPrompt && !force) return;
+    _didShowImportPrompt = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _showImportSetupSheet();
+    });
   }
 
   Future<void> _selectDateRange() async {
@@ -92,9 +107,179 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
       setState(() {
         _dateRange = picked;
       });
-      // Auto-sync after date range selection
-      _syncTransactions();
     }
+  }
+
+  Future<void> _showImportSetupSheet() async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final textSecondary = AppColors.textSecondary(context);
+
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            void setQuickRange(int days) {
+              final now = DateTime.now();
+              final nextRange = DateTimeRange(
+                start: days >= 3650
+                    ? DateTime(2020)
+                    : now.subtract(Duration(days: days)),
+                end: now,
+              );
+              setState(() {
+                _dateRange = nextRange;
+              });
+              setSheetState(() {});
+            }
+
+            return SafeArea(
+              top: false,
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.surfaceDark : Colors.white,
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(28),
+                  ),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 48,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          color: textSecondary.withOpacity(0.25),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Choose SMS import period'.tr(),
+                      style: AppTypography.titleLarge().copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Pick the exact bank SMS history window to scan before importing transactions.'
+                          .tr(),
+                      style: AppTypography.bodyMedium(color: textSecondary),
+                    ),
+                    const SizedBox(height: 20),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: [
+                        _QuickRangeChip(
+                          label: 'Last 7 days'.tr(),
+                          onTap: () => setQuickRange(7),
+                        ),
+                        _QuickRangeChip(
+                          label: 'Last 30 days'.tr(),
+                          onTap: () => setQuickRange(30),
+                        ),
+                        _QuickRangeChip(
+                          label: 'Last 90 days'.tr(),
+                          onTap: () => setQuickRange(90),
+                        ),
+                        _QuickRangeChip(
+                          label: 'Full history'.tr(),
+                          onTap: () => setQuickRange(3650),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    InkWell(
+                      onTap: () async {
+                        await _selectDateRange();
+                        setSheetState(() {});
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      child: Ink(
+                        padding: const EdgeInsets.all(18),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              AppColors.primary.withOpacity(0.16),
+                              AppColors.secondary.withOpacity(0.12),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: AppColors.primary.withOpacity(0.25),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withOpacity(0.14),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: Icon(
+                                Icons.calendar_month_rounded,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Import range'.tr(),
+                                    style: AppTypography.labelMedium(
+                                      color: textSecondary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    _dateRange == null
+                                        ? 'Select date range'.tr()
+                                        : '${_formatDate(_dateRange!.start)} - ${_formatDate(_dateRange!.end)}',
+                                    style: AppTypography.bodyLarge().copyWith(
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              size: 16,
+                              color: textSecondary,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    AppButton.primary(
+                      label: 'Scan SMS transactions'.tr(),
+                      onPressed: () async {
+                        Navigator.of(context).pop();
+                        await _syncTransactions();
+                      },
+                      icon: Icons.sync_rounded,
+                      expanded: true,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   Future<void> _syncTransactions() async {
@@ -165,6 +350,11 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
       actions: _hasPermission
           ? [
               IconButton(
+                icon: const Icon(Icons.tune_rounded),
+                onPressed: _showImportSetupSheet,
+                tooltip: 'Import setup'.tr(),
+              ),
+              IconButton(
                 icon: const Icon(Icons.date_range),
                 onPressed: _selectDateRange,
                 tooltip: 'Select Date Range'.tr(),
@@ -205,6 +395,38 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
                       ),
                     ),
                   ],
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.primary.withOpacity(0.08),
+                        AppColors.secondary.withOpacity(0.06),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.info_outline_rounded,
+                        color: AppColors.primary,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Choose from and to dates before scanning so imports stay accurate and fast.'
+                              .tr(),
+                          style: AppTypography.bodySmall(
+                            color: AppColors.textSecondary(context),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 16),
                 InkWell(
@@ -273,7 +495,7 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
                 ),
                 const SizedBox(height: 16),
                 AppButton.primary(
-                  label: 'Sync Transactions'.tr(),
+                  label: 'Scan SMS transactions'.tr(),
                   onPressed: _syncTransactions,
                   icon: Icons.sync,
                   expanded: true,
@@ -369,8 +591,10 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
             gradient: LinearGradient(
               colors: [
                 AppColors.primary,
-                AppColors.primary.withOpacity(0.8),
+                AppColors.secondary,
               ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
           ),
           child: SafeArea(
@@ -420,8 +644,8 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
                 ),
                 const SizedBox(height: 12),
                 AppButton.secondary(
-                  label: 'Refresh'.tr(),
-                  onPressed: _syncTransactions,
+                  label: 'Change range'.tr(),
+                  onPressed: _showImportSetupSheet,
                   icon: Icons.refresh,
                   expanded: true,
                 ),
@@ -494,51 +718,123 @@ class _TransactionItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isExpense = transaction.type == TransactionType.expense;
+    final noteBits = (transaction.note ?? '')
+        .split('•')
+        .map((part) => part.trim())
+        .where((part) => part.isNotEmpty)
+        .toList();
 
     return AppCard(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
-      child: Row(
+      child: Column(
         children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: (isExpense ? AppColors.error : AppColors.success)
-                  .withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              isExpense ? Icons.arrow_downward : Icons.arrow_upward,
-              color: isExpense ? AppColors.error : AppColors.success,
-            ),
+          Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: (isExpense ? AppColors.error : AppColors.success)
+                      .withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  isExpense ? Icons.arrow_downward : Icons.arrow_upward,
+                  color: isExpense ? AppColors.error : AppColors.success,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      transaction.title,
+                      style:
+                          AppTypography.bodyLarge(fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${transaction.category} • ${transaction.date.day}/${transaction.date.month}/${transaction.date.year}',
+                      style: AppTypography.bodySmall(
+                        color: AppColors.textSecondary(context),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                '${isExpense ? '-' : '+'}${CurrencyFormatter.format(transaction.amount, currencyCode: transaction.currency)}',
+                style: AppTypography.titleSmall(
+                  color: isExpense ? AppColors.error : AppColors.success,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          if (transaction.paymentMethod != null || noteBits.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
               children: [
-                Text(
-                  transaction.title,
-                  style: AppTypography.bodyLarge(fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  transaction.category,
-                  style: AppTypography.bodySmall(
-                    color: AppColors.textSecondary(context),
-                  ),
-                ),
+                if (transaction.paymentMethod != null)
+                  _InfoPill(label: transaction.paymentMethod!),
+                for (final bit in noteBits.take(3)) _InfoPill(label: bit),
               ],
             ),
-          ),
-          Text(
-            '${isExpense ? '-' : '+'}${CurrencyFormatter.format(transaction.amount, currencyCode: transaction.currency)}',
-            style: AppTypography.titleSmall(
-              color: isExpense ? AppColors.error : AppColors.success,
-            ),
-          ),
+          ],
         ],
+      ),
+    );
+  }
+}
+
+class _QuickRangeChip extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _QuickRangeChip({
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ActionChip(
+      onPressed: onTap,
+      backgroundColor: AppColors.primary.withOpacity(0.08),
+      side: BorderSide(color: AppColors.primary.withOpacity(0.16)),
+      label: Text(
+        label,
+        style: AppTypography.labelMedium(
+          color: AppColors.primary,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+class _InfoPill extends StatelessWidget {
+  final String label;
+
+  const _InfoPill({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: AppTypography.labelSmall(
+          color: AppColors.textSecondary(context),
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }

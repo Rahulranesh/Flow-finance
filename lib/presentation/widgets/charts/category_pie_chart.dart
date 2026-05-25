@@ -54,9 +54,62 @@ class CategoryPieChart extends StatelessWidget {
     }
 
     final total = categoryData.values.fold(0.0, (sum, amount) => sum + amount);
+    final topCategory = categoryData.entries.first;
 
     return Column(
       children: [
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                _getCategoryColor(topCategory.key).withOpacity(0.16),
+                AppColors.primary.withOpacity(0.06),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: _getCategoryColor(topCategory.key).withOpacity(0.16),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(
+                  Icons.auto_awesome_rounded,
+                  color: _getCategoryColor(topCategory.key),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Top spend category'.tr(),
+                      style: AppTypography.labelMedium(
+                        color: isDark
+                            ? AppColors.textSecondaryDark
+                            : AppColors.textSecondaryLight,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${topCategory.key} • ${topCategory.value.toCurrency(decimalDigits: 0)}',
+                      style: AppTypography.titleSmall().copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 18),
         // Enhanced Pie Chart with better spacing and shadows
         Container(
           height: radius * 2 + 60,

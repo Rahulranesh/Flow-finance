@@ -32,9 +32,38 @@ class TrendChart extends StatelessWidget {
     final incomeData = _getIncomeData();
     final expenseData = _getExpenseData();
     final balanceData = _getBalanceData();
+    final netFlow = transactions.fold<double>(0, (sum, transaction) {
+      if (transaction.type == TransactionType.income) {
+        return sum + transaction.amount;
+      }
+      if (transaction.type == TransactionType.expense) {
+        return sum - transaction.amount;
+      }
+      return sum;
+    });
 
     return Column(
       children: [
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          alignment: WrapAlignment.center,
+          children: [
+            _buildInsightChip(
+              context,
+              'Net trend'.tr(),
+              netFlow.toCurrency(decimalDigits: 0),
+              netFlow >= 0 ? AppColors.success : AppColors.error,
+            ),
+            _buildInsightChip(
+              context,
+              'Transactions'.tr(),
+              '${transactions.length}',
+              AppColors.primary,
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
         // Legend
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -90,9 +119,18 @@ class TrendChart extends StatelessWidget {
                   sideTitles: SideTitles(
                     showTitles: true,
                     reservedSize: 30,
-                    getTitlesWidget: (value, meta) {
+                  getTitlesWidget: (value, meta) {
                       final date =
                           DateTime.fromMillisecondsSinceEpoch(value.toInt());
+                      final interval = _getBottomLabelInterval();
+                      final index = meta.appliedInterval == 0
+                          ? 0
+                          : ((value - meta.min) / meta.appliedInterval).round();
+                      if (index % interval != 0 &&
+                          value != meta.min &&
+                          value != meta.max) {
+                        return const SizedBox.shrink();
+                      }
                       return Padding(
                         padding: const EdgeInsets.only(top: 8),
                         child: Text(
@@ -179,6 +217,41 @@ class TrendChart extends StatelessWidget {
           style: AppTypography.bodySmall(),
         ),
       ],
+    );
+  }
+
+  Widget _buildInsightChip(
+    BuildContext context,
+    String label,
+    String value,
+    Color color,
+  ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withOpacity(0.14)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: AppTypography.labelSmall(
+              color: AppColors.textSecondary(context),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: AppTypography.bodyMedium(
+              color: color,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -281,6 +354,14 @@ class TrendChart extends StatelessWidget {
 
     final maxAmount = allAmounts.reduce((a, b) => a > b ? a : b);
     return maxAmount / 5;
+  }
+
+  int _getBottomLabelInterval() {
+    final span = endDate.difference(startDate).inDays;
+    if (span <= 10) return 1;
+    if (span <= 31) return 3;
+    if (span <= 90) return 7;
+    return 14;
   }
 }
 

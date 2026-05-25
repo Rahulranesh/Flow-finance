@@ -41,6 +41,32 @@ class CashFlowChart extends StatelessWidget {
 
     return Column(
       children: [
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          alignment: WrapAlignment.center,
+          children: [
+            _buildMetricPill(
+              context,
+              'Net Flow'.tr(),
+              (transactions
+                          .where((t) => t.type == TransactionType.income)
+                          .fold<double>(0, (sum, t) => sum + t.amount) -
+                      transactions
+                          .where((t) => t.type == TransactionType.expense)
+                          .fold<double>(0, (sum, t) => sum + t.amount))
+                  .toCurrency(decimalDigits: 0),
+              AppColors.primary,
+            ),
+            _buildMetricPill(
+              context,
+              showDaily ? 'Daily view'.tr() : 'Monthly view'.tr(),
+              showDaily ? 'Live spread'.tr() : 'Grouped trend'.tr(),
+              AppColors.secondary,
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
         // Legend
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -59,6 +85,7 @@ class CashFlowChart extends StatelessWidget {
             BarChartData(
               alignment: BarChartAlignment.spaceAround,
               maxY: _getMaxY(),
+              groupsSpace: showDaily ? 10 : 18,
               barTouchData: BarTouchData(
                 touchTooltipData: BarTouchTooltipData(
                   getTooltipColor: (group) =>
@@ -229,8 +256,8 @@ class CashFlowChart extends StatelessWidget {
             color: isDark ? AppColors.borderDark : AppColors.borderLight,
           ),
           Expanded(
-            child: _buildSummaryItem(
-              'Balance',
+          child: _buildSummaryItem(
+              'Balance'.tr(),
               balance,
               balance >= 0 ? AppColors.primary : AppColors.error,
             ),
@@ -257,6 +284,41 @@ class CashFlowChart extends StatelessWidget {
           ).copyWith(fontWeight: FontWeight.bold),
         ),
       ],
+    );
+  }
+
+  Widget _buildMetricPill(
+    BuildContext context,
+    String label,
+    String value,
+    Color color,
+  ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withOpacity(0.14)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: AppTypography.labelSmall(
+              color: AppColors.textSecondary(context),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: AppTypography.bodyMedium(
+              color: color,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -312,7 +374,14 @@ class CashFlowChart extends StatelessWidget {
         barRods: [
           BarChartRodData(
             toY: values['income'] ?? 0,
-            color: AppColors.success,
+            gradient: LinearGradient(
+              colors: [
+                AppColors.success.withOpacity(0.75),
+                AppColors.success,
+              ],
+              begin: Alignment.bottomCenter,
+              end: Alignment.topCenter,
+            ),
             width: 8,
             borderRadius: const BorderRadius.vertical(
               top: Radius.circular(4),
@@ -320,7 +389,14 @@ class CashFlowChart extends StatelessWidget {
           ),
           BarChartRodData(
             toY: values['expense'] ?? 0,
-            color: AppColors.error,
+            gradient: LinearGradient(
+              colors: [
+                AppColors.error.withOpacity(0.75),
+                AppColors.error,
+              ],
+              begin: Alignment.bottomCenter,
+              end: Alignment.topCenter,
+            ),
             width: 8,
             borderRadius: const BorderRadius.vertical(
               top: Radius.circular(4),
@@ -361,7 +437,14 @@ class CashFlowChart extends StatelessWidget {
         barRods: [
           BarChartRodData(
             toY: values['income'] ?? 0,
-            color: AppColors.success,
+            gradient: LinearGradient(
+              colors: [
+                AppColors.success.withOpacity(0.75),
+                AppColors.success,
+              ],
+              begin: Alignment.bottomCenter,
+              end: Alignment.topCenter,
+            ),
             width: 16,
             borderRadius: const BorderRadius.vertical(
               top: Radius.circular(4),
@@ -369,7 +452,14 @@ class CashFlowChart extends StatelessWidget {
           ),
           BarChartRodData(
             toY: values['expense'] ?? 0,
-            color: AppColors.error,
+            gradient: LinearGradient(
+              colors: [
+                AppColors.error.withOpacity(0.75),
+                AppColors.error,
+              ],
+              begin: Alignment.bottomCenter,
+              end: Alignment.topCenter,
+            ),
             width: 16,
             borderRadius: const BorderRadius.vertical(
               top: Radius.circular(4),
@@ -414,7 +504,7 @@ class CashFlowChart extends StatelessWidget {
         max = transaction.amount;
       }
     }
-    return max * 1.2;
+    return max == 0 ? 100 : max * 1.2;
   }
 
   double _getHorizontalInterval() {

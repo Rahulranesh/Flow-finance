@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:telephony/telephony.dart';
 import '../../data/models/transaction_model.dart';
 
@@ -11,7 +12,7 @@ class SmsTransactionService {
       final bool? result = await telephony.requestPhoneAndSmsPermissions;
       return result ?? false;
     } catch (e) {
-      print('Error requesting SMS permissions: $e');
+      debugPrint('Error requesting SMS permissions: $e');
       return false;
     }
   }
@@ -71,7 +72,7 @@ class SmsTransactionService {
 
       return filteredMessages;
     } catch (e) {
-      print('Error getting SMS messages: $e');
+      debugPrint('Error getting SMS messages: $e');
       return [];
     }
   }
@@ -103,6 +104,7 @@ class SmsTransactionService {
       }
     }
 
+    transactions.sort((a, b) => b.date.compareTo(a.date));
     return transactions;
   }
 
@@ -147,6 +149,7 @@ class SmsTransactionService {
     final reference = _extractReference(body);
     final note = _buildNote(
       bankName: bankName,
+      counterparty: counterparty,
       upiId: upiId,
       reference: reference,
       source: address,
@@ -286,6 +289,10 @@ class SmsTransactionService {
         r'(?:paid to|sent to)\s+([A-Za-z0-9\s&.\-]+)',
         caseSensitive: false,
       ),
+      RegExp(
+        r'(?:trf to|transfer to|purchase at)\s+([A-Za-z0-9\s&.\-]+)',
+        caseSensitive: false,
+      ),
     ];
 
     for (final pattern in patterns) {
@@ -310,6 +317,14 @@ class SmsTransactionService {
       ),
       RegExp(
         r'(?:from|to)\s+([A-Za-z][A-Za-z0-9\s.&\-]{2,40})\s+(?:upi|a\/c|acct|ref|utr|on)',
+        caseSensitive: false,
+      ),
+      RegExp(
+        r'(?:vpa|upi id)\s*[:\-]?\s*([A-Za-z0-9.\-_]{2,}@[A-Za-z0-9]+)',
+        caseSensitive: false,
+      ),
+      RegExp(
+        r'(?:collect from|received from)\s+([A-Za-z][A-Za-z0-9\s.&\-]{2,40})',
         caseSensitive: false,
       ),
     ];
@@ -343,6 +358,14 @@ class SmsTransactionService {
       'PAYTM': 'Paytm Payments Bank',
       'GPAY': 'Google Pay',
       'PHONEPE': 'PhonePe',
+      'AIRTEL': 'Airtel Payments Bank',
+      'BOI': 'Bank of India',
+      'IOB': 'Indian Overseas Bank',
+      'UCO': 'UCO Bank',
+      'RBL': 'RBL Bank',
+      'FEDERAL': 'Federal Bank',
+      'HSBC': 'HSBC',
+      'DBS': 'DBS Bank',
     };
 
     for (final entry in banks.entries) {
@@ -396,6 +419,12 @@ class SmsTransactionService {
       if (_containsAny(lowerBody, ['salary', 'payroll'])) {
         return 'Salary';
       }
+      if (_containsAny(lowerBody, ['rent'])) {
+        return 'Rental Income';
+      }
+      if (_containsAny(lowerBody, ['bonus', 'incentive'])) {
+        return 'Bonus';
+      }
       if (_containsAny(lowerBody, ['refund', 'cashback'])) {
         return 'Refund';
       }
@@ -421,6 +450,9 @@ class SmsTransactionService {
       'biryani',
       'hotel',
       'bakery',
+      'juice',
+      'tea',
+      'coffee',
     ])) {
       return 'Food & Dining';
     }
@@ -439,6 +471,8 @@ class SmsTransactionService {
       'irctc',
       'bus',
       'fastag',
+      'uber moto',
+      'petrol bunk',
     ])) {
       return 'Transportation';
     }
@@ -455,6 +489,10 @@ class SmsTransactionService {
       'mart',
       'bazaar',
       'supermarket',
+      'dmart',
+      'reliance fresh',
+      'jiomart',
+      'bigbasket',
     ])) {
       return 'Shopping';
     }
@@ -471,6 +509,7 @@ class SmsTransactionService {
       'pvr',
       'inox',
       'bookmyshow',
+      'gaming',
     ])) {
       return 'Entertainment';
     }
@@ -488,6 +527,8 @@ class SmsTransactionService {
       'postpaid',
       'dth',
       'emi',
+      'loan',
+      'insurance',
     ])) {
       return 'Bills & Utilities';
     }
@@ -510,6 +551,38 @@ class SmsTransactionService {
       return 'Education';
     }
 
+    if (_containsAny(lowerMerchant, [
+      'medical',
+      'pharma',
+      'hospital',
+      'clinic',
+    ])) {
+      return 'Health & Fitness';
+    }
+
+    if (_containsAny(lowerBody, [
+      'grocer',
+      'grocery',
+      'vegetable',
+      'super market',
+      'kirana',
+      'provision',
+    ])) {
+      return 'Groceries';
+    }
+
+    if (_containsAny(lowerBody, [
+      'mutual fund',
+      'sip',
+      'stocks',
+      'demat',
+      'zerodha',
+      'groww',
+      'upstox',
+    ])) {
+      return 'Investment';
+    }
+
     if (_containsAny(lowerBody, ['atm', 'cash withdrawal'])) {
       return 'Cash Withdrawal';
     }
@@ -524,12 +597,15 @@ class SmsTransactionService {
 
   String _buildNote({
     required String? bankName,
+    required String? counterparty,
     required String? upiId,
     required String? reference,
     required String source,
   }) {
     final pieces = <String>[
       if (bankName != null) bankName,
+      if (counterparty != null && counterparty != bankName)
+        'Person: $counterparty',
       if (upiId != null) 'UPI: $upiId',
       if (reference != null) 'Ref: $reference',
       'SMS: $source',
