@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
@@ -17,6 +18,10 @@ class FirebaseNotificationService {
     if (_isInitialized) return;
 
     try {
+      if (Firebase.apps.isEmpty) {
+        await Firebase.initializeApp();
+      }
+
       // Request permission
       final settings = await _firebaseMessaging.requestPermission(
         alert: true,
@@ -172,6 +177,9 @@ class FirebaseNotificationService {
 /// Background message handler (must be top-level function)
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp();
+  }
   print('Handling background message: ${message.messageId}');
   // Handle background message
 }

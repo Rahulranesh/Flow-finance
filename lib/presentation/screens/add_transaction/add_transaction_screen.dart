@@ -148,6 +148,15 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         top: false,
         child: Column(
           children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+              child: FlowMascotBubble(
+                message: _isExpense
+                    ? 'What did you spend on?'
+                    : 'Nice. Let\'s log your income.',
+                subtitle: 'One step at a time. No forms, no pressure.',
+              ),
+            ),
             _AmountDisplay(
               amount: _amount,
               isExpense: _isExpense,
@@ -169,6 +178,14 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                           _selectedCategory = category;
                         });
                       },
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: FlowMascotBubble(
+                        message: 'Smart pick: $_selectedCategory',
+                        subtitle:
+                            'Tap a category above or keep moving if this is correct.',
+                      ),
                     ),
                     _WalletSelector(
                       selectedWalletId: _selectedWalletId,

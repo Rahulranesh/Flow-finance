@@ -5,6 +5,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import '../theme/app_animations.dart';
 import '../theme/app_shadows.dart';
+import 'package:lottie/lottie.dart';
 import 'app_button.dart';
 
 /// Modern loading states and skeleton screens
@@ -22,7 +23,18 @@ class AppLoading {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const AppSpinner(size: AppSpinnerSize.large),
+                SizedBox(
+                  width: 80,
+                  height: 80,
+                  child: Lottie.asset(
+                    'assets/mascot.json',
+                    fit: BoxFit.contain,
+                    repeat: true,
+                    animate: true,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const AppSpinner(size: AppSpinnerSize.medium),
                 if (message != null) ...[
                   const SizedBox(height: 16),
                   Text(
@@ -393,6 +405,17 @@ class AppEmptyState extends StatelessWidget {
                   size: 40,
                   color: AppColors.primary,
                 ),
+              )
+            else
+              SizedBox(
+                width: 120,
+                height: 120,
+                child: Lottie.asset(
+                  'assets/mascot.json',
+                  fit: BoxFit.contain,
+                  repeat: true,
+                  animate: true,
+                ),
               ),
             const SizedBox(height: 24),
             Text(
@@ -453,17 +476,14 @@ class AppErrorState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: AppColors.error.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: const Icon(
-                Icons.error_outline,
-                size: 40,
-                color: AppColors.error,
+            SizedBox(
+              width: 120,
+              height: 120,
+              child: Lottie.asset(
+                'assets/mascot.json',
+                fit: BoxFit.contain,
+                repeat: true,
+                animate: true,
               ),
             ),
             const SizedBox(height: 24),

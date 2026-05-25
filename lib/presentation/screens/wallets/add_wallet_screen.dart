@@ -5,6 +5,7 @@ import '../../../core/services/currency_formatter.dart';
 import '../../../core/theme/theme.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../../data/models/wallet_model.dart';
+import 'package:flow_finance/core/utils/extensions.dart';
 import '../../blocs/wallet_bloc.dart';
 
 /// Add/Edit wallet screen
@@ -374,7 +375,7 @@ class _AddWalletScreenState extends State<AddWalletScreen> {
 
       if (mounted) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
+        context.showSnackBar(
           SnackBar(
             content: Text(
               widget.wallet != null
@@ -386,7 +387,7 @@ class _AddWalletScreenState extends State<AddWalletScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        context.showSnackBar(
           SnackBar(
             content: Text('${'Error'.tr()}: $e'),
             backgroundColor: AppColors.error,

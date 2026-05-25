@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/theme/theme.dart';
 import '../../../core/widgets/widgets.dart';
 import '../navigation/main_navigation_screen.dart';
@@ -65,6 +66,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   void _finishOnboarding() {
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setBool('seen_onboarding', true);
+    });
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(

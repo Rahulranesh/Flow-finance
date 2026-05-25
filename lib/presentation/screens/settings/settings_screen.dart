@@ -18,6 +18,10 @@ import 'sms_sync_screen.dart';
 import 'google_pay_sync_screen.dart';
 import '../family/family_screen.dart';
 import '../goals/goals_screen.dart';
+import '../wallets/wallets_screen.dart';
+import '../recurring/recurring_transactions_screen.dart';
+import '../bank_integration/bank_connect_screen.dart';
+import '../automation/automation_screen.dart';
 import '../../blocs/blocs.dart';
 
 /// Modern settings screen with grouped sections
@@ -257,6 +261,59 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         subtitle:
                             '${controller.currencyCode} (${CurrencyFormatter.currentCurrency.symbol})',
                         onTap: () => _pickCurrency(controller),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  _SettingsSection(
+                    title: 'Accounts & Features'.tr(),
+                    children: [
+                      _SettingsTile(
+                        icon: Icons.account_balance_wallet,
+                        iconColor: AppColors.income,
+                        title: 'Wallets & Accounts'.tr(),
+                        subtitle: 'Manage your cash and bank accounts'.tr(),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const WalletsScreen()),
+                        ),
+                      ),
+                      const _SettingsDivider(),
+                      _SettingsTile(
+                        icon: Icons.repeat,
+                        iconColor: AppColors.primary,
+                        title: 'Recurring Transactions'.tr(),
+                        subtitle: 'Manage subscriptions and repeat bills'.tr(),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const RecurringTransactionsScreen()),
+                        ),
+                      ),
+                      const _SettingsDivider(),
+                      _SettingsTile(
+                        icon: Icons.account_balance,
+                        iconColor: AppColors.info,
+                        title: 'Bank Integration'.tr(),
+                        subtitle: 'Connect your real bank accounts'.tr(),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const BankConnectScreen()),
+                        ),
+                      ),
+                      const _SettingsDivider(),
+                      _SettingsTile(
+                        icon: Icons.auto_awesome,
+                        iconColor: AppColors.warning,
+                        title: 'Automation & Rules'.tr(),
+                        subtitle: 'Smart routing and categorization'.tr(),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const AutomationScreen()),
+                        ),
                       ),
                     ],
                   ),

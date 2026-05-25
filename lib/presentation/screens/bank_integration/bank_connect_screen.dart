@@ -8,6 +8,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_scaffold.dart';
+import 'package:flow_finance/core/utils/extensions.dart';
 import '../../blocs/wallet_bloc.dart';
 
 /// Screen for connecting bank accounts
@@ -409,7 +410,7 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      context.showSnackBar(
         SnackBar(content: Text('Error loading banks: $e')),
       );
     } finally {
@@ -465,7 +466,7 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
 
     // Start bank connection flow
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      context.showSnackBar(
         SnackBar(
           content: Text('Connecting to ${institution.name}...'),
           duration: const Duration(seconds: 2),

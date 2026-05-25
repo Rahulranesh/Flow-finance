@@ -10,6 +10,7 @@ import '../../../core/widgets/app_scaffold.dart';
 import '../../../core/widgets/app_loading.dart';
 import '../../../data/models/wallet_model.dart';
 import '../../blocs/wallet_bloc.dart';
+import 'package:flow_finance/core/utils/extensions.dart';
 import 'add_wallet_screen.dart';
 
 class WalletsScreen extends StatefulWidget {
@@ -435,7 +436,7 @@ class _WalletTransferDialogState extends State<WalletTransferDialog> {
   void _transfer() {
     final amount = double.tryParse(_amountController.text) ?? 0.0;
     if (amount <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      context.showSnackBar(
         SnackBar(content: Text('Please enter a valid amount'.tr())),
       );
       return;

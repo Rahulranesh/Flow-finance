@@ -13,8 +13,9 @@ import '../settings/google_pay_sync_screen.dart';
 import '../add_transaction/add_transaction_screen.dart';
 import '../transactions/transactions_screen.dart';
 import '../reports/reports_screen.dart';
+import '../ai_insights/ai_insights_screen.dart';
+import '../../widgets/home_floating_mascot.dart';
 
-/// Modern home screen with balance overview, quick actions, and recent transactions
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -42,9 +43,31 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         const SizedBox(width: 16),
       ],
-      body: CustomScrollView(
-        slivers: [
-          // Balance Hero Section
+      body: Stack(
+        children: [
+          CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                  child: FlowMascotBubble(
+                    message: 'Welcome back. I\'ll keep your money simple today.',
+                    subtitle:
+                        'Check your balance, log spending, or ask for a quick insight.',
+                    actionLabel: 'Add expense',
+                    onAction: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const AddTransactionScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+
+              // Balance Hero Section
           SliverToBoxAdapter(
             child: _BalanceHeroCard(),
           ),
@@ -139,7 +162,10 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      floatingActionButton: AppFAB(
+      const HomeFloatingMascot(),
+    ],
+  ),
+  floatingActionButton: AppFAB(
         onPressed: () {
           Navigator.push(
             context,
@@ -379,12 +405,13 @@ class _QuickActionsRow extends StatelessWidget {
       ),
       _ActionItem(
         icon: Icons.auto_awesome,
-        label: 'Auto Sync',
+        label: 'AI Insights',
         color: AppColors.warning,
         onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Auto sync will run in background'),
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const AIInsightsScreen(),
             ),
           );
         },

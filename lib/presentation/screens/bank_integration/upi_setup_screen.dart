@@ -6,6 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
+import 'package:flow_finance/core/utils/extensions.dart';
 import '../../../core/widgets/app_scaffold.dart';
 
 /// Screen for setting up UPI transaction tracking
@@ -481,7 +482,7 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        context.showSnackBar(
           SnackBar(
             content: Text('Found ${transactions.length} UPI transactions'),
           ),
@@ -493,7 +494,7 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        context.showSnackBar(
           SnackBar(content: Text('Error: $e')),
         );
       }

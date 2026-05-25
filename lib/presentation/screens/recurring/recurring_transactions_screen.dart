@@ -11,6 +11,7 @@ import '../../../core/widgets/app_scaffold.dart';
 import '../../../core/widgets/app_loading.dart';
 import '../../../data/models/recurring_transaction_model.dart';
 import '../../../data/models/transaction_model.dart';
+import 'package:flow_finance/core/utils/extensions.dart';
 import '../../../data/repositories/recurring_transaction_repository.dart';
 
 /// Recurring transactions management screen
@@ -50,7 +51,7 @@ class _RecurringTransactionsScreenState
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        context.showSnackBar(
           SnackBar(content: Text('Failed to load recurring transactions'.tr())),
         );
       }
@@ -319,7 +320,7 @@ class _RecurringTransactionsScreenState
             Navigator.pop(context);
             _loadData();
           } catch (e) {
-            ScaffoldMessenger.of(context).showSnackBar(
+            context.showSnackBar(
               SnackBar(
                 content: Text(
                   isEditing
@@ -341,7 +342,7 @@ class _RecurringTransactionsScreenState
       _loadData();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        context.showSnackBar(
           SnackBar(content: Text('Failed to update transaction'.tr())),
         );
       }
@@ -376,7 +377,7 @@ class _RecurringTransactionsScreenState
         _loadData();
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
+          context.showSnackBar(
             SnackBar(content: Text('Failed to delete transaction'.tr())),
           );
         }
@@ -854,21 +855,21 @@ class _RecurringTransactionFormState extends State<_RecurringTransactionForm> {
   void _save() {
     final amount = double.tryParse(_amountController.text);
     if (amount == null || amount <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      context.showSnackBar(
         SnackBar(content: Text('Please enter a valid amount'.tr())),
       );
       return;
     }
 
     if (_titleController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      context.showSnackBar(
         SnackBar(content: Text('Please enter a title'.tr())),
       );
       return;
     }
 
     if (_categoryController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      context.showSnackBar(
         SnackBar(content: Text('Please select a category'.tr())),
       );
       return;

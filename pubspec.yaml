@@ -110,6 +110,7 @@ dependencies:
   printing: ^5.14.3
   permission_handler: ^11.3.1
   telephony: ^0.2.0
+  lottie: ^3.3.0
   
 # flutter pub run flutter_launcher_icons:main
 flutter_icons:
@@ -152,6 +153,7 @@ flutter:
   # https://flutter.dev/assets-and-images/#from-packages
 
   assets:
+    - assets/mascot.json
     - assets/fonts/
     - assets/categories/
     - assets/banner/

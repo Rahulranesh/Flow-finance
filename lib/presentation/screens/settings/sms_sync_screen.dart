@@ -6,6 +6,7 @@ import '../../../core/services/currency_formatter.dart';
 import '../../../core/services/sms_transaction_service.dart';
 import '../../../data/models/transaction_model.dart';
 import '../../blocs/transaction_bloc.dart';
+import 'package:flow_finance/core/utils/extensions.dart';
 import 'package:provider/provider.dart';
 
 /// SMS Sync screen for syncing transactions from SMS
@@ -62,7 +63,7 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
       _showImportSetupIfNeeded(force: true);
     } else {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        context.showSnackBar(
           SnackBar(
             content:
                 Text('SMS permissions are required to sync transactions'.tr()),
@@ -284,7 +285,7 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
 
   Future<void> _syncTransactions() async {
     if (_dateRange == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      context.showSnackBar(
         SnackBar(
           content: Text('Please select a date range first'.tr()),
           backgroundColor: AppColors.warning,
@@ -309,7 +310,7 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        context.showSnackBar(
           SnackBar(
             content: Text(
               'Found {} transactions from {} to {}'
@@ -329,7 +330,7 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        context.showSnackBar(
           SnackBar(
             content: Text('${'Error syncing'.tr()}: $e'),
             backgroundColor: AppColors.error,
@@ -688,7 +689,7 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
                           _transactions,
                         );
                 if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
+                context.showSnackBar(
                   SnackBar(
                     content: Text(
                       imported == 0

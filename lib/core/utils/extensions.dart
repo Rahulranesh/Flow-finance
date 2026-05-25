@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/currency_formatter.dart';
+import '../widgets/mascot_snackbar.dart';
 
 /// Extension on BuildContext for easy access to theme and media query
 extension BuildContextExtension on BuildContext {
@@ -48,7 +49,35 @@ extension BuildContextExtension on BuildContext {
 
   /// Show a snackbar
   void showSnackBar(SnackBar snackBar) {
-    ScaffoldMessenger.of(this).showSnackBar(snackBar);
+    if (snackBar.content is Text) {
+      final textWidget = snackBar.content as Text;
+      final message = textWidget.data ?? '';
+      
+      // Determine type based on common keywords or properties (simple heuristic)
+      MascotSnackBarType type = MascotSnackBarType.info;
+      if (message.toLowerCase().contains('failed') || 
+          message.toLowerCase().contains('error') || 
+          message.toLowerCase().contains('please enter') ||
+          snackBar.backgroundColor == Colors.red) {
+        type = MascotSnackBarType.error;
+      } else if (message.toLowerCase().contains('success') || 
+                 message.toLowerCase().contains('created') || 
+                 message.toLowerCase().contains('saved') || 
+                 message.toLowerCase().contains('sent') || 
+                 message.toLowerCase().contains('updated')) {
+        type = MascotSnackBarType.success;
+      }
+
+      ScaffoldMessenger.of(this).showSnackBar(buildMascotSnackBar(this, message, type: type));
+    } else {
+      ScaffoldMessenger.of(this).showSnackBar(snackBar);
+    }
+  }
+
+  /// Show a customized animated mascot snackbar
+  void showMascotSnackBar(String message, {MascotSnackBarType type = MascotSnackBarType.info}) {
+    hideSnackBar();
+    ScaffoldMessenger.of(this).showSnackBar(buildMascotSnackBar(this, message, type: type));
   }
 
   /// Hide the current snackbar

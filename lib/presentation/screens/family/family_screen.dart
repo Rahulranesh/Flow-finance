@@ -11,6 +11,7 @@ import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_scaffold.dart';
 import '../../../core/widgets/app_loading.dart';
 import '../../../data/models/family_model.dart';
+import 'package:flow_finance/core/utils/extensions.dart';
 import '../../../data/repositories/family_repository.dart';
 
 /// Family/Shared Budget screen
@@ -54,7 +55,7 @@ class _FamilyScreenState extends State<FamilyScreen> {
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        context.showSnackBar(
           SnackBar(content: Text('Failed to load families'.tr())),
         );
       }
@@ -172,7 +173,7 @@ class _FamilyScreenState extends State<FamilyScreen> {
             }
           } catch (e) {
             if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
+              context.showSnackBar(
                 SnackBar(content: Text('Failed to create family'.tr())),
               );
             }
@@ -514,11 +515,11 @@ class _FamilyDetailScreen extends StatelessWidget {
                   role: selectedRole,
                 );
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
+                context.showSnackBar(
                   const SnackBar(content: Text('Invitation sent!')),
                 );
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
+                context.showSnackBar(
                   const SnackBar(content: Text('Failed to send invitation')),
                 );
               }
@@ -562,11 +563,11 @@ class _FamilyDetailScreen extends StatelessWidget {
                 await repo.updateMemberRole(
                     family.id, member.userId, selectedRole);
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
+                context.showSnackBar(
                   const SnackBar(content: Text('Role updated!')),
                 );
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
+                context.showSnackBar(
                   const SnackBar(content: Text('Failed to update role')),
                 );
               }
@@ -597,11 +598,11 @@ class _FamilyDetailScreen extends StatelessWidget {
                 final repo = context.read<FamilyRepository>();
                 await repo.removeMember(family.id, member.userId);
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
+                context.showSnackBar(
                   const SnackBar(content: Text('Member removed')),
                 );
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
+                context.showSnackBar(
                   const SnackBar(content: Text('Failed to remove member')),
                 );
               }
@@ -653,7 +654,7 @@ class _FamilyDetailScreen extends StatelessWidget {
               if (categoryController.text.isEmpty ||
                   amount == null ||
                   amount <= 0) {
-                ScaffoldMessenger.of(context).showSnackBar(
+                context.showSnackBar(
                   const SnackBar(content: Text('Please fill in all fields')),
                 );
                 return;
@@ -669,11 +670,11 @@ class _FamilyDetailScreen extends StatelessWidget {
                   ),
                 );
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
+                context.showSnackBar(
                   const SnackBar(content: Text('Budget created!')),
                 );
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
+                context.showSnackBar(
                   const SnackBar(content: Text('Failed to create budget')),
                 );
               }
@@ -955,11 +956,11 @@ class _MembersTab extends StatelessWidget {
                   role: selectedRole,
                 );
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
+                context.showSnackBar(
                   const SnackBar(content: Text('Invitation sent!')),
                 );
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
+                context.showSnackBar(
                   const SnackBar(content: Text('Failed to send invitation')),
                 );
               }
@@ -1003,11 +1004,11 @@ class _MembersTab extends StatelessWidget {
                 await repo.updateMemberRole(
                     family.id, member.userId, selectedRole);
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
+                context.showSnackBar(
                   const SnackBar(content: Text('Role updated!')),
                 );
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
+                context.showSnackBar(
                   const SnackBar(content: Text('Failed to update role')),
                 );
               }
@@ -1038,11 +1039,11 @@ class _MembersTab extends StatelessWidget {
                 final repo = context.read<FamilyRepository>();
                 await repo.removeMember(family.id, member.userId);
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
+                context.showSnackBar(
                   const SnackBar(content: Text('Member removed')),
                 );
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
+                context.showSnackBar(
                   const SnackBar(content: Text('Failed to remove member')),
                 );
               }
@@ -1173,7 +1174,7 @@ class _BudgetsTab extends StatelessWidget {
               if (categoryController.text.isEmpty ||
                   amount == null ||
                   amount <= 0) {
-                ScaffoldMessenger.of(context).showSnackBar(
+                context.showSnackBar(
                   const SnackBar(content: Text('Please fill in all fields')),
                 );
                 return;
@@ -1189,11 +1190,11 @@ class _BudgetsTab extends StatelessWidget {
                   ),
                 );
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
+                context.showSnackBar(
                   const SnackBar(content: Text('Budget created!')),
                 );
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
+                context.showSnackBar(
                   const SnackBar(content: Text('Failed to create budget')),
                 );
               }

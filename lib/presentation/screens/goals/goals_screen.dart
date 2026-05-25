@@ -207,26 +207,41 @@ class _GoalsScreenState extends State<GoalsScreen> {
       ],
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : _goals.isEmpty
-              ? Center(
-                  child: AppEmptyState(
-                    icon: Icons.flag,
-                    title: 'No goals yet'.tr(),
-                    subtitle: 'Create your first financial goal'.tr(),
+          : Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                  child: FlowMascotBubble(
+                    message: 'Let\'s make one goal feel exciting.',
+                    subtitle: 'I\'ll celebrate when you get close.',
+                    actionLabel: 'Create goal',
+                    onAction: () => _showGoalEditor(),
                   ),
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.all(20),
-                  itemCount: _goals.length,
-                  itemBuilder: (context, index) {
-                    final goal = _goals[index];
-                    return _GoalCard(
-                      goal: goal,
-                      onRefresh: _loadGoals,
-                      onEdit: () => _showGoalEditor(goal),
-                    );
-                  },
                 ),
+                Expanded(
+                  child: _goals.isEmpty
+                      ? Center(
+                          child: AppEmptyState(
+                            icon: Icons.flag,
+                            title: 'No goals yet'.tr(),
+                            subtitle: 'Create your first financial goal'.tr(),
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.all(20),
+                          itemCount: _goals.length,
+                          itemBuilder: (context, index) {
+                            final goal = _goals[index];
+                            return _GoalCard(
+                              goal: goal,
+                              onRefresh: _loadGoals,
+                              onEdit: () => _showGoalEditor(goal),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
     );
   }
 }

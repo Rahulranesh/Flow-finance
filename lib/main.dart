@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Core
 import 'core/services/notification_service.dart';
+import 'core/services/firebase_notification_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/app_colors.dart';
 
@@ -18,6 +20,7 @@ import 'data/repositories/family_repository.dart';
 import 'presentation/blocs/blocs.dart';
 
 // Screens
+import 'presentation/screens/navigation/main_navigation_screen.dart';
 import 'presentation/screens/onboarding/onboarding_screen.dart';
 
 void main() async {
@@ -40,6 +43,8 @@ void main() async {
       systemNavigationBarDividerColor: Colors.transparent,
     ),
   );
+
+  await Firebase.initializeApp();
 
   runApp(
     EasyLocalization(
@@ -124,7 +129,7 @@ class FlowFinanceApp extends StatelessWidget {
           locale: settings.languageCode == 'ta'
               ? const Locale('ta')
               : const Locale('en'),
-          home: const AppInitializer(),
+          home: AppInitializer(sharedPreferences: sharedPreferences),
         ),
       ),
     );
@@ -133,7 +138,9 @@ class FlowFinanceApp extends StatelessWidget {
 
 /// App initializer to load data on startup
 class AppInitializer extends StatefulWidget {
-  const AppInitializer({super.key});
+  const AppInitializer({super.key, required this.sharedPreferences});
+
+  final SharedPreferences sharedPreferences;
 
   @override
   State<AppInitializer> createState() => _AppInitializerState();
@@ -153,8 +160,10 @@ class _AppInitializerState extends State<AppInitializer> {
   Future<void> _initializeApp() async {
     try {
       final notifications = NotificationService();
+      final firebaseNotifications = FirebaseNotificationService();
       try {
         await notifications.initialize();
+        await firebaseNotifications.initialize();
       } catch (e) {
         debugPrint('Notification initialization failed: $e');
       }
@@ -323,8 +332,7 @@ class _AppInitializerState extends State<AppInitializer> {
       );
     }
 
-    // Show onboarding for first-time users
-    // For now, show main navigation
-    return const OnboardingScreen();
+    final seenOnboarding = widget.sharedPreferences.getBool('seen_onboarding') ?? false;
+    return seenOnboarding ? const MainNavigationScreen() : const OnboardingScreen();
   }
 }

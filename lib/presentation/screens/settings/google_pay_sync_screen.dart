@@ -6,6 +6,7 @@ import '../../../core/services/currency_formatter.dart';
 import '../../../core/services/google_pay_service.dart';
 import '../../../data/models/transaction_model.dart';
 import '../../blocs/transaction_bloc.dart';
+import 'package:flow_finance/core/utils/extensions.dart';
 import 'package:provider/provider.dart';
 
 /// Google Pay Sync screen
@@ -41,7 +42,7 @@ class _GooglePaySyncScreenState extends State<GooglePaySyncScreen> {
       });
 
       if (mounted && transactions.isNotEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        context.showSnackBar(
           SnackBar(
             content: Text(
               'Found {} Google Pay transactions'
@@ -56,7 +57,7 @@ class _GooglePaySyncScreenState extends State<GooglePaySyncScreen> {
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        context.showSnackBar(
           SnackBar(
             content: Text('${'Error syncing'.tr()}: $e'),
             backgroundColor: AppColors.error,
@@ -185,7 +186,7 @@ class _GooglePaySyncScreenState extends State<GooglePaySyncScreen> {
                           _transactions,
                         );
                 if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
+                context.showSnackBar(
                   SnackBar(
                     content: Text(
                       imported == 0

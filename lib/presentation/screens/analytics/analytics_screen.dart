@@ -6,6 +6,7 @@ import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_scaffold.dart';
 import '../../../core/widgets/app_loading.dart';
+import '../../../core/widgets/widgets.dart';
 import '../../../core/utils/extensions.dart';
 import '../../../data/models/transaction_model.dart';
 import '../../blocs/transaction_bloc.dart';
@@ -57,6 +58,14 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
       ],
       body: Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+            child: FlowMascotBubble(
+              message: 'I\'ll translate the charts into plain language.',
+              subtitle: 'Slow scroll, clear insights, no finance jargon.',
+            ),
+          ),
+
           // Date Range Display
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),

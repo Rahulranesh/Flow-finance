@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../../core/theme/app_colors.dart';
 import '../home/home_screen.dart';
 import '../transactions/transactions_screen.dart';
+import '../analytics/analytics_screen.dart';
 import '../budgets/budgets_screen.dart';
 import '../settings/settings_screen.dart';
 import '../add_transaction/add_transaction_screen.dart';
@@ -21,6 +22,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   final List<Widget> _screens = const [
     HomeScreen(),
     TransactionsScreen(),
+    AnalyticsScreen(),
     BudgetsScreen(),
     SettingsScreen(),
   ];
@@ -54,14 +56,15 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildNavItem(Icons.home_rounded, 'Home', 0),
-                _buildNavItem(Icons.receipt_long_rounded, 'Transactions', 1),
-                _buildNavItem(Icons.pie_chart_rounded, 'Budgets', 2),
-                _buildNavItem(Icons.settings_rounded, 'Settings', 3),
+                _buildNavItem(Icons.receipt_long_rounded, 'Logs', 1),
+                _buildNavItem(Icons.insights_rounded, 'Graphs', 2),
+                _buildNavItem(Icons.pie_chart_rounded, 'Budgets', 3),
+                _buildNavItem(Icons.settings_rounded, 'Settings', 4),
               ],
             ),
           ),
@@ -79,7 +82,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       onTap: () => setState(() => _currentIndex = index),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected
               ? AppColors.primary.withOpacity(0.1)
@@ -99,7 +102,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               label.tr(),
               style: TextStyle(
                 color: color,
-                fontSize: 12,
+                fontSize: 10,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
             ),
