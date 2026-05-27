@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:shimmer/shimmer.dart';
@@ -65,7 +66,7 @@ class AppLoading {
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
               decoration: BoxDecoration(
                 color: AppColors.surface(context),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(10),
                 boxShadow: AppShadows.lg,
               ),
               child: Column(
@@ -107,9 +108,8 @@ class AppSpinner extends StatelessWidget {
     return SizedBox(
       width: _getSize(),
       height: _getSize(),
-      child: CircularProgressIndicator(
-        strokeWidth: _getStrokeWidth(),
-        valueColor: AlwaysStoppedAnimation<Color>(spinnerColor),
+      child: CupertinoActivityIndicator(
+        radius: _getSize() / 2,
       ),
     );
   }
@@ -258,7 +258,7 @@ class SkeletonCard extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppColors.surface(context),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(10),
         ),
         child: Row(
           children: [
@@ -268,7 +268,7 @@ class SkeletonCard extends StatelessWidget {
                 height: 60,
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
             if (hasImage) const SizedBox(width: 16),
@@ -357,7 +357,7 @@ class SkeletonGrid extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             color: AppColors.surface(context),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(10),
           ),
         ),
       ),
@@ -398,7 +398,7 @@ class AppEmptyState extends StatelessWidget {
                 height: 80,
                 decoration: BoxDecoration(
                   color: AppColors.primary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
                   icon,

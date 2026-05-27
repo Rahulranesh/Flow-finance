@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../core/models/upi_transaction.dart';
 import '../../../core/services/bank_integration/upi_transaction_service.dart';
@@ -7,6 +8,7 @@ import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
 import 'package:flow_finance/core/utils/extensions.dart';
+import '../../../core/widgets/cupertino_toast.dart';
 import '../../../core/widgets/app_scaffold.dart';
 
 /// Screen for setting up UPI transaction tracking
@@ -111,7 +113,7 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
           children: [
             Row(
               children: [
-                Icon(Icons.info_outline, color: AppColors.success),
+                Icon(CupertinoIcons.info_circle, color: AppColors.success),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -150,59 +152,69 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
       child: Column(
         children: [
           // SMS Permission
-          SwitchListTile(
-            title: Row(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
               children: [
-                Icon(Icons.sms, color: AppColors.primary),
+                Icon(CupertinoIcons.chat_bubble_2_fill, color: AppColors.primary),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('SMS Access'.tr(),
-                          style: AppTypography.bodyMedium()),
+                          style: AppTypography.bodyLarge(fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 2),
                       Text(
                         'Read UPI transaction SMS'.tr(),
-                        style: AppTypography.labelSmall(
-                          color: AppColors.textSecondaryLight,
+                        style: AppTypography.bodySmall(
+                          color: AppColors.textTertiary(context),
                         ),
                       ),
                     ],
                   ),
                 ),
+                const SizedBox(width: 12),
+                CupertinoSwitch(
+                  value: _smsPermissionGranted,
+                  onChanged: (value) => _toggleSmsPermission(value),
+                ),
               ],
             ),
-            value: _smsPermissionGranted,
-            onChanged: (value) => _toggleSmsPermission(value),
           ),
 
           const Divider(height: 1),
 
           // Notification Permission
-          SwitchListTile(
-            title: Row(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
               children: [
-                Icon(Icons.notifications, color: AppColors.secondary),
+                Icon(CupertinoIcons.bell_fill, color: AppColors.secondary),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Notifications'.tr(),
-                          style: AppTypography.bodyMedium()),
+                          style: AppTypography.bodyLarge(fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 2),
                       Text(
                         'Read UPI app notifications'.tr(),
-                        style: AppTypography.labelSmall(
-                          color: AppColors.textSecondaryLight,
+                        style: AppTypography.bodySmall(
+                          color: AppColors.textTertiary(context),
                         ),
                       ),
                     ],
                   ),
                 ),
+                const SizedBox(width: 12),
+                CupertinoSwitch(
+                  value: _notificationPermissionGranted,
+                  onChanged: (value) => _toggleNotificationPermission(value),
+                ),
               ],
             ),
-            value: _notificationPermissionGranted,
-            onChanged: (value) => _toggleNotificationPermission(value),
           ),
         ],
       ),
@@ -213,42 +225,47 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
     return AppCard(
       child: Column(
         children: UPIApp.supportedApps.map((app) {
-          return CheckboxListTile(
-            title: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: GestureDetector(
+              onTap: () {},
+              child: Row(
+                children: [
+                  Icon(
+                    true ? CupertinoIcons.check_mark_circled_solid : CupertinoIcons.circle,
+                    color: true ? AppColors.primary : AppColors.textTertiary(context),
+                    size: 24,
                   ),
-                  child: Icon(Icons.payment, color: AppColors.primary),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(app.name, style: AppTypography.bodyMedium()),
-                      Text(
-                        app.packageName,
-                        style: AppTypography.labelSmall(
-                          color: AppColors.textSecondaryLight,
+                  const SizedBox(width: 12),
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(CupertinoIcons.creditcard_fill, color: AppColors.primary),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(app.name, style: AppTypography.bodyLarge()),
+                        Text(
+                          app.packageName,
+                          style: AppTypography.bodySmall(
+                            color: AppColors.textTertiary(context),
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                  if (app.supportsSms)
+                    Icon(CupertinoIcons.chat_bubble_2_fill, color: AppColors.success, size: 20),
+                ],
+              ),
             ),
-            value: true, // In real implementation, check user preferences
-            onChanged: (value) {
-              // Toggle app tracking
-            },
-            secondary: app.supportsSms
-                ? Icon(Icons.sms_outlined, color: AppColors.success, size: 20)
-                : null,
           );
         }).toList(),
       ),
@@ -260,48 +277,73 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
       child: Column(
         children: [
           // Auto-sync
-          SwitchListTile(
-            title: Text('Auto-Sync'.tr(), style: AppTypography.bodyMedium()),
-            subtitle: Text(
-              'Automatically add UPI transactions to your budget'.tr(),
-              style: AppTypography.labelSmall(
-                color: AppColors.textSecondaryLight,
-              ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Auto-Sync'.tr(), style: AppTypography.bodyLarge(fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Automatically add UPI transactions to your budget'.tr(),
+                        style: AppTypography.bodySmall(color: AppColors.textTertiary(context)),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                CupertinoSwitch(
+                  value: _autoSyncEnabled,
+                  onChanged: (value) {
+                    setState(() {
+                      _autoSyncEnabled = value;
+                      _upiService.setAutoSyncEnabled(value);
+                    });
+                  },
+                ),
+              ],
             ),
-            value: _autoSyncEnabled,
-            onChanged: (value) {
-              setState(() {
-                _autoSyncEnabled = value;
-                _upiService.setAutoSyncEnabled(value);
-              });
-            },
           ),
 
           const Divider(height: 1),
 
           // Scan days back
-          ListTile(
-            title: Text('Scan History'.tr(), style: AppTypography.bodyMedium()),
-            subtitle: Text(
-              'Scan SMS from last {} days'.tr(args: [_scanDaysBack.toString()]),
-              style: AppTypography.labelSmall(
-                color: AppColors.textSecondaryLight,
-              ),
-            ),
-            trailing: DropdownButton<int>(
-              value: _scanDaysBack,
-              underline: const SizedBox(),
-              items: [7, 30, 60, 90, 180].map((days) {
-                return DropdownMenuItem(
-                  value: days,
-                  child: Text('{} days'.tr(args: [days.toString()])),
-                );
-              }).toList(),
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() => _scanDaysBack = value);
-                }
-              },
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Scan History'.tr(), style: AppTypography.bodyLarge(fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Scan SMS from last {} days'.tr(args: [_scanDaysBack.toString()]),
+                        style: AppTypography.bodySmall(color: AppColors.textTertiary(context)),
+                      ),
+                    ],
+                  ),
+                ),
+                DropdownButton<int>(
+                  value: _scanDaysBack,
+                  underline: const SizedBox(),
+                  items: [7, 30, 60, 90, 180].map((days) {
+                    return DropdownMenuItem(
+                      value: days,
+                      child: Text('{} days'.tr(args: [days.toString()])),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() => _scanDaysBack = value);
+                    }
+                  },
+                ),
+              ],
             ),
           ),
         ],
@@ -408,7 +450,7 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
           children: [
             AppButton.primary(
               label: 'Scan Historical SMS'.tr(),
-              icon: Icons.history,
+              icon: CupertinoIcons.clock,
               onPressed: _isLoading ? null : _scanHistoricalSms,
               isLoading: _isLoading,
             ),
@@ -421,7 +463,7 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
             const SizedBox(height: 12),
             AppButton.secondary(
               label: 'View Pending Transactions'.tr(),
-              icon: Icons.list,
+              icon: CupertinoIcons.list_bullet,
               onPressed: _showPendingTransactions,
             ),
           ],
@@ -441,15 +483,15 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
     } else {
       // Cannot revoke SMS permission programmatically
       // Show dialog directing user to settings
-      showDialog(
+      showCupertinoDialog(
         context: context,
-        builder: (context) => AlertDialog(
+        builder: (context) => CupertinoAlertDialog(
           title: Text('Revoke Permission'.tr()),
           content: Text(
             'To revoke SMS permission, please go to Settings > Apps > Cashew > Permissions'.tr(),
           ),
           actions: [
-            TextButton(
+            CupertinoDialogAction(
               onPressed: () => Navigator.pop(context),
               child: Text('OK'.tr()),
             ),
@@ -482,10 +524,9 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
       );
 
       if (mounted) {
-        context.showSnackBar(
-          SnackBar(
-            content: Text('Found {} UPI transactions'.tr(args: [transactions.length.toString()])),
-          ),
+        CupertinoToast.show(
+          context,
+          message: 'Found {} UPI transactions'.tr(args: [transactions.length.toString()]),
         );
 
         setState(() {
@@ -494,8 +535,9 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
       }
     } catch (e) {
       if (mounted) {
-        context.showSnackBar(
-          SnackBar(content: Text('${'Error'.tr()}: $e')),
+        CupertinoToast.show(
+          context,
+          message: '${'Error'.tr()}: $e',
         );
       }
     } finally {
@@ -504,9 +546,9 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
   }
 
   void _showTestParser() {
-    showDialog(
+    showCupertinoDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => CupertinoAlertDialog(
         title: Text('Test SMS Parser'.tr()),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -522,7 +564,7 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
           ],
         ),
         actions: [
-          TextButton(
+          CupertinoDialogAction(
             onPressed: () => Navigator.pop(context),
             child: Text('Cancel'.tr()),
           ),
@@ -542,9 +584,8 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
   void _showPendingTransactions() {
     final pending = _upiService.getPendingTransactions();
 
-    showModalBottomSheet(
+    showCupertinoModalPopup(
       context: context,
-      isScrollControlled: true,
       builder: (context) => DraggableScrollableSheet(
         initialChildSize: 0.7,
         minChildSize: 0.5,
@@ -566,12 +607,25 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
                   itemCount: pending.length,
                   itemBuilder: (context, index) {
                     final tx = pending[index];
-                    return ListTile(
-                      title: Text(tx.displayAmount),
-                      subtitle: Text(tx.upiId),
-                      trailing: Text(
-                        tx.sourceApp,
-                        style: AppTypography.labelSmall(),
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(tx.displayAmount, style: AppTypography.bodyLarge(fontWeight: FontWeight.w600)),
+                                const SizedBox(height: 2),
+                                Text(tx.upiId, style: AppTypography.bodySmall(color: AppColors.textTertiary(context))),
+                              ],
+                            ),
+                          ),
+                          Text(
+                            tx.sourceApp,
+                            style: AppTypography.labelSmall(),
+                          ),
+                        ],
                       ),
                     );
                   },

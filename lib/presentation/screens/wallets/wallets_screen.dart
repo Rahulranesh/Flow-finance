@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
@@ -13,6 +14,7 @@ import '../../../data/models/wallet_model.dart';
 import '../../../data/models/currency_model.dart';
 import '../../blocs/wallet_bloc.dart';
 import '../../../core/utils/extensions.dart';
+import '../../../core/widgets/cupertino_toast.dart';
 import 'add_wallet_screen.dart';
 
 class WalletsScreen extends StatefulWidget {
@@ -39,7 +41,7 @@ class _WalletsScreenState extends State<WalletsScreen> {
       title: 'Wallets'.tr(),
       actions: [
         IconButton(
-          icon: const Icon(Icons.add),
+          icon: const Icon(CupertinoIcons.add),
           onPressed: () => _showAddWalletDialog(context),
         ),
       ],
@@ -69,6 +71,8 @@ class _WalletsScreenState extends State<WalletsScreen> {
                           ? AppColors.textPrimaryDark
                           : AppColors.textPrimaryLight,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ),
@@ -126,7 +130,7 @@ class _WalletsScreenState extends State<WalletsScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(10),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,6 +140,8 @@ class _WalletsScreenState extends State<WalletsScreen> {
               style: AppTypography.bodyMedium(
                 color: Colors.white.withValues(alpha: 0.8),
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 8),
             Text(
@@ -143,6 +149,8 @@ class _WalletsScreenState extends State<WalletsScreen> {
               style: AppTypography.displaySmall(
                 color: Colors.white,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             if (bloc.balancesByCurrency.length > 1) ...[
               const SizedBox(height: 16),
@@ -154,13 +162,15 @@ class _WalletsScreenState extends State<WalletsScreen> {
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
                       '${_currencySymbol(entry.key)}${entry.value.toStringAsFixed(2)}',
                       style: AppTypography.bodySmall(
                         color: Colors.white,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   );
                 }).toList(),
@@ -181,11 +191,11 @@ class _WalletsScreenState extends State<WalletsScreen> {
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
           color: AppColors.error,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10),
         ),
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
-        child: const Icon(Icons.delete, color: Colors.white),
+        child: const Icon(CupertinoIcons.delete, color: Colors.white),
       ),
       onDismissed: (_) => _confirmAndDeleteWallet(context, bloc, wallet),
       child: AppCard(
@@ -199,7 +209,7 @@ class _WalletsScreenState extends State<WalletsScreen> {
               height: 56,
               decoration: BoxDecoration(
                 color: wallet.color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
                 wallet.icon,
@@ -223,6 +233,8 @@ class _WalletsScreenState extends State<WalletsScreen> {
                               ? AppColors.textPrimaryDark
                               : AppColors.textPrimaryLight,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       if (wallet.isDefault) ...[
                         const SizedBox(width: 8),
@@ -238,6 +250,8 @@ class _WalletsScreenState extends State<WalletsScreen> {
                             style: AppTypography.labelSmall(
                               color: AppColors.success,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
@@ -251,6 +265,8 @@ class _WalletsScreenState extends State<WalletsScreen> {
                           ? AppColors.textSecondaryDark
                           : AppColors.textSecondaryLight,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -267,6 +283,8 @@ class _WalletsScreenState extends State<WalletsScreen> {
                         ? AppColors.success
                         : AppColors.error,
                   ).copyWith(fontWeight: FontWeight.w600),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
                 if (!wallet.isDefault)
@@ -281,6 +299,22 @@ class _WalletsScreenState extends State<WalletsScreen> {
                       'Set as Default'.tr(),
                       style: AppTypography.labelSmall(
                         color: AppColors.primary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                const SizedBox(height: 4),
+                if (!wallet.isDefault)
+                  GestureDetector(
+                    onTap: () => bloc.setDefaultWallet(wallet.id),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      child: Text(
+                        'Set as Default'.tr(),
+                        style: AppTypography.labelSmall(
+                          color: AppColors.primary,
+                        ),
                       ),
                     ),
                   ),
@@ -318,22 +352,22 @@ class _WalletsScreenState extends State<WalletsScreen> {
   }
 
   void _confirmAndDeleteWallet(BuildContext context, WalletBloc bloc, Wallet wallet) {
-    showDialog(
+    showCupertinoDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
+      builder: (ctx) => CupertinoAlertDialog(
         title: Text('Delete Wallet'.tr()),
         content: Text('Are you sure you want to delete "${wallet.name}"?'.tr()),
         actions: [
-          TextButton(
+          CupertinoDialogAction(
             onPressed: () => Navigator.pop(ctx),
             child: Text('Cancel'.tr()),
           ),
-          TextButton(
+          CupertinoDialogAction(
+            isDestructiveAction: true,
             onPressed: () {
               Navigator.pop(ctx);
               bloc.deleteWallet(wallet.id);
             },
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
             child: Text('Delete'.tr()),
           ),
         ],
@@ -342,7 +376,7 @@ class _WalletsScreenState extends State<WalletsScreen> {
   }
 
   void _showTransferDialog(BuildContext context, WalletBloc bloc) {
-    showDialog(
+    showCupertinoDialog(
       context: context,
       builder: (context) => WalletTransferDialog(bloc: bloc),
     );
@@ -416,7 +450,7 @@ class _WalletTransferDialogState extends State<WalletTransferDialog> {
     final wallets = widget.bloc.activeWallets;
 
     return AlertDialog(
-      title: Text('Transfer Between Wallets'.tr()),
+      title: Text('Transfer Between Wallets'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -428,7 +462,9 @@ class _WalletTransferDialogState extends State<WalletTransferDialog> {
                 return DropdownMenuItem(
                   value: wallet.id,
                   child: Text(
-                      '${wallet.name} (${_currencySymbol(wallet.currency)}${wallet.balance.toStringAsFixed(2)})'),
+                      '${wallet.name} (${_currencySymbol(wallet.currency)}${wallet.balance.toStringAsFixed(2)})',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis),
                 );
               }).toList(),
               onChanged: (value) => setState(() {
@@ -444,7 +480,9 @@ class _WalletTransferDialogState extends State<WalletTransferDialog> {
               items: wallets.where((w) => w.id != _fromWalletId).map((wallet) {
                 return DropdownMenuItem(
                   value: wallet.id,
-                  child: Text('${wallet.name} (${_currencySymbol(wallet.currency)})'),
+                  child: Text('${wallet.name} (${_currencySymbol(wallet.currency)})',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
                 );
               }).toList(),
               onChanged: (value) => setState(() {
@@ -469,7 +507,7 @@ class _WalletTransferDialogState extends State<WalletTransferDialog> {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: AppColors.warning.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: AppColors.warning.withOpacity(0.3)),
                 ),
                 child: Column(
@@ -496,6 +534,8 @@ class _WalletTransferDialogState extends State<WalletTransferDialog> {
                     Text(
                       '1 ${_fromWalletId != null ? (widget.bloc.wallets.firstWhere((w) => w.id == _fromWalletId).currency) : ''} = ? ${_toWalletId != null ? (widget.bloc.wallets.firstWhere((w) => w.id == _toWalletId).currency) : ''}'.tr(),
                       style: AppTypography.bodySmall(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 8),
                     TextField(
@@ -535,7 +575,8 @@ class _WalletTransferDialogState extends State<WalletTransferDialog> {
         ),
       ),
       actions: [
-        TextButton(
+        CupertinoButton(
+          padding: EdgeInsets.zero,
           onPressed: () => Navigator.pop(context),
           child: Text('Cancel'.tr()),
         ),
@@ -556,21 +597,25 @@ class _WalletTransferDialogState extends State<WalletTransferDialog> {
     return Text(
       '→ ${CurrencyFormatter.format(converted, currencyCode: to.currency)}',
       style: AppTypography.bodySmall(color: AppColors.success),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
     );
   }
 
   Future<void> _transfer() async {
     final amount = double.tryParse(_amountController.text) ?? 0.0;
     if (amount <= 0) {
-      context.showSnackBar(
-        SnackBar(content: Text('Please enter a valid amount'.tr())),
+      CupertinoToast.show(
+        context,
+        message: 'Please enter a valid amount'.tr(),
       );
       return;
     }
 
     if (_fromWalletId == _toWalletId) {
-      context.showSnackBar(
-        SnackBar(content: Text('Source and destination wallets must be different'.tr())),
+      CupertinoToast.show(
+        context,
+        message: 'Source and destination wallets must be different'.tr(),
       );
       return;
     }
@@ -579,8 +624,9 @@ class _WalletTransferDialogState extends State<WalletTransferDialog> {
     final toWallet = widget.bloc.wallets.firstWhere((w) => w.id == _toWalletId);
 
     if (fromWallet.balance < amount) {
-      context.showSnackBar(
-        SnackBar(content: Text('Insufficient balance in source wallet'.tr())),
+      CupertinoToast.show(
+        context,
+        message: 'Insufficient balance in source wallet'.tr(),
       );
       return;
     }
@@ -589,8 +635,9 @@ class _WalletTransferDialogState extends State<WalletTransferDialog> {
     if (fromWallet.currency != toWallet.currency) {
       final rate = double.tryParse(_exchangeRateController.text);
       if (rate == null || rate <= 0) {
-        context.showSnackBar(
-          SnackBar(content: Text('Please enter a valid exchange rate'.tr())),
+        CupertinoToast.show(
+          context,
+          message: 'Please enter a valid exchange rate'.tr(),
         );
         return;
       }

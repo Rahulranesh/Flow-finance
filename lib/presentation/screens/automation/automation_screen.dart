@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
@@ -7,7 +8,7 @@ import '../../../core/services/auto_transfer_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/app_button.dart';
-import '../../../core/widgets/app_card.dart';
+
 import '../../../core/widgets/app_scaffold.dart';
 import '../../../core/widgets/flow_mascot.dart';
 import '../../../core/widgets/mascot_snackbar.dart';
@@ -88,12 +89,19 @@ class _SmartRulesTabState extends State<_SmartRulesTab> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: CupertinoButton(
         onPressed: _showAddRuleDialog,
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add_rounded),
-        label: Text('Add Rule'.tr()),
+        color: AppColors.primary,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        borderRadius: BorderRadius.circular(10),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(CupertinoIcons.add, size: 18, color: Colors.white),
+            const SizedBox(width: 6),
+            Text('Add Rule'.tr(), style: const TextStyle(color: Colors.white, fontSize: 14)),
+          ],
+        ),
       ),
       body: rules.isEmpty
           ? _buildEmptyState(
@@ -125,7 +133,7 @@ class _SmartRulesTabState extends State<_SmartRulesTab> {
   }
 
   void _showAddRuleDialog() async {
-    final result = await showDialog<SmartRule>(
+    final result = await showCupertinoDialog<SmartRule>(
       context: context,
       builder: (_) => const _SmartRuleDialog(),
     );
@@ -138,7 +146,7 @@ class _SmartRulesTabState extends State<_SmartRulesTab> {
   }
 
   void _showEditRuleDialog(SmartRule existing) async {
-    final result = await showDialog<SmartRule>(
+    final result = await showCupertinoDialog<SmartRule>(
       context: context,
       builder: (_) => _SmartRuleDialog(existing: existing),
     );
@@ -166,49 +174,78 @@ class _RuleTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppCard(
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        leading: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: (rule.isActive ? AppColors.primary : AppColors.textSecondary(context))
-                .withOpacity(0.12),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(
-            _iconForType(rule.type),
-            color: rule.isActive ? AppColors.primary : AppColors.textSecondary(context),
-            size: 20,
-          ),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isDark ? AppColors.borderDark : AppColors.borderLight,
+          width: 0.5,
         ),
-        title: Text(rule.name, style: AppTypography.bodyMedium(fontWeight: FontWeight.w600)),
-        subtitle: Text(
-          '${rule.conditions.length} ${'conditions'.tr()} → ${rule.actions.length} ${'actions'.tr()}',
-          style: AppTypography.labelSmall(color: AppColors.textSecondary(context)),
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
           children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: (rule.isActive ? AppColors.primary : AppColors.textSecondary(context))
+                    .withOpacity(0.12),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                _iconForType(rule.type),
+                color: rule.isActive ? AppColors.primary : AppColors.textSecondary(context),
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(rule.name, style: AppTypography.bodyLarge(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 2),
+                  Text(
+                    '${rule.conditions.length} ${'conditions'.tr()} → ${rule.actions.length} ${'actions'.tr()}',
+                    style: AppTypography.bodySmall(color: AppColors.textTertiary(context)),
+                  ),
+                ],
+              ),
+            ),
             Switch(
               value: rule.isActive,
               onChanged: onToggle,
               activeColor: AppColors.primary,
             ),
-            PopupMenuButton<String>(
-              icon: Icon(Icons.more_vert_rounded, color: AppColors.textSecondary(context), size: 20),
-              onSelected: (v) {
-                if (v == 'edit') onEdit();
-                if (v == 'delete') onDelete();
+            GestureDetector(
+              onTap: () {
+                showCupertinoModalPopup<void>(
+                  context: context,
+                  builder: (context) => CupertinoActionSheet(
+                    actions: [
+                      CupertinoActionSheetAction(
+                        child: Text('Edit'.tr()),
+                        onPressed: () { Navigator.pop(context); onEdit(); },
+                      ),
+                      CupertinoActionSheetAction(
+                        isDestructiveAction: true,
+                        child: Text('Delete'.tr()),
+                        onPressed: () { Navigator.pop(context); onDelete(); },
+                      ),
+                    ],
+                    cancelButton: CupertinoActionSheetAction(
+                      isDefaultAction: true,
+                      child: Text('Cancel'.tr()),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
+                );
               },
-              itemBuilder: (_) => [
-                PopupMenuItem(value: 'edit', child: Text('Edit'.tr())),
-                PopupMenuItem(
-                  value: 'delete',
-                  child: Text('Delete'.tr(), style: TextStyle(color: AppColors.error)),
-                ),
-              ],
+              child: Icon(CupertinoIcons.ellipsis, color: AppColors.textSecondary(context), size: 20),
             ),
           ],
         ),
@@ -223,11 +260,11 @@ class _RuleTile extends StatelessWidget {
       case RuleType.tagging:
         return Icons.tag_rounded;
       case RuleType.walletAssignment:
-        return Icons.account_balance_wallet_rounded;
+        return CupertinoIcons.creditcard;
       case RuleType.typeAssignment:
         return Icons.swap_horiz_rounded;
       case RuleType.notification:
-        return Icons.notifications_rounded;
+        return CupertinoIcons.bell_fill;
     }
   }
 }
@@ -245,23 +282,39 @@ class _AutoTransferTab extends StatefulWidget {
 class _AutoTransferTabState extends State<_AutoTransferTab> {
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final rules = widget.transferService.rules;
     final summary = widget.transferService.getSavingsSummary();
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: CupertinoButton(
         onPressed: _showAddDialog,
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add_rounded),
-        label: Text('Add Transfer'.tr()),
+        color: AppColors.primary,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        borderRadius: BorderRadius.circular(10),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(CupertinoIcons.add, size: 18, color: Colors.white),
+            const SizedBox(width: 6),
+            Text('Add Transfer'.tr(), style: const TextStyle(color: Colors.white, fontSize: 14)),
+          ],
+        ),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
         children: [
           // Summary card
-          AppCard(
+          Container(
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                width: 0.5,
+              ),
+            ),
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Row(
@@ -294,7 +347,7 @@ class _AutoTransferTabState extends State<_AutoTransferTab> {
 
           if (rules.isEmpty)
             _buildEmptyState(
-              icon: Icons.sync_alt_rounded,
+              icon: CupertinoIcons.refresh_thick,
               title: 'No auto-transfer rules'.tr(),
               subtitle: 'Set up rules to move money automatically'.tr(),
             )
@@ -338,7 +391,7 @@ class _AutoTransferTabState extends State<_AutoTransferTab> {
       _showNeedMoreWallets();
       return;
     }
-    final result = await showDialog<AutoTransferRule>(
+    final result = await showCupertinoDialog<AutoTransferRule>(
       context: context,
       builder: (_) => _AutoTransferDialog(wallets: wallets),
     );
@@ -351,13 +404,13 @@ class _AutoTransferTabState extends State<_AutoTransferTab> {
   }
 
   void _showNeedMoreWallets() {
-    showDialog(
+    showCupertinoDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (_) => CupertinoAlertDialog(
         title: Text('Need More Wallets'.tr()),
         content: Text('You need at least 2 wallets to set up auto-transfers.'.tr()),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text('OK'.tr())),
+          CupertinoDialogAction(onPressed: () => Navigator.pop(context), child: Text('OK'.tr())),
         ],
       ),
     );
@@ -373,29 +426,46 @@ class _AutoTransferTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppCard(
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        leading: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: AppColors.primary.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(Icons.sync_alt_rounded, color: AppColors.primary, size: 20),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isDark ? AppColors.borderDark : AppColors.borderLight,
+          width: 0.5,
         ),
-        title: Text(rule.name, style: AppTypography.bodyMedium(fontWeight: FontWeight.w600)),
-        subtitle: Text(
-          '${rule.calculationType.name} · \$${rule.amount}',
-          style: AppTypography.labelSmall(color: AppColors.textSecondary(context)),
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
           children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(CupertinoIcons.refresh_thick, color: AppColors.primary, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(rule.name, style: AppTypography.bodyLarge(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 2),
+                  Text(
+                    '${rule.calculationType.name} · \$${rule.amount}',
+                    style: AppTypography.bodySmall(color: AppColors.textTertiary(context)),
+                  ),
+                ],
+              ),
+            ),
             Switch(value: rule.isActive, onChanged: onToggle, activeColor: AppColors.primary),
             IconButton(
-              icon: Icon(Icons.delete_outline_rounded, color: AppColors.error, size: 20),
+              icon: Icon(CupertinoIcons.delete_solid, color: AppColors.error, size: 20),
               onPressed: onDelete,
             ),
           ],
@@ -422,16 +492,23 @@ class _RoundUpTabState extends State<_RoundUpTab> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: CupertinoButton(
         onPressed: _showAddDialog,
-        backgroundColor: AppColors.success,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add_rounded),
-        label: Text('Add Round-Up'.tr()),
+        color: AppColors.success,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        borderRadius: BorderRadius.circular(10),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(CupertinoIcons.add, size: 18, color: Colors.white),
+            const SizedBox(width: 6),
+            Text('Add Round-Up'.tr(), style: const TextStyle(color: Colors.white, fontSize: 14)),
+          ],
+        ),
       ),
       body: rules.isEmpty
           ? _buildEmptyState(
-              icon: Icons.savings_rounded,
+              icon: CupertinoIcons.money_dollar,
               title: 'No round-up rules yet'.tr(),
               subtitle: 'Round up purchases and save the change'.tr(),
             )
@@ -469,19 +546,19 @@ class _RoundUpTabState extends State<_RoundUpTab> {
   void _showAddDialog() async {
     final wallets = context.read<WalletBloc>().wallets;
     if (wallets.length < 2) {
-      showDialog(
+      showCupertinoDialog(
         context: context,
-        builder: (_) => AlertDialog(
+        builder: (_) => CupertinoAlertDialog(
           title: Text('Need More Wallets'.tr()),
           content: Text('You need at least 2 wallets to set up round-up savings.'.tr()),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: Text('OK'.tr())),
+            CupertinoDialogAction(onPressed: () => Navigator.pop(context), child: Text('OK'.tr())),
           ],
         ),
       );
       return;
     }
-    final result = await showDialog<RoundUpRule>(
+    final result = await showCupertinoDialog<RoundUpRule>(
       context: context,
       builder: (_) => _RoundUpDialog(wallets: wallets),
     );
@@ -519,27 +596,44 @@ class _RoundUpTile extends StatelessWidget {
         break;
     }
 
-    return AppCard(
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        leading: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: AppColors.success.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(Icons.savings_rounded, color: AppColors.success, size: 20),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isDark ? AppColors.borderDark : AppColors.borderLight,
+          width: 0.5,
         ),
-        title: Text(rule.name, style: AppTypography.bodyMedium(fontWeight: FontWeight.w600)),
-        subtitle: Text(roundUpText,
-            style: AppTypography.labelSmall(color: AppColors.textSecondary(context))),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
           children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppColors.success.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(CupertinoIcons.money_dollar, color: AppColors.success, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(rule.name, style: AppTypography.bodyLarge(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 2),
+                  Text(roundUpText,
+                      style: AppTypography.bodySmall(color: AppColors.textTertiary(context))),
+                ],
+              ),
+            ),
             Switch(value: rule.isActive, onChanged: onToggle, activeColor: AppColors.success),
             IconButton(
-              icon: Icon(Icons.delete_outline_rounded, color: AppColors.error, size: 20),
+              icon: Icon(CupertinoIcons.delete_solid, color: AppColors.error, size: 20),
               onPressed: onDelete,
             ),
           ],
@@ -621,7 +715,7 @@ class _SmartRuleDialogState extends State<_SmartRuleDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: ConstrainedBox(
@@ -652,7 +746,7 @@ class _SmartRuleDialogState extends State<_SmartRuleDialog> {
                         controller: _nameCtrl,
                         decoration: InputDecoration(
                           labelText: 'Rule Name'.tr(),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -662,7 +756,7 @@ class _SmartRuleDialogState extends State<_SmartRuleDialog> {
                       DropdownButtonFormField<RuleType>(
                         value: _ruleType,
                         decoration: InputDecoration(
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                           contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                         ),
                         items: RuleType.values.map((t) {
@@ -673,7 +767,7 @@ class _SmartRuleDialogState extends State<_SmartRuleDialog> {
                       const SizedBox(height: 20),
 
                       // Conditions section
-                      _sectionHeader('Conditions'.tr(), Icons.filter_list_rounded),
+                      _sectionHeader('Conditions'.tr(), CupertinoIcons.slider_horizontal_3),
                       const SizedBox(height: 8),
                       ..._conditions.asMap().entries.map((e) => _conditionChip(e.key, e.value)),
                       const SizedBox(height: 8),
@@ -696,7 +790,8 @@ class _SmartRuleDialogState extends State<_SmartRuleDialog> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  TextButton(
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
                     onPressed: () => Navigator.pop(context),
                     child: Text('Cancel'.tr()),
                   ),
@@ -753,7 +848,7 @@ class _SmartRuleDialogState extends State<_SmartRuleDialog> {
             ),
             GestureDetector(
               onTap: () => setState(() => _conditions.removeAt(index)),
-              child: Icon(Icons.close_rounded, size: 16, color: AppColors.error),
+              child: Icon(CupertinoIcons.xmark, size: 16, color: AppColors.error),
             ),
           ],
         ),
@@ -780,7 +875,7 @@ class _SmartRuleDialogState extends State<_SmartRuleDialog> {
             ),
             GestureDetector(
               onTap: () => setState(() => _actions.removeAt(index)),
-              child: Icon(Icons.close_rounded, size: 16, color: AppColors.error),
+              child: Icon(CupertinoIcons.xmark, size: 16, color: AppColors.error),
             ),
           ],
         ),
@@ -862,7 +957,7 @@ class _SmartRuleDialogState extends State<_SmartRuleDialog> {
                   _condValueCtrl.clear();
                 });
               },
-              icon: const Icon(Icons.add_rounded, color: Colors.white),
+              icon: const Icon(CupertinoIcons.add, color: Colors.white),
             ),
           ],
         ),
@@ -916,7 +1011,7 @@ class _SmartRuleDialogState extends State<_SmartRuleDialog> {
                   _actionValueCtrl.clear();
                 });
               },
-              icon: const Icon(Icons.add_rounded, color: Colors.white),
+              icon: const Icon(CupertinoIcons.add, color: Colors.white),
             ),
           ],
         ),
@@ -988,7 +1083,7 @@ class _AutoTransferDialogState extends State<_AutoTransferDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: ConstrainedBox(
@@ -1010,7 +1105,7 @@ class _AutoTransferDialogState extends State<_AutoTransferDialog> {
                   controller: _nameCtrl,
                   decoration: InputDecoration(
                     labelText: 'Rule Name'.tr(),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -1018,7 +1113,7 @@ class _AutoTransferDialogState extends State<_AutoTransferDialog> {
                   value: _sourceId,
                   decoration: InputDecoration(
                     labelText: 'From Wallet'.tr(),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                   items: widget.wallets.map((w) {
                     return DropdownMenuItem(value: w.id, child: Text(w.name));
@@ -1030,7 +1125,7 @@ class _AutoTransferDialogState extends State<_AutoTransferDialog> {
                   value: _destId,
                   decoration: InputDecoration(
                     labelText: 'To Wallet'.tr(),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                   items: widget.wallets.map((w) {
                     return DropdownMenuItem(value: w.id, child: Text(w.name));
@@ -1042,7 +1137,7 @@ class _AutoTransferDialogState extends State<_AutoTransferDialog> {
                   value: _triggerType,
                   decoration: InputDecoration(
                     labelText: 'Trigger'.tr(),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                   items: TriggerType.values.map((t) {
                     return DropdownMenuItem(value: t, child: Text(t.name));
@@ -1054,7 +1149,7 @@ class _AutoTransferDialogState extends State<_AutoTransferDialog> {
                   value: _calcType,
                   decoration: InputDecoration(
                     labelText: 'Calculation'.tr(),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                   items: CalculationType.values.map((t) {
                     return DropdownMenuItem(value: t, child: Text(t.name));
@@ -1068,14 +1163,15 @@ class _AutoTransferDialogState extends State<_AutoTransferDialog> {
                   decoration: InputDecoration(
                     labelText:
                         _calcType == CalculationType.percentage ? 'Percentage (%)'.tr() : 'Amount'.tr(),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                 ),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    TextButton(
+                    CupertinoButton(
+                        padding: EdgeInsets.zero,
                         onPressed: () => Navigator.pop(context), child: Text('Cancel'.tr())),
                     const SizedBox(width: 12),
                     AppButton.primary(label: 'Save'.tr(), onPressed: _save, size: AppButtonSize.small),
@@ -1140,7 +1236,7 @@ class _RoundUpDialogState extends State<_RoundUpDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: ConstrainedBox(
@@ -1162,7 +1258,7 @@ class _RoundUpDialogState extends State<_RoundUpDialog> {
                   controller: _nameCtrl,
                   decoration: InputDecoration(
                     labelText: 'Rule Name'.tr(),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -1170,7 +1266,7 @@ class _RoundUpDialogState extends State<_RoundUpDialog> {
                   value: _sourceId,
                   decoration: InputDecoration(
                     labelText: 'Spending Wallet'.tr(),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                   items: widget.wallets.map((w) {
                     return DropdownMenuItem(value: w.id, child: Text(w.name));
@@ -1182,7 +1278,7 @@ class _RoundUpDialogState extends State<_RoundUpDialog> {
                   value: _savingsId,
                   decoration: InputDecoration(
                     labelText: 'Savings Wallet'.tr(),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                   items: widget.wallets.map((w) {
                     return DropdownMenuItem(value: w.id, child: Text(w.name));
@@ -1194,7 +1290,7 @@ class _RoundUpDialogState extends State<_RoundUpDialog> {
                   value: _roundUpTo,
                   decoration: InputDecoration(
                     labelText: 'Round Up To'.tr(),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                   items: RoundUpTo.values.map((t) {
                     String label;
@@ -1223,7 +1319,7 @@ class _RoundUpDialogState extends State<_RoundUpDialog> {
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
                       labelText: 'Custom Amount'.tr(),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                     ),
                   ),
                 ],
@@ -1231,7 +1327,8 @@ class _RoundUpDialogState extends State<_RoundUpDialog> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    TextButton(
+                    CupertinoButton(
+                        padding: EdgeInsets.zero,
                         onPressed: () => Navigator.pop(context), child: Text('Cancel'.tr())),
                     const SizedBox(width: 12),
                     AppButton.primary(label: 'Save'.tr(), onPressed: _save, size: AppButtonSize.small),

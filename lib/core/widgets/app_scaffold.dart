@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import '../theme/app_colors.dart';
-import '../theme/app_animations.dart';
 import '../theme/app_typography.dart';
 import 'app_button.dart';
 
@@ -62,7 +62,7 @@ class AppScaffold extends StatelessWidget {
               leading: leading ??
                   (showBackButton && Navigator.canPop(context)
                       ? AppIconButton(
-                          icon: Icons.arrow_back,
+                          icon: CupertinoIcons.back,
                           onPressed:
                               onBackPressed ?? () => Navigator.pop(context),
                           variant: AppIconButtonVariant.filled,
@@ -73,37 +73,7 @@ class AppScaffold extends StatelessWidget {
           : null,
       body: body == null
           ? null
-          : SafeArea(
-              child: Stack(
-                children: [
-                  Positioned(
-                    top: -120,
-                    right: -40,
-                    child: IgnorePointer(
-                      child: Container(
-                        width: 240,
-                        height: 240,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: RadialGradient(
-                            colors: [
-                              AppColors.primary.withOpacity(isDark ? 0.08 : 0.12),
-                              Colors.transparent,
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  AnimatedSwitcher(
-                    duration: AppAnimations.medium,
-                    switchInCurve: AppAnimations.easeOutCubic,
-                    switchOutCurve: AppAnimations.easeInOut,
-                    child: body!,
-                  ),
-                ],
-              ),
-            ),
+          : SafeArea(child: body!),
       bottomNavigationBar: bottomNavigationBar,
       floatingActionButton: floatingActionButton,
     );
@@ -161,25 +131,13 @@ class AppScrollScaffold extends StatelessWidget {
               centerTitle: centerTitle,
               backgroundColor:
                   isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
-              flexibleSpace: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      AppColors.primary.withOpacity(isDark ? 0.08 : 0.12),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
               elevation: 0,
               scrolledUnderElevation: 0,
               pinned: pinnedHeader,
               leading: leading ??
                   (showBackButton && Navigator.canPop(context)
                       ? AppIconButton(
-                          icon: Icons.arrow_back,
+                          icon: CupertinoIcons.back,
                           onPressed:
                               onBackPressed ?? () => Navigator.pop(context),
                           variant: AppIconButtonVariant.filled,
@@ -269,7 +227,7 @@ class _NavItem extends StatelessWidget {
           color: isSelected
               ? AppColors.primary.withOpacity(0.1)
               : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -317,12 +275,12 @@ class AppBottomNavItem {
   });
 }
 
-/// Floating action button with animation
+/// Floating action button (Cupertino style)
 class AppFAB extends StatelessWidget {
   const AppFAB({
     super.key,
     required this.onPressed,
-    this.icon = Icons.add,
+    this.icon = CupertinoIcons.add,
     this.label,
   });
 
@@ -332,17 +290,21 @@ class AppFAB extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (label != null) {
-      return FloatingActionButton.extended(
-        onPressed: onPressed,
-        icon: Icon(icon),
-        label: Text(label!),
-      );
-    }
-
-    return FloatingActionButton(
+    return CupertinoButton(
       onPressed: onPressed,
-      child: Icon(icon),
+      color: AppColors.primary,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      borderRadius: BorderRadius.circular(10),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 18, color: Colors.white),
+          if (label != null) ...[
+            const SizedBox(width: 6),
+            Text(label!, style: const TextStyle(color: Colors.white, fontSize: 14)),
+          ],
+        ],
+      ),
     );
   }
 }
@@ -383,7 +345,8 @@ class AppSectionHeader extends StatelessWidget {
           if (action != null)
             action!
           else if (actionLabel != null)
-            TextButton(
+            CupertinoButton(
+              padding: EdgeInsets.zero,
               onPressed: onAction,
               child: Text(actionLabel!),
             ),

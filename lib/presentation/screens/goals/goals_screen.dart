@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
@@ -51,10 +52,8 @@ class _GoalsScreenState extends State<GoalsScreen> {
     DateTime selectedDate =
         goal?.targetDate ?? DateTime.now().add(const Duration(days: 90));
 
-    await showModalBottomSheet<void>(
+    await showCupertinoModalPopup<void>(
       context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
       builder: (context) => Padding(
         padding: EdgeInsets.only(
           left: 20,
@@ -123,22 +122,55 @@ class _GoalsScreenState extends State<GoalsScreen> {
                 ],
               ),
               const SizedBox(height: 12),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text('Target date'.tr()),
-                subtitle: Text(selectedDate.toLongDate()),
-                trailing: const Icon(Icons.calendar_today),
-                onTap: () async {
-                  final picked = await showDatePicker(
-                    context: context,
-                    firstDate: DateTime.now(),
-                    lastDate: DateTime.now().add(const Duration(days: 3650)),
-                    initialDate: selectedDate,
-                  );
-                  if (picked != null) {
-                    setModalState(() => selectedDate = picked);
-                  }
-                },
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 12),
+                child: GestureDetector(
+                  onTap: () async {
+                    final picked = await showCupertinoModalPopup<DateTime>(
+                      context: context,
+                      builder: (context) => Container(
+                        height: 300,
+                        padding: const EdgeInsets.only(top: 40),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface(context),
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(14),
+                          ),
+                        ),
+                        child: CupertinoDatePicker(
+                          initialDateTime: selectedDate,
+                          minimumDate: DateTime.now(),
+                          maximumDate: DateTime.now().add(const Duration(days: 3650)),
+                          mode: CupertinoDatePickerMode.date,
+                          onDateTimeChanged: (date) {
+                            Navigator.pop(context, date);
+                          },
+                        ),
+                      ),
+                    );
+                    if (picked != null) {
+                      setModalState(() => selectedDate = picked);
+                    }
+                  },
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Target date'.tr(), style: AppTypography.bodyLarge(fontWeight: FontWeight.w600)),
+                            const SizedBox(height: 2),
+                            Text(
+                              selectedDate.toLongDate(),
+                              style: AppTypography.bodySmall(color: AppColors.textTertiary(context)),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(CupertinoIcons.calendar, size: 18, color: AppColors.textTertiary(context)),
+                    ],
+                  ),
+                ),
               ),
               const SizedBox(height: 12),
               AppButton.primary(
@@ -150,12 +182,9 @@ class _GoalsScreenState extends State<GoalsScreen> {
                   if (nameController.text.trim().isEmpty ||
                       target == null ||
                       target <= 0) {
-                    context.showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'Enter a valid goal name and target amount'.tr(),
-                        ),
-                      ),
+                    CupertinoToast.show(
+                      context,
+                      message: 'Enter a valid goal name and target amount'.tr(),
                     );
                     return;
                   }
@@ -199,14 +228,14 @@ class _GoalsScreenState extends State<GoalsScreen> {
       title: 'Goals'.tr(),
       actions: [
         AppIconButton(
-          icon: Icons.add,
+          icon: CupertinoIcons.add,
           onPressed: () => _showGoalEditor(),
           variant: AppIconButtonVariant.filled,
         ),
         const SizedBox(width: 16),
       ],
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CupertinoActivityIndicator())
           : Column(
               children: [
                 Padding(
@@ -222,7 +251,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
                   child: _goals.isEmpty
                       ? Center(
                           child: AppEmptyState(
-                            icon: Icons.flag,
+                            icon: CupertinoIcons.flag,
                             title: 'No goals yet'.tr(),
                             subtitle: 'Create your first financial goal'.tr(),
                           ),
@@ -277,7 +306,7 @@ class _GoalCard extends StatelessWidget {
                 height: 48,
                 decoration: BoxDecoration(
                   color: goal.color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
                   goal.icon,
@@ -381,7 +410,7 @@ class _GoalCard extends StatelessWidget {
           Row(
             children: [
               Icon(
-                Icons.calendar_today,
+                CupertinoIcons.calendar,
                 size: 16,
                 color: AppColors.textSecondary(context),
               ),
@@ -404,9 +433,8 @@ class _GoalCard extends StatelessWidget {
   }
 
   void _showGoalDetails(BuildContext context) {
-    showModalBottomSheet<void>(
+    showCupertinoModalPopup<void>(
       context: context,
-      showDragHandle: true,
       builder: (context) => SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),

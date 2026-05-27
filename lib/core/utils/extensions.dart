@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../services/currency_formatter.dart';
 import '../widgets/mascot_snackbar.dart';
+import '../widgets/cupertino_toast.dart';
 
 /// Extension on BuildContext for easy access to theme and media query
 extension BuildContextExtension on BuildContext {
@@ -48,52 +49,60 @@ extension BuildContextExtension on BuildContext {
   /// Get the scaffold messenger
   ScaffoldMessengerState get scaffoldMessenger => ScaffoldMessenger.of(this);
 
-  /// Show a snackbar
+  /// Show a Cupertino-styled toast notification
   void showSnackBar(SnackBar snackBar) {
-    if (snackBar.content is Text) {
-      final textWidget = snackBar.content as Text;
-      final message = textWidget.data ?? '';
-      
-      // Determine type based on common keywords or properties (simple heuristic)
-      MascotSnackBarType type = MascotSnackBarType.info;
-      if (message.toLowerCase().contains('failed') || 
-          message.toLowerCase().contains('error') || 
-          message.toLowerCase().contains('please enter') ||
-          snackBar.backgroundColor == Colors.red) {
-        type = MascotSnackBarType.error;
-      } else if (message.toLowerCase().contains('success') || 
-                 message.toLowerCase().contains('created') || 
-                 message.toLowerCase().contains('saved') || 
-                 message.toLowerCase().contains('sent') || 
-                 message.toLowerCase().contains('updated')) {
-        type = MascotSnackBarType.success;
-      }
-
-      ScaffoldMessenger.of(this).showSnackBar(buildMascotSnackBar(this, message, type: type));
-    } else {
+    try {
       ScaffoldMessenger.of(this).showSnackBar(snackBar);
+    } catch (_) {
+      // Fallback to Cupertino toast when no Material ancestor exists
+      CupertinoToast.show(
+        this,
+        message: (snackBar.content as Text?)?.data ?? '',
+        type: CupertinoToastType.info,
+      );
     }
   }
 
-  /// Show a customized animated mascot snackbar
-  void showMascotSnackBar(String message, {MascotSnackBarType type = MascotSnackBarType.info}) {
-    hideSnackBar();
-    ScaffoldMessenger.of(this).showSnackBar(buildMascotSnackBar(this, message, type: type));
+  /// Show a mascot-styled Cupertino toast notification
+  void showMascotSnackBar(
+    String message, {
+    MascotSnackBarType type = MascotSnackBarType.info,
+  }) {
+    try {
+      ScaffoldMessenger.of(this).showSnackBar(buildMascotSnackBar(this, message, type: type));
+    } catch (_) {
+      // Fallback to Cupertino toast when no Material ancestor exists
+      final toastType = switch (type) {
+        MascotSnackBarType.success => CupertinoToastType.success,
+        MascotSnackBarType.error => CupertinoToastType.error,
+        MascotSnackBarType.warning => CupertinoToastType.warning,
+        MascotSnackBarType.info => CupertinoToastType.info,
+      };
+      CupertinoToast.show(this, message: message, type: toastType);
+    }
   }
 
   /// Hide the current snackbar
   void hideSnackBar() {
-    ScaffoldMessenger.of(this).hideCurrentSnackBar();
+    try {
+      ScaffoldMessenger.of(this).hideCurrentSnackBar();
+    } catch (_) {}
   }
 
   /// Show a material banner
   void showMaterialBanner(MaterialBanner banner) {
-    ScaffoldMessenger.of(this).showMaterialBanner(banner);
+    try {
+      ScaffoldMessenger.of(this).showMaterialBanner(banner);
+    } catch (_) {
+      CupertinoToast.show(this, message: 'Notification', type: CupertinoToastType.info);
+    }
   }
 
   /// Hide the current material banner
   void hideMaterialBanner() {
-    ScaffoldMessenger.of(this).hideCurrentMaterialBanner();
+    try {
+      ScaffoldMessenger.of(this).hideCurrentMaterialBanner();
+    } catch (_) {}
   }
 
   /// Navigate to a new screen

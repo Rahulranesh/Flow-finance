@@ -1,8 +1,10 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import 'flow_mascot.dart';
+import 'cupertino_toast.dart';
 
 enum MascotSnackBarType { info, success, error, warning }
 
@@ -77,27 +79,15 @@ class _MascotSnackBarContentState extends State<MascotSnackBarContent>
                     colors.bg2,
                   ],
                 ),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(10),
                 border: Border.all(
                   color: colors.accent.withOpacity(0.35),
                   width: 1.2,
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: colors.accent.withOpacity(0.25),
-                    blurRadius: 20,
-                    spreadRadius: 0,
-                    offset: const Offset(0, 6),
-                  ),
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.15),
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
+
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(10),
                 child: Stack(
                   children: [
                     // Shimmer sweep
@@ -198,7 +188,7 @@ class _MascotSnackBarContentState extends State<MascotSnackBarContent>
           bg2: isDark ? const Color(0xFF133322) : const Color(0xFFD0EDDA),
           accent: AppColors.success,
           text: isDark ? Colors.white : const Color(0xFF1B5E20),
-          icon: Icons.check_circle_rounded,
+          icon: CupertinoIcons.checkmark_alt_circle_fill,
         );
       case MascotSnackBarType.error:
         return _SnackColors(
@@ -206,7 +196,7 @@ class _MascotSnackBarContentState extends State<MascotSnackBarContent>
           bg2: isDark ? const Color(0xFF3A1010) : const Color(0xFFFFD6D6),
           accent: AppColors.error,
           text: isDark ? Colors.white : const Color(0xFFB71C1C),
-          icon: Icons.error_rounded,
+          icon: CupertinoIcons.exclamationmark_circle_fill,
         );
       case MascotSnackBarType.warning:
         return _SnackColors(
@@ -214,7 +204,7 @@ class _MascotSnackBarContentState extends State<MascotSnackBarContent>
           bg2: isDark ? const Color(0xFF3A2C10) : const Color(0xFFFFECB3),
           accent: const Color(0xFFF59E0B),
           text: isDark ? Colors.white : const Color(0xFF78350F),
-          icon: Icons.warning_rounded,
+          icon: CupertinoIcons.exclamationmark_triangle_fill,
         );
       case MascotSnackBarType.info:
         return _SnackColors(
@@ -222,7 +212,7 @@ class _MascotSnackBarContentState extends State<MascotSnackBarContent>
           bg2: isDark ? const Color(0xFF10223A) : const Color(0xFFBBDEFB),
           accent: AppColors.primary,
           text: isDark ? Colors.white : const Color(0xFF0D47A1),
-          icon: Icons.info_rounded,
+          icon: CupertinoIcons.info_circle_fill,
         );
     }
   }
@@ -265,6 +255,20 @@ class _SnackColors {
     required this.text,
     required this.icon,
   });
+}
+
+/// Show a Cupertino-styled mascot notification
+void showCupertinoMascotNotification(BuildContext context, String message, {MascotSnackBarType type = MascotSnackBarType.info}) {
+  CupertinoToast.show(
+    context,
+    message: message,
+    type: switch (type) {
+      MascotSnackBarType.success => CupertinoToastType.success,
+      MascotSnackBarType.error => CupertinoToastType.error,
+      MascotSnackBarType.warning => CupertinoToastType.warning,
+      MascotSnackBarType.info => CupertinoToastType.info,
+    },
+  );
 }
 
 // ─── Builder helper ───────────────────────────────────────────────────────────

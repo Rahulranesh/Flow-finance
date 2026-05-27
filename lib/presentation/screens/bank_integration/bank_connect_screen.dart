@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../../../core/models/bank_account.dart';
@@ -9,6 +10,7 @@ import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_scaffold.dart';
 import 'package:flow_finance/core/utils/extensions.dart';
+import '../../../core/widgets/cupertino_toast.dart';
 import '../../blocs/wallet_bloc.dart';
 
 /// Screen for connecting bank accounts
@@ -124,7 +126,7 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
           children: [
             Row(
               children: [
-                Icon(Icons.security, color: AppColors.primary),
+                Icon(CupertinoIcons.lock_shield_fill, color: AppColors.primary),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -164,25 +166,34 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
       runSpacing: 8,
       children: _countries.map((country) {
         final isSelected = _selectedCountry == country['code'];
-        return ChoiceChip(
-          label: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(country['flag'] as String),
-              const SizedBox(width: 8),
-              Text((country['name'] as String).tr()),
-            ],
-          ),
-          selected: isSelected,
-          onSelected: (selected) {
+        return GestureDetector(
+          onTap: () {
             setState(() {
-              _selectedCountry = selected ? country['code'] as String : null;
+              _selectedCountry = isSelected ? null : country['code'] as String;
               _selectedProvider = null;
               _institutions = [];
             });
           },
-          selectedColor: AppColors.primary.withValues(alpha: 0.2),
-          checkmarkColor: AppColors.primary,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: isSelected ? AppColors.primary.withOpacity(0.1) : AppColors.surfaceVariant(context),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: isSelected ? AppColors.primary : AppColors.border(context).withOpacity(0.5),
+                width: isSelected ? 1.5 : 0.5,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(country['flag'] as String),
+                const SizedBox(width: 8),
+                Text((country['name'] as String).tr(), style: AppTypography.labelMedium(color: isSelected ? AppColors.primary : null)),
+              ],
+            ),
+          ),
         );
       }).toList(),
     );
@@ -203,21 +214,39 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
           },
           backgroundColor:
               isSelected ? AppColors.primary.withValues(alpha: 0.1) : null,
-          child: ListTile(
-            leading: Icon(
-              provider['icon'] as IconData,
-              color: isSelected ? AppColors.primary : null,
-            ),
-            title: Text((provider['name'] as String).tr()),
-            subtitle: Text(
-              (provider['description'] as String).tr(),
-              style: AppTypography.bodySmall(
-                color: AppColors.textSecondaryLight,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: GestureDetector(
+              onTap: () {},
+              child: Row(
+                children: [
+                  Icon(
+                    provider['icon'] as IconData,
+                    size: 20,
+                    color: isSelected ? AppColors.primary : AppColors.textSecondary(context),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text((provider['name'] as String).tr(), style: AppTypography.bodyLarge(fontWeight: FontWeight.w600)),
+                        const SizedBox(height: 2),
+                        Text(
+                          (provider['description'] as String).tr(),
+                          style: AppTypography.bodySmall(color: AppColors.textTertiary(context)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    isSelected ? CupertinoIcons.check_mark_circled_solid : CupertinoIcons.chevron_right,
+                    size: 18,
+                    color: isSelected ? AppColors.primary : AppColors.textTertiary(context),
+                  ),
+                ],
               ),
             ),
-            trailing: isSelected
-                ? Icon(Icons.check_circle, color: AppColors.primary)
-                : const Icon(Icons.chevron_right),
           ),
         );
       }).toList(),
@@ -234,7 +263,7 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
         'id': 'plaid',
         'name': 'Plaid',
         'description': 'Connect via Plaid (US, Canada, UK, EU)',
-        'icon': Icons.account_balance,
+        'icon': CupertinoIcons.building_2_fill,
       });
     }
 
@@ -244,7 +273,7 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
         'id': 'truelayer',
         'name': 'TrueLayer',
         'description': 'Connect via TrueLayer (UK & EU)',
-        'icon': Icons.account_balance_wallet,
+        'icon': CupertinoIcons.money_dollar_circle_fill,
       });
     }
 
@@ -254,13 +283,13 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
         'id': 'aa_finvu',
         'name': 'Account Aggregator (Finvu)',
         'description': 'RBI-approved secure connection',
-        'icon': Icons.verified_user,
+        'icon': CupertinoIcons.checkmark_seal_fill,
       });
       providers.add({
         'id': 'upi_sms',
         'name': 'UPI SMS Tracking',
         'description': 'Track UPI transactions via SMS',
-        'icon': Icons.message,
+        'icon': CupertinoIcons.chat_bubble_2_fill,
       });
     }
 
@@ -269,7 +298,7 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
 
   Widget _buildBankSelector(bool isDark) {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: CupertinoActivityIndicator());
     }
 
     if (_institutions.isEmpty) {
@@ -279,7 +308,7 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
           child: Column(
             children: [
               Icon(
-                Icons.search,
+                CupertinoIcons.search,
                 size: 48,
                 color: AppColors.textSecondaryLight,
               ),
@@ -292,9 +321,9 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
               TextField(
                 decoration: InputDecoration(
                   hintText: 'Bank name...'.tr(),
-                  prefixIcon: const Icon(Icons.search),
+                  prefixIcon: const Icon(CupertinoIcons.search),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                 ),
                 onChanged: _searchInstitutions,
@@ -309,23 +338,35 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
       children: _institutions.map((institution) {
         return AppCard(
           onTap: () => _connectBank(institution),
-          child: ListTile(
-            leading: institution.logo != null
-                ? Image.network(
-                    institution.logo!,
-                    width: 40,
-                    height: 40,
-                    errorBuilder: (_, __, ___) => _buildBankIcon(),
-                  )
-                : _buildBankIcon(),
-            title: Text(institution.name),
-            subtitle: Text(
-              '${'Supports'.tr()}: ${institution.supportedFeatures.take(3).join(', ')}',
-              style: AppTypography.labelSmall(
-                color: AppColors.textSecondaryLight,
-              ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                institution.logo != null
+                    ? Image.network(
+                        institution.logo!,
+                        width: 40,
+                        height: 40,
+                        errorBuilder: (_, __, ___) => _buildBankIcon(),
+                      )
+                    : _buildBankIcon(),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(institution.name, style: AppTypography.bodyLarge(fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${'Supports'.tr()}: ${institution.supportedFeatures.take(3).join(', ')}',
+                        style: AppTypography.bodySmall(color: AppColors.textTertiary(context)),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(CupertinoIcons.chevron_right, size: 18, color: AppColors.textTertiary(context)),
+              ],
             ),
-            trailing: const Icon(Icons.chevron_right),
           ),
         );
       }).toList(),
@@ -338,9 +379,9 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
       height: 40,
       decoration: BoxDecoration(
         color: AppColors.primary.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(10),
       ),
-      child: Icon(Icons.account_balance, color: AppColors.primary),
+      child: Icon(CupertinoIcons.building_2_fill, color: AppColors.primary),
     );
   }
 
@@ -358,7 +399,7 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
               child: Column(
                 children: [
                   Icon(
-                    Icons.account_balance_outlined,
+                    CupertinoIcons.building_2_fill,
                     size: 48,
                     color: AppColors.textSecondaryLight,
                   ),
@@ -410,8 +451,9 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
         });
       }
     } catch (e) {
-      context.showSnackBar(
-        SnackBar(content: Text('${'Error loading banks'.tr()}: $e')),
+      CupertinoToast.show(
+        context,
+        message: '${'Error loading banks'.tr()}: $e',
       );
     } finally {
       setState(() => _isLoading = false);
@@ -444,19 +486,19 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
     final wallets = walletBloc.wallets;
 
     if (wallets.isNotEmpty) {
-      await showDialog<String>(
+      await showCupertinoModalPopup<String>(
         context: context,
-        builder: (context) => AlertDialog(
+        builder: (context) => CupertinoActionSheet(
           title: Text('Link to Wallet'.tr()),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: wallets.map((wallet) {
-              return ListTile(
-                title: Text(wallet.name),
-                subtitle: Text(wallet.currency),
-                onTap: () => Navigator.pop(context, wallet.id),
-              );
-            }).toList(),
+          actions: wallets.map((wallet) {
+            return CupertinoActionSheetAction(
+              onPressed: () => Navigator.pop(context, wallet.id),
+              child: Text(wallet.name),
+            );
+          }).toList(),
+          cancelButton: CupertinoActionSheetAction(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'.tr()),
           ),
         ),
       );
@@ -464,11 +506,9 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
 
     // Start bank connection flow
     if (mounted) {
-      context.showSnackBar(
-        SnackBar(
-          content: Text('Connecting to {institution}...'.tr(namedArgs: {'institution': institution.name})),
-          duration: const Duration(seconds: 2),
-        ),
+      CupertinoToast.show(
+        context,
+        message: 'Connecting to {institution}...'.tr(namedArgs: {'institution': institution.name}),
       );
     }
 

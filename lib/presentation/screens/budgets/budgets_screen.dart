@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
@@ -14,55 +15,66 @@ class BudgetsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppScrollScaffold(
-      title: 'Budgets'.tr(),
-      actions: [
-        AppIconButton(
-          icon: Icons.add,
-          onPressed: () => _showCreateBudgetDialog(context),
-          variant: AppIconButtonVariant.filled,
-        ),
-        const SizedBox(width: 16),
-      ],
-      slivers: [
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Monthly Overview Card
-                _MonthlyOverviewCard(),
-
-                const SizedBox(height: 24),
-
-                // Budget Progress
-                Text(
-                  'Budget Progress'.tr(),
-                  style: AppTypography.titleLarge(),
-                ),
-                const SizedBox(height: 16),
-
-                // Budget List
-                _BudgetList(),
-
-                const SizedBox(height: 24),
-
-                // Spending Insights
-                Text(
-                  'Spending Insights'.tr(),
-                  style: AppTypography.titleLarge(),
-                ),
-                const SizedBox(height: 16),
-
-                _SpendingInsights(),
-
-                const SizedBox(height: 40),
-              ],
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Budgets'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis),
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        actions: [
+          GestureDetector(
+            onTap: () => _showCreateBudgetDialog(context),
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(CupertinoIcons.add, size: 20, color: AppColors.primary),
             ),
           ),
+          const SizedBox(width: 16),
+        ],
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Monthly Overview Card
+            _MonthlyOverviewCard(),
+
+            const SizedBox(height: 24),
+
+            // Budget Progress
+            Text(
+              'Budget Progress'.tr(),
+              style: AppTypography.titleLarge(),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 16),
+
+            // Budget List
+            _BudgetList(),
+
+            const SizedBox(height: 24),
+
+            // Spending Insights
+            Text(
+              'Spending Insights'.tr(),
+              style: AppTypography.titleLarge(),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 16),
+
+            _SpendingInsights(),
+
+            const SizedBox(height: 40),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
@@ -83,8 +95,13 @@ class _MonthlyOverviewCard extends StatelessWidget {
         final double percentage =
             totalBudget > 0 ? totalSpent / totalBudget : 0.0;
 
-        return AppCard(
-          variant: AppCardVariant.highlighted,
+        return Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceVariant(context),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: AppColors.border(context), width: 0.5),
+          ),
           child: Column(
             children: [
               Row(
@@ -98,11 +115,15 @@ class _MonthlyOverviewCard extends StatelessWidget {
                           style: AppTypography.bodyMedium(
                             color: AppColors.textSecondary(context),
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 4),
                         Text(
                           totalBudget.toCurrency(),
                           style: AppTypography.headlineMedium(),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
@@ -116,17 +137,17 @@ class _MonthlyOverviewCard extends StatelessWidget {
                           : percentage > 0.75
                               ? AppColors.warning.withOpacity(0.1)
                               : AppColors.success.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
                           percentage > 0.9
-                              ? Icons.warning
+                              ? CupertinoIcons.exclamationmark_triangle
                               : percentage > 0.75
-                                  ? Icons.trending_up
-                                  : Icons.trending_down,
+                              ? CupertinoIcons.arrow_up
+                              : CupertinoIcons.arrow_down,
                           size: 16,
                           color: percentage > 0.9
                               ? AppColors.error
@@ -148,6 +169,8 @@ class _MonthlyOverviewCard extends StatelessWidget {
                                     ? AppColors.warning
                                     : AppColors.success,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
@@ -240,6 +263,8 @@ class _StatItem extends StatelessWidget {
         Text(
           value,
           style: AppTypography.titleMedium(),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
       ],
     );
@@ -253,20 +278,21 @@ class _BudgetList extends StatelessWidget {
     return Consumer<BudgetBloc>(
       builder: (context, bloc, child) {
         if (bloc.isLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: CupertinoActivityIndicator());
         }
 
         if (bloc.error != null) {
           return Center(
             child: Column(
               children: [
-                Icon(Icons.error_outline, size: 48, color: AppColors.error),
+                const Icon(CupertinoIcons.exclamationmark_circle, size: 48, color: AppColors.error),
                 const SizedBox(height: 16),
                 Text(bloc.error!),
                 const SizedBox(height: 16),
-                AppButton.secondary(
-                  label: 'Retry'.tr(),
+                CupertinoButton(
+                  padding: EdgeInsets.zero,
                   onPressed: () => bloc.loadBudgets(),
+                  child: Text('Retry'.tr()),
                 ),
               ],
             ),
@@ -289,94 +315,106 @@ class _BudgetList extends StatelessWidget {
             final isOverBudget = p.isOverBudget;
             final isNearLimit = p.isNearLimit;
 
-            return AppCard(
-              variant: AppCardVariant.flat,
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(16),
+            return GestureDetector(
               onTap: () => _showBudgetDetails(context, p),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: p.category.color.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceVariant(context),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: AppColors.border(context), width: 0.5),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: p.category.color.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(
+                            _getCategoryIcon(p.category.iconName),
+                            color: p.category.color,
+                            size: 22,
+                          ),
                         ),
-                        child: Icon(
-                          _getCategoryIcon(p.category.iconName),
-                          color: p.category.color,
-                          size: 22,
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                p.category.name,
+                                style: AppTypography.bodyLarge(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${p.spent.toCurrency()} ${'of'.tr()} ${p.budget.limit.toCurrency()}',
+                                style: AppTypography.bodySmall(
+                                  color: AppColors.textTertiary(context),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Text(
-                              p.category.name,
-                              style: AppTypography.bodyLarge(
-                                fontWeight: FontWeight.w600,
+                              '${(p.percentage * 100).toInt()}%',
+                              style: AppTypography.labelLarge(
+                                color: isOverBudget
+                                    ? AppColors.error
+                                    : isNearLimit
+                                        ? AppColors.warning
+                                        : p.category.color,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '${p.spent.toCurrency()} ${'of'.tr()} ${p.budget.limit.toCurrency()}',
-                              style: AppTypography.bodySmall(
-                                color: AppColors.textTertiary(context),
+                              '${p.remaining.toCurrency()} ${'left'.tr()}',
+                              style: AppTypography.caption(
+                                color: isOverBudget
+                                    ? AppColors.error
+                                    : AppColors.textTertiary(context),
                               ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            '${(p.percentage * 100).toInt()}%',
-                            style: AppTypography.labelLarge(
-                              color: isOverBudget
-                                  ? AppColors.error
-                                  : isNearLimit
-                                      ? AppColors.warning
-                                      : p.category.color,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '${p.remaining.toCurrency()} ${'left'.tr()}',
-                            style: AppTypography.caption(
-                              color: isOverBudget
-                                  ? AppColors.error
-                                  : AppColors.textTertiary(context),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(6),
-                    child: LinearProgressIndicator(
-                      value: p.percentage.clamp(0.0, 1.0),
-                      minHeight: 8,
-                      backgroundColor: AppColors.surfaceVariant(context),
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        isOverBudget
-                            ? AppColors.error
-                            : isNearLimit
-                                ? AppColors.warning
-                                : p.category.color,
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: LinearProgressIndicator(
+                        value: p.percentage.clamp(0.0, 1.0),
+                        minHeight: 8,
+                        backgroundColor: AppColors.surfaceVariant(context),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          isOverBudget
+                              ? AppColors.error
+                              : isNearLimit
+                                  ? AppColors.warning
+                                  : p.category.color,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             );
           }).toList(),
@@ -390,50 +428,69 @@ class _BudgetList extends StatelessWidget {
   }
 
   void _showBudgetDetails(BuildContext context, BudgetProgress progress) {
-    showModalBottomSheet<void>(
+    showCupertinoModalPopup<void>(
       context: context,
-      showDragHandle: true,
-      builder: (context) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                progress.category.name,
-                style: AppTypography.headlineSmall(),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '${progress.spent.toCurrency()} ${'spent'.tr()}',
-                style: AppTypography.displaySmall(
-                  color: progress.category.color,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text('${'Limit'.tr()}: ${progress.budget.limit.toCurrency()}'),
-              const SizedBox(height: 8),
-              Text('${'Remaining'.tr()}: ${progress.remaining.toCurrency()}'),
-              const SizedBox(height: 8),
-              Text(
-                '${'Usage'.tr()}: ${(progress.percentage * 100).toStringAsFixed(1)}%',
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '${'Period'.tr()}: ${progress.budget.period.name.capitalize.tr()}',
-              ),
-              const SizedBox(height: 8),
-              Text(
-                  '${'Start'.tr()}: ${progress.budget.startDate.toLongDate()}'),
-              if (progress.budget.endDate != null) ...[
-                const SizedBox(height: 8),
-                Text('${'End'.tr()}: ${progress.budget.endDate!.toLongDate()}'),
-              ],
-            ],
+      builder: (context) => CupertinoActionSheet(
+        title: Text(
+          progress.category.name,
+          style: AppTypography.headlineSmall(),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        message: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.45,
           ),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 8),
+                Text(
+                  '${progress.spent.toCurrency()} ${'spent'.tr()}',
+                  style: AppTypography.displaySmall(
+                    color: progress.category.color,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 16),
+                Text('${'Limit'.tr()}: ${progress.budget.limit.toCurrency()}', maxLines: 1, overflow: TextOverflow.ellipsis),
+                const SizedBox(height: 8),
+                Text('${'Remaining'.tr()}: ${progress.remaining.toCurrency()}', maxLines: 1, overflow: TextOverflow.ellipsis),
+                const SizedBox(height: 8),
+                Text(
+                  '${'Usage'.tr()}: ${(progress.percentage * 100).toStringAsFixed(1)}%',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '${'Period'.tr()}: ${progress.budget.period.name.capitalize.tr()}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                    '${'Start'.tr()}: ${progress.budget.startDate.toLongDate()}', maxLines: 1, overflow: TextOverflow.ellipsis),
+                if (progress.budget.endDate != null) ...[
+                  const SizedBox(height: 8),
+                  Text('${'End'.tr()}: ${progress.budget.endDate!.toLongDate()}', maxLines: 1, overflow: TextOverflow.ellipsis),
+                ],
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          CupertinoActionSheetAction(
+            isDefaultAction: true,
+            onPressed: () => Navigator.pop(context),
+            child: Text('Close'.tr()),
+          ),
+        ],
+        cancelButton: CupertinoActionSheetAction(
+          onPressed: () => Navigator.pop(context),
+          child: Text('Cancel'.tr()),
         ),
       ),
     );
@@ -464,14 +521,21 @@ class _SpendingInsights extends StatelessWidget {
 
         return Column(
           children: [
-            AppCard(
-              variant: AppCardVariant.flat,
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceVariant(context),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColors.border(context), width: 0.5),
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'Top Spending Categories'.tr(),
                     style: AppTypography.titleMedium(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 16),
                   if (ranked.isEmpty)
@@ -480,6 +544,9 @@ class _SpendingInsights extends StatelessWidget {
                       style: AppTypography.bodySmall(
                         color: AppColors.textSecondary(context),
                       ),
+                      maxLines: 2,
+                      softWrap: true,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ...ranked.take(3).toList().asMap().entries.map((entry) {
                     final percentage = totalExpense > 0
@@ -500,8 +567,13 @@ class _SpendingInsights extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            AppCard(
-              variant: AppCardVariant.flat,
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceVariant(context),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColors.border(context), width: 0.5),
+              ),
               child: Row(
                 children: [
                   Container(
@@ -511,12 +583,12 @@ class _SpendingInsights extends StatelessWidget {
                               ? AppColors.warning
                               : AppColors.success)
                           .withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(
                       alertBudget.isNotEmpty
-                          ? Icons.warning_amber
-                          : Icons.check_circle,
+                          ? CupertinoIcons.exclamationmark_triangle
+                          : CupertinoIcons.check_mark_circled,
                       color: alertBudget.isNotEmpty
                           ? AppColors.warning
                           : AppColors.success,
@@ -535,6 +607,8 @@ class _SpendingInsights extends StatelessWidget {
                           style: AppTypography.bodyLarge(
                             fontWeight: FontWeight.w600,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 4),
                         Text(
@@ -547,6 +621,9 @@ class _SpendingInsights extends StatelessWidget {
                           style: AppTypography.bodySmall(
                             color: AppColors.textSecondary(context),
                           ),
+                          maxLines: 2,
+                          softWrap: true,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
@@ -601,7 +678,7 @@ class _InsightItem extends StatelessWidget {
                 : rank == 2
                     ? const Color(0xFFC0C0C0).withOpacity(0.2)
                     : const Color(0xFFCD7F32).withOpacity(0.2),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(10),
           ),
           child: Center(
             child: Text(
@@ -630,6 +707,8 @@ class _InsightItem extends StatelessWidget {
           child: Text(
             category,
             style: AppTypography.bodyMedium(),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
         Text(
@@ -637,6 +716,8 @@ class _InsightItem extends StatelessWidget {
           style: AppTypography.bodyMedium(
             fontWeight: FontWeight.w600,
           ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(width: 8),
         Text(
@@ -644,6 +725,8 @@ class _InsightItem extends StatelessWidget {
           style: AppTypography.caption(
             color: AppColors.textTertiary(context),
           ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
       ],
     );
@@ -671,10 +754,10 @@ void _showCreateBudgetDialog(BuildContext context) {
   final amountController = TextEditingController();
   final categories = Category.defaultCategories;
 
-  showDialog(
+  showCupertinoDialog(
     context: context,
     builder: (context) => StatefulBuilder(
-      builder: (context, setState) => AlertDialog(
+      builder: (context, setState) => CupertinoAlertDialog(
         title: Text('Create Budget'.tr()),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -685,29 +768,76 @@ void _showCreateBudgetDialog(BuildContext context) {
               style: AppTypography.bodyMedium(
                 fontWeight: FontWeight.w600,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 8),
-            DropdownButtonFormField<String>(
-              value: selectedCategoryId,
-              items: categories.map((cat) => DropdownMenuItem(
-                value: cat.id,
+            GestureDetector(
+              onTap: () {
+                showCupertinoModalPopup(
+                  context: context,
+                  builder: (context) => CupertinoActionSheet(
+                    title: Text('Select a category'.tr()),
+                    actions: categories.map((cat) => CupertinoActionSheetAction(
+                      onPressed: () {
+                        setState(() => selectedCategoryId = cat.id);
+                        Navigator.pop(context);
+                      },
+                      child: Row(
+                        children: [
+                          Icon(_categoryIcon(cat.iconName), size: 20, color: cat.color),
+                          const SizedBox(width: 8),
+                          Text(cat.name, maxLines: 1, overflow: TextOverflow.ellipsis),
+                        ],
+                      ),
+                    )).toList(),
+                    cancelButton: CupertinoActionSheetAction(
+                      isDestructiveAction: false,
+                      onPressed: () => Navigator.pop(context),
+                      child: Text('Cancel'.tr()),
+                    ),
+                  ),
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceVariant(context),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: AppColors.border(context)),
+                ),
                 child: Row(
                   children: [
-                    Icon(_categoryIcon(cat.iconName), size: 20, color: cat.color),
-                    const SizedBox(width: 8),
-                    Text(cat.name),
+                    Expanded(
+                      child: selectedCategoryId == null
+                          ? Text(
+                              'Select a category'.tr(),
+                              style: TextStyle(color: AppColors.textTertiary(context)),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            )
+                          : Row(
+                              children: [
+                                Icon(
+                                  _categoryIcon(
+                                    categories.firstWhere((c) => c.id == selectedCategoryId).iconName,
+                                  ),
+                                  size: 20,
+                                  color: categories.firstWhere((c) => c.id == selectedCategoryId).color,
+                                ),
+                                const SizedBox(width: 8),
+                                Flexible(
+                                  child: Text(
+                                    categories.firstWhere((c) => c.id == selectedCategoryId).name,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                    ),
+                    Icon(CupertinoIcons.chevron_down, size: 16, color: AppColors.textTertiary(context)),
                   ],
-                ),
-              )).toList(),
-              onChanged: (val) => setState(() => selectedCategoryId = val),
-              decoration: InputDecoration(
-                hintText: 'Select a category'.tr(),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
                 ),
               ),
             ),
@@ -717,36 +847,32 @@ void _showCreateBudgetDialog(BuildContext context) {
               style: AppTypography.bodyMedium(
                 fontWeight: FontWeight.w600,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 8),
-            TextField(
+            CupertinoTextField(
               controller: amountController,
-              decoration: InputDecoration(
-                hintText: '0.00'.tr(),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
-                ),
-              ),
+              placeholder: '0.00'.tr(),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
             ),
           ],
         ),
         actions: [
-          TextButton(
+          CupertinoDialogAction(
+            isDefaultAction: false,
             onPressed: () => Navigator.pop(context),
             child: Text('Cancel'.tr()),
           ),
-          AppButton.primary(
-            label: 'Create'.tr(),
+          CupertinoDialogAction(
+            isDefaultAction: true,
             onPressed: () async {
               final amount = double.tryParse(amountController.text);
               if (selectedCategoryId == null || amount == null || amount <= 0) {
-                context.showSnackBar(
-                  SnackBar(content: Text('Please fill in all fields'.tr())),
+                CupertinoToast.show(
+                  context,
+                  message: 'Please fill in all fields'.tr(),
                 );
                 return;
               }
@@ -762,6 +888,7 @@ void _showCreateBudgetDialog(BuildContext context) {
               await context.read<BudgetBloc>().addBudget(budget);
               if (context.mounted) Navigator.pop(context);
             },
+            child: Text('Create'.tr()),
           ),
         ],
       ),

@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
@@ -7,11 +8,12 @@ import '../../../core/services/currency_formatter.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/app_button.dart';
-import '../../../core/widgets/app_card.dart';
+
 import '../../../core/widgets/app_scaffold.dart';
 import '../../../core/widgets/app_loading.dart';
 import '../../../data/models/family_model.dart';
 import 'package:flow_finance/core/utils/extensions.dart';
+import '../../../core/widgets/cupertino_toast.dart';
 import '../../../data/repositories/family_repository.dart';
 
 /// Family/Shared Budget screen
@@ -55,8 +57,9 @@ class _FamilyScreenState extends State<FamilyScreen> {
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        context.showSnackBar(
-          SnackBar(content: Text('Failed to load families'.tr())),
+        CupertinoToast.show(
+          context,
+          message: 'Failed to load families'.tr(),
         );
       }
     }
@@ -70,7 +73,7 @@ class _FamilyScreenState extends State<FamilyScreen> {
       title: 'Family Budget'.tr(),
       actions: [
         IconButton(
-          icon: const Icon(Icons.add),
+          icon: const Icon(CupertinoIcons.add),
           onPressed: _createFamily,
         ),
       ],
@@ -88,11 +91,11 @@ class _FamilyScreenState extends State<FamilyScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            Icons.people_outline,
+            CupertinoIcons.person_3_fill,
             size: 80,
             color: isDark
                 ? AppColors.textSecondaryDark
-                : AppColors.textSecondaryLight,
+                : AppColors.textSecondary(context),
           ),
           const SizedBox(height: 24),
           Text(
@@ -110,14 +113,14 @@ class _FamilyScreenState extends State<FamilyScreen> {
             style: AppTypography.bodyMedium(
               color: isDark
                   ? AppColors.textSecondaryDark
-                  : AppColors.textSecondaryLight,
+                  : AppColors.textSecondary(context),
             ),
           ),
           const SizedBox(height: 32),
           AppButton.primary(
             label: 'Create Family Group'.tr(),
             onPressed: _createFamily,
-            icon: Icons.add,
+            icon: CupertinoIcons.add,
           ),
         ],
       ),
@@ -143,7 +146,7 @@ class _FamilyScreenState extends State<FamilyScreen> {
   }
 
   void _createFamily() {
-    showDialog(
+    showCupertinoDialog(
       context: context,
       builder: (context) => _CreateFamilyDialog(
         onCreate: (name, description) async {
@@ -173,8 +176,9 @@ class _FamilyScreenState extends State<FamilyScreen> {
             }
           } catch (e) {
             if (mounted) {
-              context.showSnackBar(
-                SnackBar(content: Text('Failed to create family'.tr())),
+              CupertinoToast.show(
+                context,
+                message: 'Failed to create family'.tr(),
               );
             }
           }
@@ -213,110 +217,123 @@ class _FamilyCard extends StatelessWidget {
     final currentMember = family.getMember(currentUserId);
     final isOwner = currentMember?.role == FamilyRole.owner;
 
-    return AppCard(
-      margin: const EdgeInsets.only(bottom: 16),
+    return GestureDetector(
       onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+            color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isDark ? AppColors.borderDark : AppColors.borderLight,
+              width: 0.5,
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CircleAvatar(
-                  backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                  child: Text(
-                    family.name.substring(0, 1).toUpperCase(),
-                    style: AppTypography.titleMedium(
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        family.name,
+                Row(
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                      child: Text(
+                        family.name.substring(0, 1).toUpperCase(),
                         style: AppTypography.titleMedium(
-                          color: isDark
-                              ? AppColors.textPrimaryDark
-                              : AppColors.textPrimaryLight,
+                          color: AppColors.primary,
                         ),
                       ),
-                      if (family.description != null) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          family.description!,
-                          style: AppTypography.bodySmall(
-                            color: isDark
-                                ? AppColors.textSecondaryDark
-                                : AppColors.textSecondaryLight,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            family.name,
+                            style: AppTypography.titleMedium(
+                              color: isDark
+                                  ? AppColors.textPrimaryDark
+                                  : AppColors.textPrimaryLight,
+                            ),
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                if (isOwner)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      'Owner'.tr(),
-                      style: AppTypography.labelSmall(
-                        color: AppColors.primary,
+                          if (family.description != null) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              family.description!,
+                              style: AppTypography.bodySmall(
+                                color: isDark
+                                    ? AppColors.textSecondaryDark
+                                    : AppColors.textSecondary(context),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ],
                       ),
                     ),
-                  ),
+                    if (isOwner)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          'Owner'.tr(),
+                          style: AppTypography.labelSmall(
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    _buildStat(
+                      CupertinoIcons.person_3_fill,
+                      '${family.activeMembers.length}',
+                      'Members'.tr(),
+                      context,
+                    ),
+                    const SizedBox(width: 24),
+                    _buildStat(
+                      CupertinoIcons.creditcard,
+                      CurrencyFormatter.format(family.totalAllocatedBudget,
+                          decimalDigits: 0),
+                      'Budget'.tr(),
+                      context,
+                    ),
+                    const SizedBox(width: 24),
+                    _buildStat(
+                      CupertinoIcons.chart_bar,
+                      CurrencyFormatter.format(family.totalSpent, decimalDigits: 0),
+                      'Spent'.tr(),
+                      context,
+                    ),
+                  ],
+                ),
               ],
             ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                _buildStat(
-                  Icons.people,
-                  '${family.activeMembers.length}',
-                  'Members'.tr(),
-                ),
-                const SizedBox(width: 24),
-                _buildStat(
-                  Icons.account_balance_wallet,
-                  CurrencyFormatter.format(family.totalAllocatedBudget,
-                      decimalDigits: 0),
-                  'Budget'.tr(),
-                ),
-                const SizedBox(width: 24),
-                _buildStat(
-                  Icons.trending_up,
-                  CurrencyFormatter.format(family.totalSpent, decimalDigits: 0),
-                  'Spent'.tr(),
-                ),
-              ],
-            ),
-          ],
+          ),
         ),
-      ),
     );
   }
 
-  Widget _buildStat(IconData icon, String value, String label) {
+  Widget _buildStat(IconData icon, String value, String label, BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(
           icon,
           size: 16,
-          color: AppColors.textSecondaryLight,
+          color: AppColors.textSecondary(context),
         ),
         const SizedBox(width: 4),
         Column(
@@ -331,7 +348,7 @@ class _FamilyCard extends StatelessWidget {
             Text(
               label,
               style: AppTypography.labelSmall(
-                color: AppColors.textSecondaryLight,
+                color: AppColors.textSecondary(context),
               ),
             ),
           ],
@@ -386,7 +403,8 @@ class _CreateFamilyDialogState extends State<_CreateFamilyDialog> {
         ],
       ),
       actions: [
-        TextButton(
+        CupertinoButton(
+          padding: EdgeInsets.zero,
           onPressed: () => Navigator.pop(context),
           child: Text('Cancel'.tr()),
         ),
@@ -475,7 +493,15 @@ class _OverviewTab extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Budget Summary Card
-          AppCard(
+          Container(
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                width: 0.5,
+              ),
+            ),
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
@@ -523,17 +549,21 @@ class _OverviewTab extends StatelessWidget {
             children: [
               Expanded(
                 child: _buildQuickStat(
+                  isDark,
                   'Members',
                   family.activeMembers.length.toString(),
-                  Icons.people,
+                  CupertinoIcons.person_3_fill,
+                  context,
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: _buildQuickStat(
+                  isDark,
                   'Budgets',
                   family.budgets.length.toString(),
-                  Icons.account_balance_wallet,
+                  CupertinoIcons.creditcard,
+                  context,
                 ),
               ),
             ],
@@ -570,8 +600,16 @@ class _OverviewTab extends StatelessWidget {
     );
   }
 
-  Widget _buildQuickStat(String label, String value, IconData icon) {
-    return AppCard(
+  Widget _buildQuickStat(bool isDark, String label, String value, IconData icon, BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isDark ? AppColors.borderDark : AppColors.borderLight,
+          width: 0.5,
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -581,7 +619,7 @@ class _OverviewTab extends StatelessWidget {
             Text(
               label,
               style: AppTypography.labelSmall(
-                color: AppColors.textSecondaryLight,
+                color: AppColors.textSecondary(context),
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -615,7 +653,7 @@ class _MembersTab extends StatelessWidget {
             padding: const EdgeInsets.only(top: 16),
             child: AppButton.secondary(
               label: 'Invite Member'.tr(),
-              icon: Icons.person_add,
+              icon: CupertinoIcons.person_add_solid,
               onPressed: () => _showInviteDialog(context, family, currentUserId),
             ),
           );
@@ -624,52 +662,71 @@ class _MembersTab extends StatelessWidget {
         final member = family.activeMembers[index];
         final isCurrentUser = member.userId == currentUserId;
 
-        return ListTile(
-          leading: CircleAvatar(
-            child: Text(
-              member.displayName.isNotEmpty
-                  ? member.displayName[0].toUpperCase()
-                  : 'U'.tr(),
-            ),
-          ),
-          title: Text(
-            member.displayName + (isCurrentUser ? ' (You)'.tr() : ''),
-            style: AppTypography.bodyMedium(
-              fontWeight: isCurrentUser ? FontWeight.w600 : null,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          subtitle: Text(
-            member.role.displayName,
-            style: AppTypography.labelSmall(
-              color: AppColors.textSecondaryLight,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          trailing: canEdit && !isCurrentUser
-              ? PopupMenuButton<String>(
-                  itemBuilder: (context) => [
-                    PopupMenuItem(
-                      value: 'role',
-                      child: Text('Change Role'.tr()),
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              CircleAvatar(
+                child: Text(
+                  member.displayName.isNotEmpty
+                      ? member.displayName[0].toUpperCase()
+                      : 'U'.tr(),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      member.displayName + (isCurrentUser ? ' (You)'.tr() : ''),
+                      style: AppTypography.bodyLarge(
+                        fontWeight: isCurrentUser ? FontWeight.w600 : FontWeight.w600,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    PopupMenuItem(
-                      value: 'remove',
-                      child: Text('Remove'.tr(),
-                          style: TextStyle(color: AppColors.error)),
+                    const SizedBox(height: 2),
+                    Text(
+                      member.role.displayName,
+                      style: AppTypography.bodySmall(
+                        color: AppColors.textTertiary(context),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
-                  onSelected: (value) {
-                    if (value == 'role') {
-                      _showChangeRoleDialog(context, family, member);
-                    } else if (value == 'remove') {
-                      _showRemoveMemberDialog(context, family, member);
-                    }
+                ),
+              ),
+              if (canEdit && !isCurrentUser)
+                GestureDetector(
+                  onTap: () {
+                    showCupertinoModalPopup<void>(
+                      context: context,
+                      builder: (context) => CupertinoActionSheet(
+                        actions: [
+                          CupertinoActionSheetAction(
+                            child: Text('Change Role'.tr()),
+                            onPressed: () { Navigator.pop(context); _showChangeRoleDialog(context, family, member); },
+                          ),
+                          CupertinoActionSheetAction(
+                            isDestructiveAction: true,
+                            child: Text('Remove'.tr()),
+                            onPressed: () { Navigator.pop(context); _showRemoveMemberDialog(context, family, member); },
+                          ),
+                        ],
+                        cancelButton: CupertinoActionSheetAction(
+                          isDefaultAction: true,
+                          child: Text('Cancel'.tr()),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ),
+                    );
                   },
-                )
-              : null,
+                  child: Icon(CupertinoIcons.ellipsis, color: AppColors.textSecondary(context)),
+                ),
+            ],
+          ),
         );
       },
     );
@@ -680,9 +737,9 @@ class _MembersTab extends StatelessWidget {
     final emailController = TextEditingController();
     FamilyRole selectedRole = FamilyRole.member;
 
-    showDialog(
+    showCupertinoDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => CupertinoAlertDialog(
         title: Text('Invite Member'.tr()),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -696,23 +753,25 @@ class _MembersTab extends StatelessWidget {
               keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: 16),
-            DropdownButtonFormField<FamilyRole>(
-              value: selectedRole,
-              decoration: InputDecoration(labelText: 'Role'.tr()),
-              items: FamilyRole.values.map((role) {
-                return DropdownMenuItem(
-                  value: role,
-                  child: Text(role.displayName),
-                );
-              }).toList(),
-              onChanged: (value) {
-                if (value != null) selectedRole = value;
-              },
+            Material(
+              child: DropdownButtonFormField<FamilyRole>(
+                value: selectedRole,
+                decoration: InputDecoration(labelText: 'Role'.tr()),
+                items: FamilyRole.values.map((role) {
+                  return DropdownMenuItem(
+                    value: role,
+                    child: Text(role.displayName),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  if (value != null) selectedRole = value;
+                },
+              ),
             ),
           ],
         ),
         actions: [
-          TextButton(
+          CupertinoDialogAction(
             onPressed: () => Navigator.pop(context),
             child: Text('Cancel'.tr()),
           ),
@@ -733,12 +792,14 @@ class _MembersTab extends StatelessWidget {
                   role: selectedRole,
                 );
                 Navigator.pop(context);
-                context.showSnackBar(
-                  SnackBar(content: Text('Invitation sent!'.tr())),
+                CupertinoToast.show(
+                  context,
+                  message: 'Invitation sent!'.tr(),
                 );
               } catch (e) {
-                context.showSnackBar(
-                  SnackBar(content: Text('Failed to send invitation'.tr())),
+                CupertinoToast.show(
+                  context,
+                  message: 'Failed to send invitation'.tr(),
                 );
               }
             },
@@ -752,24 +813,26 @@ class _MembersTab extends StatelessWidget {
       BuildContext context, Family family, FamilyMember member) {
     FamilyRole selectedRole = member.role;
 
-    showDialog(
+    showCupertinoDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => CupertinoAlertDialog(
         title: Text('Change Role for {memberName}'.tr(namedArgs: {'memberName': member.displayName})),
-        content: DropdownButtonFormField<FamilyRole>(
-          value: selectedRole,
-          items: FamilyRole.values.map((role) {
-            return DropdownMenuItem(
-              value: role,
-              child: Text(role.displayName),
-            );
-          }).toList(),
-          onChanged: (value) {
-            if (value != null) selectedRole = value;
-          },
+        content: Material(
+          child: DropdownButtonFormField<FamilyRole>(
+            value: selectedRole,
+            items: FamilyRole.values.map((role) {
+              return DropdownMenuItem(
+                value: role,
+                child: Text(role.displayName),
+              );
+            }).toList(),
+            onChanged: (value) {
+              if (value != null) selectedRole = value;
+            },
+          ),
         ),
         actions: [
-          TextButton(
+          CupertinoDialogAction(
             onPressed: () => Navigator.pop(context),
             child: Text('Cancel'.tr()),
           ),
@@ -781,12 +844,14 @@ class _MembersTab extends StatelessWidget {
                 await repo.updateMemberRole(
                     family.id, member.userId, selectedRole);
                 Navigator.pop(context);
-                context.showSnackBar(
-                  SnackBar(content: Text('Role updated!'.tr())),
+                CupertinoToast.show(
+                  context,
+                  message: 'Role updated!'.tr(),
                 );
               } catch (e) {
-                context.showSnackBar(
-                  SnackBar(content: Text('Failed to update role'.tr())),
+                CupertinoToast.show(
+                  context,
+                  message: 'Failed to update role'.tr(),
                 );
               }
             },
@@ -798,33 +863,36 @@ class _MembersTab extends StatelessWidget {
 
   void _showRemoveMemberDialog(
       BuildContext context, Family family, FamilyMember member) {
-    showDialog(
+    showCupertinoDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => CupertinoAlertDialog(
         title: Text('Remove {memberName}?'.tr(namedArgs: {'memberName': member.displayName})),
         content: Text(
             'Are you sure you want to remove {memberName} from the family?'.tr(namedArgs: {'memberName': member.displayName})),
         actions: [
-          TextButton(
+          CupertinoDialogAction(
             onPressed: () => Navigator.pop(context),
             child: Text('Cancel'.tr()),
           ),
-          AppButton.primary(
-            label: 'Remove'.tr(),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
             onPressed: () async {
               try {
                 final repo = context.read<FamilyRepository>();
                 await repo.removeMember(family.id, member.userId);
                 Navigator.pop(context);
-                context.showSnackBar(
-                  SnackBar(content: Text('Member removed'.tr())),
+                CupertinoToast.show(
+                  context,
+                  message: 'Member removed'.tr(),
                 );
               } catch (e) {
-                context.showSnackBar(
-                  SnackBar(content: Text('Failed to remove member'.tr())),
+                CupertinoToast.show(
+                  context,
+                  message: 'Failed to remove member'.tr(),
                 );
               }
             },
+            child: Text('Remove'.tr()),
           ),
         ],
       ),
@@ -851,11 +919,11 @@ class _BudgetsTab extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.account_balance_wallet_outlined,
+              CupertinoIcons.creditcard,
               size: 64,
               color: isDark
                   ? AppColors.textSecondaryDark
-                  : AppColors.textSecondaryLight,
+                  : AppColors.textSecondary(context),
             ),
             const SizedBox(height: 16),
             Text(
@@ -872,7 +940,7 @@ class _BudgetsTab extends StatelessWidget {
               style: AppTypography.bodyMedium(
                 color: isDark
                     ? AppColors.textSecondaryDark
-                    : AppColors.textSecondaryLight,
+                    : AppColors.textSecondary(context),
               ),
             ),
             if (canEdit) ...[
@@ -880,7 +948,7 @@ class _BudgetsTab extends StatelessWidget {
               AppButton.primary(
                 label: 'Create Budget'.tr(),
                 onPressed: () => _showCreateBudgetDialog(context, family),
-                icon: Icons.add,
+                icon: CupertinoIcons.add,
               ),
             ],
           ],
@@ -898,7 +966,7 @@ class _BudgetsTab extends StatelessWidget {
             child: AppButton.secondary(
               label: 'Add Budget'.tr(),
               onPressed: () => _showCreateBudgetDialog(context, family),
-              icon: Icons.add,
+              icon: CupertinoIcons.add,
               expanded: true,
             ),
           );
@@ -914,9 +982,9 @@ class _BudgetsTab extends StatelessWidget {
     final categoryController = TextEditingController();
     final amountController = TextEditingController();
 
-    showDialog(
+    showCupertinoDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => CupertinoAlertDialog(
         title: Text('Create Budget'.tr()),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -940,7 +1008,7 @@ class _BudgetsTab extends StatelessWidget {
           ],
         ),
         actions: [
-          TextButton(
+          CupertinoDialogAction(
             onPressed: () => Navigator.pop(context),
             child: Text('Cancel'.tr()),
           ),
@@ -951,8 +1019,9 @@ class _BudgetsTab extends StatelessWidget {
               if (categoryController.text.isEmpty ||
                   amount == null ||
                   amount <= 0) {
-                context.showSnackBar(
-                  SnackBar(content: Text('Please fill in all fields'.tr())),
+                CupertinoToast.show(
+                  context,
+                  message: 'Please fill in all fields'.tr(),
                 );
                 return;
               }
@@ -967,12 +1036,14 @@ class _BudgetsTab extends StatelessWidget {
                   ),
                 );
                 Navigator.pop(context);
-                context.showSnackBar(
-                  SnackBar(content: Text('Budget created!'.tr())),
+                CupertinoToast.show(
+                  context,
+                  message: 'Budget created!'.tr(),
                 );
               } catch (e) {
-                context.showSnackBar(
-                  SnackBar(content: Text('Failed to create budget'.tr())),
+                CupertinoToast.show(
+                  context,
+                  message: 'Failed to create budget'.tr(),
                 );
               }
             },
@@ -994,8 +1065,16 @@ class _BudgetCard extends StatelessWidget {
     final progress = budget.percentageUsed / 100;
     final isOverBudget = budget.isOverBudget;
 
-    return AppCard(
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isDark ? AppColors.borderDark : AppColors.borderLight,
+          width: 0.5,
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -1015,14 +1094,14 @@ class _BudgetCard extends StatelessWidget {
                   style: AppTypography.bodySmall(
                     color: isOverBudget
                         ? AppColors.error
-                        : AppColors.textSecondaryLight,
+                        : AppColors.textSecondary(context),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 12),
             ClipRRect(
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(10),
               child: LinearProgressIndicator(
                 value: progress.clamp(0, 1),
                 backgroundColor:
@@ -1045,7 +1124,7 @@ class _BudgetCard extends StatelessWidget {
               style: AppTypography.labelSmall(
                 color: isOverBudget
                     ? AppColors.error
-                    : AppColors.textSecondaryLight,
+                    : AppColors.textSecondary(context),
               ),
             ),
           ],

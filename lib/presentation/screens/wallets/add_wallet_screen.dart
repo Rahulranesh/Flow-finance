@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../../../core/services/currency_formatter.dart';
@@ -43,9 +44,9 @@ class _AddWalletScreenState extends State<AddWalletScreen> {
   final List<IconData> _icons = [
     Icons.account_balance_wallet,
     Icons.account_balance,
-    Icons.credit_card,
+    CupertinoIcons.creditcard,
     Icons.savings,
-    Icons.attach_money,
+    CupertinoIcons.money_dollar,
     Icons.monetization_on,
     Icons.payment,
     Icons.wallet,
@@ -93,7 +94,7 @@ class _AddWalletScreenState extends State<AddWalletScreen> {
               decoration: InputDecoration(
                 labelText: 'Wallet Name'.tr(),
                 hintText: 'e.g., Main Account, Savings'.tr(),
-                prefixIcon: Icon(Icons.label),
+                prefixIcon: Icon(CupertinoIcons.tag),
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -110,7 +111,7 @@ class _AddWalletScreenState extends State<AddWalletScreen> {
               decoration: InputDecoration(
                 labelText: 'Initial Balance'.tr(),
                 hintText: '0.00'.tr(),
-                prefixIcon: Icon(Icons.attach_money),
+                prefixIcon: Icon(CupertinoIcons.money_dollar),
               ),
               keyboardType: TextInputType.number,
               validator: (value) {
@@ -136,18 +137,35 @@ class _AddWalletScreenState extends State<AddWalletScreen> {
               runSpacing: 12,
               children: WalletType.values.map((type) {
                 final isSelected = type == _selectedType;
-                return ChoiceChip(
-                  label: Text(_getTypeName(type)),
-                  selected: isSelected,
-                  onSelected: (selected) {
+                return GestureDetector(
+                  onTap: () {
                     setState(() {
                       _selectedType = type;
                     });
                   },
-                  avatar: Icon(
-                    _getTypeIcon(type),
-                    size: 18,
-                    color: isSelected ? Colors.white : null,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: isSelected ? AppColors.primary.withOpacity(0.1) : AppColors.surfaceVariant(context),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: isSelected ? AppColors.primary : AppColors.border(context).withOpacity(0.5),
+                        width: isSelected ? 1.5 : 0.5,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          _getTypeIcon(type),
+                          size: 18,
+                          color: isSelected ? AppColors.primary : AppColors.textSecondary(context),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(_getTypeName(type), style: AppTypography.labelMedium(color: isSelected ? AppColors.primary : null)),
+                      ],
+                    ),
                   ),
                 );
               }).toList(),
@@ -181,18 +199,9 @@ class _AddWalletScreenState extends State<AddWalletScreen> {
                         color: isSelected ? Colors.white : Colors.transparent,
                         width: 3,
                       ),
-                      boxShadow: isSelected
-                          ? [
-                              BoxShadow(
-                                color: color.withOpacity(0.5),
-                                blurRadius: 8,
-                                spreadRadius: 2,
-                              ),
-                            ]
-                          : null,
                     ),
                     child: isSelected
-                        ? const Icon(Icons.check, color: Colors.white)
+                        ? const Icon(CupertinoIcons.check_mark, color: Colors.white)
                         : null,
                   ),
                 );
@@ -224,7 +233,7 @@ class _AddWalletScreenState extends State<AddWalletScreen> {
                       color: isSelected
                           ? _selectedColor.withOpacity(0.2)
                           : AppColors.surfaceVariant(context),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(10),
                       border: Border.all(
                         color: isSelected ? _selectedColor : Colors.transparent,
                         width: 2,
@@ -265,7 +274,7 @@ class _AddWalletScreenState extends State<AddWalletScreen> {
               height: 56,
               decoration: BoxDecoration(
                 color: _selectedColor.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
                 _selectedIcon,
@@ -328,17 +337,17 @@ class _AddWalletScreenState extends State<AddWalletScreen> {
   IconData _getTypeIcon(WalletType type) {
     switch (type) {
       case WalletType.cash:
-        return Icons.money;
+        return CupertinoIcons.money_dollar;
       case WalletType.bank:
         return Icons.account_balance;
       case WalletType.creditCard:
-        return Icons.credit_card;
+        return CupertinoIcons.creditcard;
       case WalletType.savings:
         return Icons.savings;
       case WalletType.investment:
         return Icons.trending_up;
       case WalletType.digital:
-        return Icons.phone_android;
+        return CupertinoIcons.phone;
       case WalletType.other:
         return Icons.wallet;
     }
@@ -375,23 +384,19 @@ class _AddWalletScreenState extends State<AddWalletScreen> {
 
       if (mounted) {
         Navigator.pop(context);
-        context.showSnackBar(
-          SnackBar(
-            content: Text(
-              widget.wallet != null
-                  ? 'Wallet updated'.tr()
-                  : 'Wallet created'.tr(),
-            ),
-          ),
+        CupertinoToast.show(
+          context,
+          message: widget.wallet != null
+              ? 'Wallet updated'.tr()
+              : 'Wallet created'.tr(),
         );
       }
     } catch (e) {
       if (mounted) {
-        context.showSnackBar(
-          SnackBar(
-            content: Text('${'Error'.tr()}: $e'),
-            backgroundColor: AppColors.error,
-          ),
+        CupertinoToast.show(
+          context,
+          message: '${'Error'.tr()}: $e',
+          type: CupertinoToastType.error,
         );
       }
     }

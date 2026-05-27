@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -31,13 +32,13 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
   final List<_Category> _categories = [
     _Category('Food', Icons.restaurant, const Color(0xFFF59E0B)),
-    _Category('Shopping', Icons.shopping_bag, const Color(0xFFEC4899)),
-    _Category('Transport', Icons.directions_car, const Color(0xFF3B82F6)),
-    _Category('Entertainment', Icons.movie, const Color(0xFF8B5CF6)),
-    _Category('Health', Icons.favorite, const Color(0xFFEF4444)),
-    _Category('Bills', Icons.receipt, const Color(0xFF64748B)),
-    _Category('Education', Icons.school, const Color(0xFF14B8A6)),
-    _Category('Salary', Icons.work, const Color(0xFF22C55E)),
+    _Category('Shopping', CupertinoIcons.bag, const Color(0xFFEC4899)),
+    _Category('Transport', CupertinoIcons.car, const Color(0xFF3B82F6)),
+    _Category('Entertainment', CupertinoIcons.film, const Color(0xFF8B5CF6)),
+    _Category('Health', CupertinoIcons.heart, const Color(0xFFEF4444)),
+    _Category('Bills', CupertinoIcons.doc_text, const Color(0xFF64748B)),
+    _Category('Education', CupertinoIcons.book, const Color(0xFF14B8A6)),
+    _Category('Salary', CupertinoIcons.briefcase, const Color(0xFF22C55E)),
     _Category('Freelance', Icons.laptop, const Color(0xFF6366F1)),
   ];
 
@@ -141,8 +142,13 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AppScaffold(
-      title: 'Add Transaction'.tr(),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Add Transaction'.tr()),
+        centerTitle: false,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+      ),
       body: SafeArea(
         top: false,
         child: Column(
@@ -211,6 +217,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               onNumberPressed: _onNumberPressed,
               onBackspace: _onBackspace,
               onDecimal: _onDecimal,
+              isExpense: _isExpense,
             ),
             Padding(
               padding: const EdgeInsets.all(20),
@@ -219,7 +226,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 onPressed: _isLoading ? null : _saveTransaction,
                 expanded: true,
                 size: AppButtonSize.large,
-                icon: _isLoading ? null : Icons.check,
+                icon: _isLoading ? null : CupertinoIcons.checkmark,
               ),
             ),
           ],
@@ -248,7 +255,7 @@ class _AmountDisplay extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface(context),
         borderRadius: const BorderRadius.vertical(
-          bottom: Radius.circular(32),
+          bottom: Radius.circular(10),
         ),
       ),
       child: Column(
@@ -319,19 +326,32 @@ class _TypeButton extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: AppAnimations.fast,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.1) : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
+          color: isSelected ? color.withOpacity(0.12) : AppColors.surfaceVariant(context),
+          borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isSelected ? color : AppColors.border(context),
+            color: isSelected ? color : AppColors.border(context).withOpacity(0.5),
+            width: isSelected ? 1.5 : 0.5,
           ),
         ),
-        child: Text(
-          label,
-          style: AppTypography.labelLarge(
-            color: isSelected ? color : AppColors.textSecondary(context),
-          ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isSelected ? (color == AppColors.expense ? CupertinoIcons.arrow_down_right : CupertinoIcons.arrow_up_right) : CupertinoIcons.minus,
+              size: 16,
+              color: isSelected ? color : AppColors.textTertiary(context),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: AppTypography.labelLarge(
+                color: isSelected ? color : AppColors.textSecondary(context),
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -383,7 +403,7 @@ class _CategorySelector extends StatelessWidget {
                     color: isSelected
                         ? category.color.withOpacity(0.1)
                         : AppColors.surfaceVariant(context),
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(10),
                     border: Border.all(
                       color: isSelected ? category.color : Colors.transparent,
                     ),
@@ -435,19 +455,45 @@ class _DateAndNoteSection extends StatelessWidget {
           // Date Picker
           GestureDetector(
             onTap: () async {
-              final date = await showDatePicker(
+              final date = await showCupertinoModalPopup<DateTime>(
                 context: context,
-                initialDate: selectedDate,
-                firstDate: DateTime(2020),
-                lastDate: DateTime(2026),
+                builder: (context) => Container(
+                  height: 300,
+                  padding: const EdgeInsets.only(top: 40),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface(context),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(14),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: CupertinoDatePicker(
+                          initialDateTime: selectedDate,
+                          minimumDate: DateTime(2020),
+                          maximumDate: DateTime(2026),
+                          mode: CupertinoDatePickerMode.date,
+                          onDateTimeChanged: (date) {
+                            Navigator.pop(context, date);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               );
               if (date != null) {
                 onDateChanged(date);
               }
             },
-            child: AppCard(
-              variant: AppCardVariant.flat,
+            child: Container(
               padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.surface(context),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColors.border(context)),
+              ),
               child: Row(
                 children: [
                   Container(
@@ -457,7 +503,7 @@ class _DateAndNoteSection extends StatelessWidget {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(
-                      Icons.calendar_today,
+                      CupertinoIcons.calendar,
                       color: AppColors.primary,
                       size: 20,
                     ),
@@ -484,7 +530,7 @@ class _DateAndNoteSection extends StatelessWidget {
                     ),
                   ),
                   Icon(
-                    Icons.chevron_right,
+                    CupertinoIcons.chevron_right,
                     color: AppColors.textTertiary(context),
                   ),
                 ],
@@ -498,7 +544,7 @@ class _DateAndNoteSection extends StatelessWidget {
           AppInput(
             controller: noteController,
             hint: 'Add a note...'.tr(),
-            prefixIcon: Icons.edit_note,
+            prefixIcon: CupertinoIcons.pencil,
             maxLines: 2,
           ),
         ],
@@ -530,47 +576,51 @@ class _NumberPad extends StatelessWidget {
   final ValueChanged<String> onNumberPressed;
   final VoidCallback onBackspace;
   final VoidCallback onDecimal;
+  final bool isExpense;
 
   const _NumberPad({
     required this.onNumberPressed,
     required this.onBackspace,
     required this.onDecimal,
+    this.isExpense = true,
   });
 
   @override
   Widget build(BuildContext context) {
+    final accentColor = isExpense ? AppColors.expense : AppColors.income;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         children: [
           Row(
             children: [
-              _NumberButton('1', onNumberPressed),
-              _NumberButton('2', onNumberPressed),
-              _NumberButton('3', onNumberPressed),
+              _NumberButton('1', onNumberPressed, accentColor: accentColor),
+              _NumberButton('2', onNumberPressed, accentColor: accentColor),
+              _NumberButton('3', onNumberPressed, accentColor: accentColor),
             ],
           ),
           Row(
             children: [
-              _NumberButton('4', onNumberPressed),
-              _NumberButton('5', onNumberPressed),
-              _NumberButton('6', onNumberPressed),
+              _NumberButton('4', onNumberPressed, accentColor: accentColor),
+              _NumberButton('5', onNumberPressed, accentColor: accentColor),
+              _NumberButton('6', onNumberPressed, accentColor: accentColor),
             ],
           ),
           Row(
             children: [
-              _NumberButton('7', onNumberPressed),
-              _NumberButton('8', onNumberPressed),
-              _NumberButton('9', onNumberPressed),
+              _NumberButton('7', onNumberPressed, accentColor: accentColor),
+              _NumberButton('8', onNumberPressed, accentColor: accentColor),
+              _NumberButton('9', onNumberPressed, accentColor: accentColor),
             ],
           ),
           Row(
             children: [
-              _NumberButton('.', onDecimal, isSpecial: true),
-              _NumberButton('0', onNumberPressed),
+              _NumberButton('.', onDecimal, isSpecial: true, accentColor: accentColor),
+              _NumberButton('0', onNumberPressed, accentColor: accentColor),
               _ActionButton(
-                icon: Icons.backspace_outlined,
+                icon: CupertinoIcons.delete_left,
                 onTap: onBackspace,
+                accentColor: accentColor,
               ),
             ],
           ),
@@ -585,11 +635,13 @@ class _NumberButton extends StatelessWidget {
   final VoidCallback? onSpecialTap;
   final ValueChanged<String>? onNumberTap;
   final bool isSpecial;
+  final Color accentColor;
 
   const _NumberButton(
     this.label,
     dynamic onTap, {
     this.isSpecial = false,
+    this.accentColor = AppColors.expense,
   })  : onSpecialTap = onTap is VoidCallback ? onTap : null,
         onNumberTap = onTap is ValueChanged<String> ? onTap : null;
 
@@ -609,14 +661,20 @@ class _NumberButton extends StatelessWidget {
           margin: const EdgeInsets.all(6),
           decoration: BoxDecoration(
             color: isSpecial
-                ? AppColors.surfaceVariant(context)
+                ? accentColor.withOpacity(0.08)
                 : AppColors.surface(context),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isSpecial ? accentColor.withOpacity(0.2) : AppColors.border(context).withOpacity(0.5),
+              width: 0.5,
+            ),
           ),
           child: Center(
             child: Text(
               label,
-              style: AppTypography.headlineSmall(),
+              style: AppTypography.headlineSmall(
+                color: isSpecial ? accentColor : null,
+              ),
             ),
           ),
         ),
@@ -628,10 +686,12 @@ class _NumberButton extends StatelessWidget {
 class _ActionButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
+  final Color accentColor;
 
   const _ActionButton({
     required this.icon,
     required this.onTap,
+    this.accentColor = AppColors.expense,
   });
 
   @override
@@ -644,13 +704,17 @@ class _ActionButton extends StatelessWidget {
           height: 64,
           margin: const EdgeInsets.all(6),
           decoration: BoxDecoration(
-            color: AppColors.surfaceVariant(context),
-            borderRadius: BorderRadius.circular(16),
+            color: accentColor.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: accentColor.withOpacity(0.2),
+              width: 0.5,
+            ),
           ),
           child: Center(
             child: Icon(
               icon,
-              color: AppColors.textSecondary(context),
+              color: accentColor,
               size: 24,
             ),
           ),
@@ -694,7 +758,7 @@ class _WalletSelector extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             color: AppColors.surface(context),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(10),
             border: Border.all(
               color: AppColors.border(context),
             ),
@@ -702,7 +766,7 @@ class _WalletSelector extends StatelessWidget {
           child: Row(
             children: [
               Icon(
-                Icons.account_balance_wallet,
+                CupertinoIcons.creditcard,
                 color: AppColors.textSecondary(context),
                 size: 20,
               ),
@@ -727,43 +791,40 @@ class _WalletSelector extends StatelessWidget {
                   ],
                 ),
               ),
-              DropdownButton<String?>(
-                value: selectedWallet.id,
-                underline: const SizedBox.shrink(),
-                icon: Icon(
-                  Icons.arrow_drop_down,
-                  color: AppColors.textSecondary(context),
-                ),
-                items: wallets.map((wallet) {
-                  return DropdownMenuItem<String>(
-                    value: wallet.id,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: wallet.color,
-                            shape: BoxShape.circle,
-                          ),
+              GestureDetector(
+                onTap: () async {
+                  final selected = await showCupertinoModalPopup<String>(
+                    context: context,
+                    builder: (ctx) => CupertinoActionSheet(
+                      title: Text('Select Wallet'.tr()),
+                      actions: wallets.map((w) => CupertinoActionSheetAction(
+                        child: Row(
+                          children: [
+                            Container(width: 8, height: 8, decoration: BoxDecoration(color: w.color, shape: BoxShape.circle)),
+                            const SizedBox(width: 8),
+                            Text(w.name),
+                            if (w.isDefault) ...[
+                              const SizedBox(width: 4),
+                              Text('(Default)'.tr(), style: AppTypography.labelSmall(color: AppColors.textSecondary(ctx))),
+                            ],
+                          ],
                         ),
-                        const SizedBox(width: 8),
-                        Text(wallet.name),
-                        if (wallet.isDefault) ...[
-                          const SizedBox(width: 4),
-                          Text(
-                            '(Default)'.tr(),
-                            style: AppTypography.labelSmall(
-                              color: AppColors.textSecondary(context),
-                            ),
-                          ),
-                        ],
-                      ],
+                        onPressed: () => Navigator.pop(ctx, w.id),
+                      )).toList(),
+                      cancelButton: CupertinoActionSheetAction(
+                        isDefaultAction: true,
+                        child: Text('Cancel'.tr()),
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
                     ),
                   );
-                }).toList(),
-                onChanged: onWalletSelected,
+                  if (selected != null) onWalletSelected(selected);
+                },
+                child: Row(
+                  children: [
+                    Icon(CupertinoIcons.chevron_down, color: AppColors.textSecondary(context), size: 18),
+                  ],
+                ),
               ),
             ],
           ),

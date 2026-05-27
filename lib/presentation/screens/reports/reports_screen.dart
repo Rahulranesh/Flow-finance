@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
@@ -5,8 +6,6 @@ import '../../../core/services/currency_formatter.dart';
 import '../../../core/services/data_export_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../../core/widgets/app_card.dart';
-import '../../../core/widgets/app_scaffold.dart';
 import '../../../core/widgets/app_loading.dart';
 import '../../../core/utils/extensions.dart';
 import '../../../data/models/transaction_model.dart';
@@ -40,18 +39,20 @@ class _ReportsScreenState extends State<ReportsScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return AppScaffold(
-      title: 'Reports'.tr(),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.calendar_today),
-          onPressed: _selectDateRange,
-        ),
-        IconButton(
-          icon: const Icon(Icons.download),
-          onPressed: _exportReport,
-        ),
-      ],
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Reports'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis),
+        actions: [
+          IconButton(
+            icon: const Icon(CupertinoIcons.calendar),
+            onPressed: _selectDateRange,
+          ),
+          IconButton(
+            icon: const Icon(CupertinoIcons.share),
+            onPressed: _exportReport,
+          ),
+        ],
+      ),
       body: Consumer<TransactionBloc>(
         builder: (context, bloc, child) {
           if (bloc.isLoading) {
@@ -67,23 +68,18 @@ class _ReportsScreenState extends State<ReportsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Date Range Display
-                _buildDateRangeDisplay(isDark),
+                _buildDateRangeDisplay(),
                 const SizedBox(height: 20),
 
-                // Summary Cards
                 _buildSummaryCards(insights),
                 const SizedBox(height: 24),
 
-                // Charts
                 _buildChartsSection(filteredTransactions, isDark),
                 const SizedBox(height: 24),
 
-                // Insights
                 _buildInsightsSection(insights, isDark),
                 const SizedBox(height: 24),
 
-                // Top Categories
                 _buildTopCategoriesSection(filteredTransactions, isDark),
                 const SizedBox(height: 100),
               ],
@@ -94,34 +90,26 @@ class _ReportsScreenState extends State<ReportsScreen> {
     );
   }
 
-  Widget _buildDateRangeDisplay(bool isDark) {
-    return Container(
+  Widget _buildDateRangeDisplay() {
+    return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
-        borderRadius: BorderRadius.circular(12),
-      ),
       child: Row(
         children: [
-          Icon(
-            Icons.date_range,
+          const Icon(
+            CupertinoIcons.calendar,
             size: 20,
-            color: isDark
-                ? AppColors.textSecondaryDark
-                : AppColors.textSecondaryLight,
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               '${_formatDate(_dateRange.start)} - ${_formatDate(_dateRange.end)}',
-              style: AppTypography.bodyMedium(
-                color: isDark
-                    ? AppColors.textPrimaryDark
-                    : AppColors.textPrimaryLight,
-              ),
+              style: AppTypography.bodyMedium(),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
-          TextButton(
+          CupertinoButton(
+            padding: EdgeInsets.zero,
             onPressed: _selectDateRange,
             child: Text('Change'.tr()),
           ),
@@ -138,7 +126,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
             'Total Income'.tr(),
             insights.totalIncome,
             AppColors.success,
-            Icons.arrow_upward,
+            CupertinoIcons.arrow_up,
           ),
         ),
         const SizedBox(width: 12),
@@ -147,7 +135,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
             'Total Expense'.tr(),
             insights.totalExpense,
             AppColors.error,
-            Icons.arrow_downward,
+            CupertinoIcons.arrow_down,
           ),
         ),
       ],
@@ -156,7 +144,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
   Widget _buildSummaryCard(
       String label, double amount, Color color, IconData icon) {
-    return AppCard(
+    return Container(
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -169,8 +162,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 Text(
                   label,
                   style: AppTypography.labelSmall(
-                    color: AppColors.textSecondaryLight,
+                    color: AppColors.textSecondary(context),
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -180,6 +175,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
               style: AppTypography.titleLarge(
                 color: color,
               ).copyWith(fontWeight: FontWeight.bold),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -197,9 +194,15 @@ class _ReportsScreenState extends State<ReportsScreen> {
             color:
                 isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
           ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(height: 16),
-        AppCard(
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: AppColors.border(context)),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: SizedBox(
@@ -212,7 +215,11 @@ class _ReportsScreenState extends State<ReportsScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        AppCard(
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: AppColors.border(context)),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: SizedBox(
@@ -240,39 +247,39 @@ class _ReportsScreenState extends State<ReportsScreen> {
             color:
                 isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
           ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(height: 16),
-        AppCard(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                _buildInsightRow(
-                  'Savings Rate'.tr(),
-                  '${insights.savingsRate.toStringAsFixed(1)}%',
-                  insights.savingsRate >= 20
-                      ? AppColors.success
-                      : AppColors.warning,
-                  Icons.savings,
-                ),
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              _buildInsightRow(
+                'Savings Rate'.tr(),
+                '${insights.savingsRate.toStringAsFixed(1)}%',
+                insights.savingsRate >= 20
+                    ? AppColors.success
+                    : AppColors.warning,
+                CupertinoIcons.money_dollar,
+              ),
+              const Divider(height: 24),
+              _buildInsightRow(
+                'Avg Daily Spend'.tr(),
+                insights.avgDailySpend.toCurrency(),
+                AppColors.primary,
+                CupertinoIcons.clock,
+              ),
+              if (insights.topCategory != null) ...[
                 const Divider(height: 24),
                 _buildInsightRow(
-                  'Avg Daily Spend'.tr(),
-                  insights.avgDailySpend.toCurrency(),
-                  AppColors.primary,
-                  Icons.today,
+                  'Top Category'.tr(),
+                  '${insights.topCategory} (${insights.topCategoryAmount.toCurrency(decimalDigits: 0)})',
+                  AppColors.secondary,
+                  CupertinoIcons.tray_full,
                 ),
-                if (insights.topCategory != null) ...[
-                  const Divider(height: 24),
-                  _buildInsightRow(
-                    'Top Category'.tr(),
-                    '${insights.topCategory} (${insights.topCategoryAmount.toCurrency(decimalDigits: 0)})',
-                    AppColors.secondary,
-                    Icons.category,
-                  ),
-                ],
               ],
-            ),
+            ],
           ),
         ),
       ],
@@ -299,8 +306,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
               Text(
                 label,
                 style: AppTypography.labelSmall(
-                  color: AppColors.textSecondaryLight,
+                  color: AppColors.textSecondary(context),
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 2),
               Text(
@@ -308,6 +317,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 style: AppTypography.bodyMedium(
                   fontWeight: FontWeight.w600,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
@@ -348,9 +359,15 @@ class _ReportsScreenState extends State<ReportsScreen> {
             color:
                 isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
           ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(height: 16),
-        AppCard(
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: AppColors.border(context)),
+          ),
           child: Column(
             children: topCategories.map((entry) {
               final percentage = (entry.value / totalExpense) * 100;
@@ -377,30 +394,37 @@ class _ReportsScreenState extends State<ReportsScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      color: color,
-                      shape: BoxShape.circle,
+              Flexible(
+                child: Row(
+                  children: [
+                    Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: color,
+                        shape: BoxShape.circle,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    category,
-                    style: AppTypography.bodyMedium(
-                      fontWeight: FontWeight.w500,
+                    const SizedBox(width: 12),
+                    Text(
+                      category,
+                      style: AppTypography.bodyMedium(
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               Text(
                 '${amount.toCurrency(decimalDigits: 0)} (${percentage.toStringAsFixed(1)}%)',
                 style: AppTypography.bodySmall(
-                  color: AppColors.textSecondaryLight,
+                  color: AppColors.textSecondary(context),
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
@@ -505,47 +529,29 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
 
   void _exportReport() {
-    showModalBottomSheet(
+    showCupertinoModalPopup(
       context: context,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 16),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.border(context),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Export Report'.tr(),
-              style: AppTypography.titleMedium(),
-            ),
-            const SizedBox(height: 16),
-            ListTile(
-              leading: const Icon(Icons.table_chart, color: AppColors.success),
-              title: Text('Export as CSV'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis),
-              subtitle: Text('Spreadsheet format for Excel/Google Sheets'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis),
-              onTap: () {
-                Navigator.pop(context);
-                _exportToCsv();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.picture_as_pdf, color: AppColors.error),
-              title: Text('Export as PDF'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis),
-              subtitle: Text('Document format for sharing/printing'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis),
-              onTap: () {
-                Navigator.pop(context);
-                _exportToPdf();
-              },
-            ),
-            const SizedBox(height: 16),
-          ],
+      builder: (context) => CupertinoActionSheet(
+        title: Text('Export Report'.tr()),
+        actions: [
+          CupertinoActionSheetAction(
+            child: Text('Export as CSV'.tr()),
+            onPressed: () {
+              Navigator.pop(context);
+              _exportToCsv();
+            },
+          ),
+          CupertinoActionSheetAction(
+            child: Text('Export as PDF'.tr()),
+            onPressed: () {
+              Navigator.pop(context);
+              _exportToPdf();
+            },
+          ),
+        ],
+        cancelButton: CupertinoActionSheetAction(
+          child: Text('Cancel'.tr()),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
     );

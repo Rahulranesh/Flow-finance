@@ -65,13 +65,19 @@ class SettingsController extends ChangeNotifier {
   Future<void> setNotificationsEnabled(bool enabled) async {
     await _repository.setNotificationsEnabled(enabled);
     if (enabled) {
-      final notifications = NotificationService();
-      await notifications.initialize();
-      await notifications.requestPermissions();
-      await notifications.scheduleDailyBudgetCheck();
-      await notifications.scheduleWeeklySummary();
+      try {
+        final notifications = NotificationService();
+        await notifications.initialize();
+        await notifications.requestPermissions();
+        await notifications.scheduleDailyBudgetCheck();
+        await notifications.scheduleWeeklySummary();
+      } catch (_) {
+        // Notification initialization may fail on some devices
+      }
     } else {
-      await NotificationService().cancelAllNotifications();
+      try {
+        await NotificationService().cancelAllNotifications();
+      } catch (_) {}
     }
     _settings = _settings.copyWith(notificationsEnabled: enabled);
     notifyListeners();

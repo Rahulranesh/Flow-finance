@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../core/theme/app_colors.dart';
@@ -8,7 +9,6 @@ import '../budgets/budgets_screen.dart';
 import '../settings/settings_screen.dart';
 import '../add_transaction/add_transaction_screen.dart';
 
-/// Main navigation with bottom nav bar.
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
 
@@ -19,52 +19,44 @@ class MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
 
+  final _screens = const [
+    HomeScreen(),
+    TransactionsScreen(),
+    AnalyticsScreen(),
+    BudgetsScreen(),
+    SettingsScreen(),
+  ];
+
   @override
   Widget build(BuildContext context) {
-    final screens = <Widget>[
-      HomeScreen(),
-      TransactionsScreen(),
-      AnalyticsScreen(),
-      BudgetsScreen(),
-      SettingsScreen(),
-    ];
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
+      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
       body: IndexedStack(
         index: _currentIndex,
-        children: screens,
+        children: _screens,
       ),
-      floatingActionButton: _currentIndex == 0 || _currentIndex == 1
-          ? FloatingActionButton.extended(
-              onPressed: () => _showAddTransaction(context),
-              backgroundColor: AppColors.primary,
-              icon: const Icon(Icons.add),
-              label: Text('Add'.tr()),
-              elevation: 4,
-            )
-          : null,
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -5),
+          color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+          border: Border(
+            top: BorderSide(
+              color: isDark ? AppColors.borderDark : AppColors.borderLight,
+              width: 0.5,
             ),
-          ],
+          ),
         ),
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          child: SizedBox(
+            height: 50,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildNavItem(Icons.home_rounded, 'Home', 0),
-                _buildNavItem(Icons.receipt_long_rounded, 'Logs', 1),
-                _buildNavItem(Icons.insights_rounded, 'Graphs', 2),
-                _buildNavItem(Icons.pie_chart_rounded, 'Budgets', 3),
-                _buildNavItem(Icons.settings_rounded, 'Settings', 4),
+                _navItem(0, CupertinoIcons.home, 'Home'),
+                _navItem(1, CupertinoIcons.doc_text, 'Logs'),
+                _navItem(2, CupertinoIcons.chart_bar, 'Graphs'),
+                _navItem(3, CupertinoIcons.money_dollar, 'Budgets'),
+                _navItem(4, CupertinoIcons.settings, 'Settings'),
               ],
             ),
           ),
@@ -73,51 +65,32 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     );
   }
 
-  Widget _buildNavItem(IconData icon, String label, int index) {
-    final isSelected = _currentIndex == index;
-    final color =
-        isSelected ? AppColors.primary : AppColors.textTertiary(context);
-
-    return GestureDetector(
-      onTap: () => setState(() => _currentIndex = index),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.primary.withOpacity(0.1)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-        ),
+  Widget _navItem(int index, IconData icon, String label) {
+    final selected = _currentIndex == index;
+    return Expanded(
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => setState(() => _currentIndex = index),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               icon,
-              color: color,
               size: 24,
+              color: selected ? AppColors.primary : AppColors.textTertiary(context),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 3),
             Text(
               label.tr(),
               style: TextStyle(
-                color: color,
                 fontSize: 10,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                color: selected ? AppColors.primary : AppColors.textTertiary(context),
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  void _showAddTransaction(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const AddTransactionScreen(),
       ),
     );
   }

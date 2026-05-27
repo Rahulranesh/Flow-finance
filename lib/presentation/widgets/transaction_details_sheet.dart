@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../core/services/currency_formatter.dart';
@@ -11,28 +12,51 @@ Future<void> showTransactionDetailsSheet(
 ) {
   final isExpense = transaction.type == TransactionType.expense;
 
-  return showModalBottomSheet<void>(
+  return showCupertinoModalPopup<void>(
     context: context,
-    isScrollControlled: true,
-    showDragHandle: true,
-    builder: (context) => SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: isExpense
-                      ? [AppColors.expense.withOpacity(0.9), AppColors.error]
-                      : [AppColors.income.withOpacity(0.9), AppColors.success],
-                ),
-                borderRadius: BorderRadius.circular(22),
-              ),
+    builder: (context) => Material(
+      color: Colors.transparent,
+      child: SafeArea(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.85,
+          ),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // drag handle
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        margin: const EdgeInsets.only(bottom: 16),
+                        decoration: BoxDecoration(
+                          color: AppColors.border(context),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(18),
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: isExpense
+                          ? [AppColors.expense.withOpacity(0.9), AppColors.error]
+                          : [AppColors.income.withOpacity(0.9), AppColors.success],
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -85,7 +109,7 @@ Future<void> showTransactionDetailsSheet(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   color: AppColors.surfaceVariant(context),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -105,6 +129,10 @@ Future<void> showTransactionDetailsSheet(
                 ),
               ),
           ],
+        ),
+      ),
+    ),
+          ),
         ),
       ),
     ),

@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../theme/theme.dart';
@@ -12,88 +13,78 @@ class QuickSettingsButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PopupMenuButton<String>(
-      icon: Icon(
-        Icons.settings_suggest,
+    return GestureDetector(
+      onTap: () {
+        showCupertinoModalPopup<void>(
+          context: context,
+          builder: (context) => CupertinoActionSheet(
+            title: Text('Quick Settings'.tr()),
+            actions: [
+              CupertinoActionSheetAction(
+                child: Row(
+                  children: [
+                    Icon(CupertinoIcons.chat_bubble_2_fill, size: 20, color: AppColors.primary),
+                    const SizedBox(width: 12),
+                    Flexible(child: Text('SMS Sync'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                  ],
+                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const SmsSyncScreen()));
+                },
+              ),
+              CupertinoActionSheetAction(
+                child: Row(
+                  children: [
+                    Icon(CupertinoIcons.creditcard, size: 20, color: AppColors.secondary),
+                    const SizedBox(width: 12),
+                    Flexible(child: Text('Google Pay Sync'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                  ],
+                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const GooglePaySyncScreen()));
+                },
+              ),
+              CupertinoActionSheetAction(
+                child: Row(
+                  children: [
+                    Icon(CupertinoIcons.flag, size: 20, color: AppColors.success),
+                    const SizedBox(width: 12),
+                    Flexible(child: Text('Goals'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                  ],
+                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const GoalsScreen()));
+                },
+              ),
+              CupertinoActionSheetAction(
+                child: Row(
+                  children: [
+                    Icon(CupertinoIcons.settings, size: 20, color: AppColors.textSecondary(context)),
+                    const SizedBox(width: 12),
+                    Flexible(child: Text('All Settings'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                  ],
+                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen()));
+                },
+              ),
+            ],
+            cancelButton: CupertinoActionSheetAction(
+              isDefaultAction: true,
+              child: Text('Cancel'.tr()),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+        );
+      },
+      child: Icon(
+        CupertinoIcons.settings,
         color: AppColors.textPrimary(context),
       ),
-      tooltip: 'Quick Settings'.tr(),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      onSelected: (value) {
-        switch (value) {
-          case 'sms_sync':
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const SmsSyncScreen()),
-            );
-            break;
-          case 'google_pay':
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => const GooglePaySyncScreen()),
-            );
-            break;
-          case 'goals':
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const GoalsScreen()),
-            );
-            break;
-          case 'settings':
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const SettingsScreen()),
-            );
-            break;
-        }
-      },
-      itemBuilder: (context) => [
-        PopupMenuItem(
-          value: 'sms_sync',
-          child: Row(
-            children: [
-              Icon(Icons.sms, size: 20, color: AppColors.primary),
-              const SizedBox(width: 12),
-              Flexible(child: Text('SMS Sync'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis)),
-            ],
-          ),
-        ),
-        PopupMenuItem(
-          value: 'google_pay',
-          child: Row(
-            children: [
-              Icon(Icons.payment, size: 20, color: AppColors.secondary),
-              const SizedBox(width: 12),
-              Flexible(child: Text('Google Pay Sync'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis)),
-            ],
-          ),
-        ),
-        PopupMenuItem(
-          value: 'goals',
-          child: Row(
-            children: [
-              Icon(Icons.flag, size: 20, color: AppColors.success),
-              const SizedBox(width: 12),
-              Flexible(child: Text('Goals'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis)),
-            ],
-          ),
-        ),
-        const PopupMenuDivider(),
-        PopupMenuItem(
-          value: 'settings',
-          child: Row(
-            children: [
-              Icon(Icons.settings,
-                  size: 20, color: AppColors.textSecondary(context)),
-              const SizedBox(width: 12),
-              Flexible(child: Text('All Settings'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis)),
-            ],
-          ),
-        ),
-      ],
     );
   }
 }
@@ -116,7 +107,7 @@ class QuickSettingsGuideBanner extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.primary.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(
           color: AppColors.primary.withOpacity(0.3),
           width: 1,
@@ -125,7 +116,7 @@ class QuickSettingsGuideBanner extends StatelessWidget {
       child: Row(
         children: [
           Icon(
-            Icons.info_outline,
+            CupertinoIcons.info_circle,
             color: AppColors.primary,
             size: 24,
           ),
@@ -141,7 +132,7 @@ class QuickSettingsGuideBanner extends StatelessWidget {
           if (onDismiss != null) ...[
             const SizedBox(width: 8),
             IconButton(
-              icon: const Icon(Icons.close, size: 20),
+              icon: const Icon(CupertinoIcons.xmark, size: 20),
               onPressed: onDismiss,
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),

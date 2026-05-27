@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../../../core/services/currency_formatter.dart';
@@ -86,7 +87,7 @@ class _AIInsightsScreenState extends State<AIInsightsScreen> {
       title: 'AI Insights'.tr(),
       actions: [
         IconButton(
-          icon: const Icon(Icons.refresh),
+          icon: const Icon(CupertinoIcons.refresh),
           onPressed: _loadInsights,
         ),
       ],
@@ -138,13 +139,7 @@ class _AIInsightsScreenState extends State<AIInsightsScreen> {
     return Container(
       decoration: BoxDecoration(
         color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
+
       ),
       child: Column(
         children: [
@@ -156,7 +151,7 @@ class _AIInsightsScreenState extends State<AIInsightsScreen> {
               margin: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: AppColors.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
                 border: Border.all(
                   color: AppColors.primary.withValues(alpha: 0.2),
                 ),
@@ -187,12 +182,20 @@ class _AIInsightsScreenState extends State<AIInsightsScreen> {
                     Wrap(
                       spacing: 8,
                       children: _lastResponse!.suggestions!.map((suggestion) {
-                        return ActionChip(
-                          label: Text(suggestion),
-                          onPressed: () {
+                        return GestureDetector(
+                          onTap: () {
                             _queryController.text = suggestion;
                             _sendQuery();
                           },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: AppColors.surfaceVariant(context),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: AppColors.border(context).withOpacity(0.5)),
+                            ),
+                            child: Text(suggestion, style: AppTypography.labelMedium()),
+                          ),
                         );
                       }).toList(),
                     ),
@@ -211,9 +214,9 @@ class _AIInsightsScreenState extends State<AIInsightsScreen> {
                     controller: _queryController,
                     decoration: InputDecoration(
                       hintText: 'Ask about your finances...'.tr(),
-                      prefixIcon: const Icon(Icons.chat_bubble_outline),
+                      prefixIcon: const                       Icon(CupertinoIcons.chat_bubble_text),
                       suffixIcon: IconButton(
-                        icon: const Icon(Icons.send),
+                        icon: const Icon(CupertinoIcons.paperplane_fill),
                         onPressed: _sendQuery,
                       ),
                     ),
@@ -250,7 +253,7 @@ class _AIInsightsScreenState extends State<AIInsightsScreen> {
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: color.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
                     score.rating,
@@ -271,11 +274,14 @@ class _AIInsightsScreenState extends State<AIInsightsScreen> {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      CircularProgressIndicator(
-                        value: score.overallScore / 100,
-                        strokeWidth: 8,
-                        backgroundColor: AppColors.border(context),
-                        valueColor: AlwaysStoppedAnimation<Color>(color),
+                      Material(
+                        color: Colors.transparent,
+                        child: CircularProgressIndicator(
+                          value: score.overallScore / 100,
+                          strokeWidth: 8,
+                          backgroundColor: AppColors.border(context),
+                          valueColor: AlwaysStoppedAnimation<Color>(color),
+                        ),
                       ),
                       Center(
                         child: Text(
@@ -307,7 +313,7 @@ class _AIInsightsScreenState extends State<AIInsightsScreen> {
                             Expanded(
                               flex: 3,
                               child: ClipRRect(
-                                borderRadius: BorderRadius.circular(4),
+                                borderRadius: BorderRadius.circular(10),
                                 child: LinearProgressIndicator(
                                   value: entry.value / 100,
                                   backgroundColor: AppColors.border(context),
@@ -342,7 +348,7 @@ class _AIInsightsScreenState extends State<AIInsightsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Icon(
-                        Icons.lightbulb_outline,
+                        CupertinoIcons.lightbulb,
                         size: 16,
                         color: AppColors.warning,
                       ),
@@ -386,44 +392,59 @@ class _AIInsightsScreenState extends State<AIInsightsScreen> {
 
     switch (alert.type) {
       case AlertType.unusualSpending:
-        icon = Icons.trending_up;
+        icon = CupertinoIcons.chart_bar_alt_fill;
         break;
       case AlertType.duplicateTransaction:
-        icon = Icons.content_copy;
+        icon = CupertinoIcons.doc_on_doc;
         break;
       case AlertType.budgetWarning:
-        icon = Icons.account_balance_wallet;
+        icon = CupertinoIcons.money_dollar_circle_fill;
         break;
       case AlertType.subscriptionRenewal:
-        icon = Icons.event_repeat;
+        icon = CupertinoIcons.arrow_2_circlepath;
         break;
     }
 
     return AppCard(
       margin: const EdgeInsets.only(bottom: 12),
-      child: ListTile(
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(icon, color: color),
-        ),
-        title: Text(alert.title.tr(),
-            style: AppTypography.bodyMedium(fontWeight: FontWeight.w600),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis),
-        subtitle: Text(alert.message, style: AppTypography.bodySmall(),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis),
-        trailing: Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: color, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(alert.title.tr(),
+                      style: AppTypography.bodyLarge(fontWeight: FontWeight.w600),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis),
+                  const SizedBox(height: 2),
+                  Text(alert.message, style: AppTypography.bodySmall(color: AppColors.textTertiary(context)),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -452,7 +473,7 @@ class _AIInsightsScreenState extends State<AIInsightsScreen> {
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
                     '{}% confidence'.tr(args: [
@@ -509,25 +530,42 @@ class _AIInsightsScreenState extends State<AIInsightsScreen> {
         ..._anomalies!.take(3).map((anomaly) {
           return AppCard(
             margin: const EdgeInsets.only(bottom: 12),
-            child: ListTile(
-              leading: Icon(
-                Icons.warning_amber,
-                color: anomaly.severity == AnomalySeverity.high
-                    ? AppColors.error
-                    : AppColors.warning,
-              ),
-              title: Text(anomaly.transaction.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis),
-              subtitle: Text(anomaly.reason, style: AppTypography.bodySmall(),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis),
-              trailing: Text(
-                CurrencyFormatter.format(anomaly.transaction.amount),
-                style: AppTypography.bodyMedium(
-                  color: AppColors.error,
-                  fontWeight: FontWeight.w600,
-                ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  Icon(
+                    CupertinoIcons.exclamationmark_triangle_fill,
+                    color: anomaly.severity == AnomalySeverity.high
+                        ? AppColors.error
+                        : AppColors.warning,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(anomaly.transaction.title,
+                            style: AppTypography.bodyLarge(fontWeight: FontWeight.w600),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis),
+                        const SizedBox(height: 2),
+                        Text(anomaly.reason, style: AppTypography.bodySmall(color: AppColors.textTertiary(context)),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    CurrencyFormatter.format(anomaly.transaction.amount),
+                    style: AppTypography.bodyMedium(
+                      color: AppColors.error,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
             ),
           );

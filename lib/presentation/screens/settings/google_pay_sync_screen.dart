@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../core/theme/theme.dart';
 import '../../../core/widgets/widgets.dart';
@@ -42,13 +43,10 @@ class _GooglePaySyncScreenState extends State<GooglePaySyncScreen> {
       });
 
       if (mounted && transactions.isNotEmpty) {
-        context.showSnackBar(
-          SnackBar(
-            content: Text(
-              'Found {} Google Pay transactions'
-                  .tr(args: [transactions.length.toString()]),
-            ),
-          ),
+        CupertinoToast.show(
+          context,
+          message: 'Found {} Google Pay transactions'
+              .tr(args: [transactions.length.toString()]),
         );
       }
     } catch (e) {
@@ -57,11 +55,10 @@ class _GooglePaySyncScreenState extends State<GooglePaySyncScreen> {
       });
 
       if (mounted) {
-        context.showSnackBar(
-          SnackBar(
-            content: Text('${'Error syncing'.tr()}: $e'),
-            backgroundColor: AppColors.error,
-          ),
+        CupertinoToast.show(
+          context,
+          message: '${'Error syncing'.tr()}: $e',
+          type: CupertinoToastType.error,
         );
       }
     }
@@ -72,7 +69,7 @@ class _GooglePaySyncScreenState extends State<GooglePaySyncScreen> {
     return AppScaffold(
       title: 'Google Pay Sync'.tr(),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CupertinoActivityIndicator())
           : _transactions.isEmpty
               ? _buildEmptyState()
               : _buildTransactionsList(),
@@ -87,7 +84,7 @@ class _GooglePaySyncScreenState extends State<GooglePaySyncScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.payment,
+              CupertinoIcons.creditcard_fill,
               size: 80,
               color: AppColors.primary.withOpacity(0.5),
             ),
@@ -110,7 +107,7 @@ class _GooglePaySyncScreenState extends State<GooglePaySyncScreen> {
             AppButton.primary(
               label: 'Sync Again'.tr(),
               onPressed: _syncTransactions,
-              icon: Icons.refresh,
+                icon: CupertinoIcons.refresh,
             ),
           ],
         ),
@@ -145,7 +142,7 @@ class _GooglePaySyncScreenState extends State<GooglePaySyncScreen> {
                 ],
               ),
               AppIconButton(
-                icon: Icons.refresh,
+              icon: CupertinoIcons.refresh,
                 onPressed: _syncTransactions,
               ),
             ],
@@ -169,13 +166,6 @@ class _GooglePaySyncScreenState extends State<GooglePaySyncScreen> {
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: Theme.of(context).scaffoldBackgroundColor,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, -5),
-              ),
-            ],
           ),
           child: SafeArea(
             child: AppButton.primary(
@@ -186,15 +176,12 @@ class _GooglePaySyncScreenState extends State<GooglePaySyncScreen> {
                           _transactions,
                         );
                 if (!mounted) return;
-                context.showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      imported == 0
-                          ? 'No new Google Pay transactions to import'.tr()
-                          : 'Imported {} Google Pay transactions'
-                              .tr(args: [imported.toString()]),
-                    ),
-                  ),
+                CupertinoToast.show(
+                  context,
+                  message: imported == 0
+                      ? 'No new Google Pay transactions to import'.tr()
+                      : 'Imported {} Google Pay transactions'
+                          .tr(args: [imported.toString()]),
                 );
                 Navigator.pop(context);
               },
@@ -227,10 +214,10 @@ class _TransactionItem extends StatelessWidget {
             decoration: BoxDecoration(
               color: (isExpense ? AppColors.error : AppColors.success)
                   .withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
-              Icons.payment,
+              CupertinoIcons.creditcard_fill,
               color: isExpense ? AppColors.error : AppColors.success,
             ),
           ),

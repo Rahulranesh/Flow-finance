@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import '../theme/app_colors.dart';
@@ -26,7 +27,7 @@ class FlowMascotBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppCard.highlighted(
+    return AppCard(
       padding: const EdgeInsets.all(16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -55,13 +56,9 @@ class FlowMascotBubble extends StatelessWidget {
                 ],
                 if (actionLabel != null && onAction != null) ...[
                   const SizedBox(height: 10),
-                  TextButton(
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
                     onPressed: onAction,
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
                     child: Text(actionLabel!),
                   ),
                 ],
@@ -185,18 +182,7 @@ class _FlowMascotAvatarState extends State<FlowMascotAvatar>
                   height: s * 1.0,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primary.withOpacity(0.22 * glowPulse),
-                        blurRadius: s * 0.5,
-                        spreadRadius: s * 0.1 * glowPulse,
-                      ),
-                      BoxShadow(
-                        color: AppColors.secondary.withOpacity(0.12 * glowPulse),
-                        blurRadius: s * 0.8,
-                        spreadRadius: s * 0.05,
-                      ),
-                    ],
+
                   ),
                 ),
 
@@ -326,19 +312,25 @@ class FlowGuideChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChoiceChip(
-      label: Text(label),
-      selected: selected,
-      onSelected: onTap == null ? null : (_) => onTap!(),
-      selectedColor: AppColors.primary.withOpacity(0.12),
-      labelStyle: AppTypography.labelMedium(
-        color: selected ? AppColors.primary : AppColors.textSecondary(context),
-      ),
-      side: BorderSide(
-        color: selected ? AppColors.primary : AppColors.border(context),
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.primary.withOpacity(0.1) : AppColors.surfaceVariant(context),
+          borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+          border: Border.all(
+            color: selected ? AppColors.primary : AppColors.border(context),
+            width: selected ? 1.5 : 0.5,
+          ),
+        ),
+        child: Text(
+          label,
+          style: AppTypography.labelMedium(
+            color: selected ? AppColors.primary : AppColors.textSecondary(context),
+          ),
+        ),
       ),
     );
   }

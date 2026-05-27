@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
@@ -7,7 +8,7 @@ import '../../../core/utils/extensions.dart';
 import '../../../data/models/models.dart';
 import '../../blocs/blocs.dart';
 import '../../widgets/transaction_details_sheet.dart';
-import '../reports/reports_screen.dart';
+
 
 /// Transactions list screen with filtering and search
 class TransactionsScreen extends StatefulWidget {
@@ -35,21 +36,60 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AppScaffold(
-      title: 'Transactions'.tr(),
-      actions: [
-        AppIconButton(
-          icon: Icons.filter_list,
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const ReportsScreen()),
-            );
-          },
-          variant: AppIconButtonVariant.filled,
-        ),
-        const SizedBox(width: 16),
-      ],
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Scaffold(
+      backgroundColor:
+          isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+      appBar: AppBar(
+        title: Text('Transactions'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis),
+        centerTitle: false,
+        backgroundColor:
+            isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(CupertinoIcons.slider_horizontal_3),
+            onPressed: () => showCupertinoModalPopup<void>(
+              context: context,
+              builder: (context) => CupertinoActionSheet(
+                title: Text('Filter Transactions'.tr()),
+                message: Text('Select a filter option'.tr()),
+                actions: [
+                  CupertinoActionSheetAction(
+                    child: Text('All Transactions'.tr()),
+                    onPressed: () {
+                      context.read<TransactionBloc>().setFilter(TransactionFilter.all);
+                      Navigator.pop(context);
+                    },
+                  ),
+                  CupertinoActionSheetAction(
+                    child: Text('Income Only'.tr()),
+                    onPressed: () {
+                      context.read<TransactionBloc>().setFilter(TransactionFilter.income);
+                      Navigator.pop(context);
+                    },
+                  ),
+                  CupertinoActionSheetAction(
+                    child: Text('Expenses Only'.tr()),
+                    onPressed: () {
+                      context.read<TransactionBloc>().setFilter(TransactionFilter.expense);
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+                cancelButton: CupertinoActionSheetAction(
+                  isDefaultAction: true,
+                  child: Text('Cancel'.tr()),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
       body: Column(
         children: [
           // Search Bar
@@ -87,21 +127,22 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                     });
                     context.read<TransactionBloc>().setFilter(filter);
                   },
-                  child: AnimatedContainer(
-                    duration: AppAnimations.fast,
+                  child: Container(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 10),
                     decoration: BoxDecoration(
                       color: isSelected
                           ? AppColors.primary
                           : AppColors.surfaceVariant(context),
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
                       label.tr(),
                       style: AppTypography.labelMedium(
                         color: isSelected ? Colors.white : null,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 );
@@ -116,7 +157,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
             child: Consumer<TransactionBloc>(
               builder: (context, bloc, child) {
                 if (bloc.isLoading) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(child: CupertinoActivityIndicator());
                 }
 
                 if (bloc.error != null) {
@@ -124,13 +165,13 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          Icons.error_outline,
+                        const Icon(
+                          CupertinoIcons.exclamationmark_circle,
                           size: 48,
                           color: AppColors.error,
                         ),
                         const SizedBox(height: 16),
-                        Text(bloc.error!),
+                        Text(bloc.error!, maxLines: 1, overflow: TextOverflow.ellipsis),
                         const SizedBox(height: 16),
                         AppButton.secondary(
                           label: 'Retry'.tr(),
@@ -146,7 +187,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                 if (transactions.isEmpty) {
                   return Center(
                     child: AppEmptyState(
-                      icon: Icons.receipt_long,
+                      icon: CupertinoIcons.doc_plaintext,
                       title: 'No transactions found'.tr(),
                       subtitle:
                           'Try adjusting your filters or add a new transaction'
@@ -210,6 +251,8 @@ class _TransactionsList extends StatelessWidget {
                 style: AppTypography.labelLarge(
                   color: AppColors.textSecondary(context),
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
 
@@ -242,16 +285,10 @@ class _TransactionItem extends StatelessWidget {
       direction: DismissDirection.endToStart,
       onDismissed: (_) {
         context.read<TransactionBloc>().deleteTransaction(transaction.id);
-        context.showSnackBar(
-          SnackBar(
-            content: Text('Transaction deleted'.tr()),
-            action: SnackBarAction(
-              label: 'Undo'.tr(),
-              onPressed: () {
-                // Could implement undo here
-              },
-            ),
-          ),
+        CupertinoToast.show(
+          context,
+          message: 'Transaction deleted'.tr(),
+          onUndo: () {},
         );
       },
       background: Container(
@@ -263,85 +300,102 @@ class _TransactionItem extends StatelessWidget {
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
         child: const Icon(
-          Icons.delete,
+          CupertinoIcons.delete,
           color: Colors.white,
         ),
       ),
-      child: AppCard(
-        variant: AppCardVariant.flat,
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
-        onTap: () => showTransactionDetailsSheet(context, transaction),
-        child: Row(
-          children: [
-            // Category Icon
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: categoryData.$2.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                categoryData.$1,
-                color: categoryData.$2,
-                size: 24,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: GestureDetector(
+          onTap: () => showTransactionDetailsSheet(context, transaction),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: AppColors.border(context).withOpacity(0.5),
+                  width: 0.5,
+                ),
               ),
             ),
-            const SizedBox(width: 16),
-
-            // Transaction Details
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    transaction.title,
-                    style: AppTypography.bodyLarge(
-                      fontWeight: FontWeight.w600,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    transaction.category,
-                    style: AppTypography.bodySmall(
-                      color: AppColors.textTertiary(context),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Amount and Status
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+            child: Row(
               children: [
-                Text(
-                  '${isExpense ? '-' : '+'}${transaction.amount.toCurrency()}',
-                  style: AppTypography.amountSmall(
-                    isNegative: isExpense,
+                // Category Icon
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: categoryData.$2.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    categoryData.$1,
+                    color: categoryData.$2,
+                    size: 24,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: AppColors.success.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(4),
+                const SizedBox(width: 16),
+
+                // Transaction Details
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        transaction.title,
+                        style: AppTypography.bodyLarge(
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        transaction.category,
+                        style: AppTypography.bodySmall(
+                          color: AppColors.textTertiary(context),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ),
-                  child: Text(
-                    'Completed',
-                    style: AppTypography.caption(
-                      color: AppColors.success,
+                ),
+
+                // Amount and Status
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '${isExpense ? '-' : '+'}${transaction.amount.toCurrency()}',
+                      style: AppTypography.amountSmall(
+                        isNegative: isExpense,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppColors.success.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        'Completed',
+                        style: AppTypography.caption(
+                          color: AppColors.success,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -349,27 +403,29 @@ class _TransactionItem extends StatelessWidget {
 
   (IconData, Color) _getCategoryData(String category) {
     final categoryMap = <String, (IconData, Color)>{
-      'Food': (Icons.restaurant, const Color(0xFFF59E0B)),
-      'Food & Dining': (Icons.restaurant, const Color(0xFFF59E0B)),
-      'Transport': (Icons.directions_car, const Color(0xFF3B82F6)),
-      'Transportation': (Icons.directions_car, const Color(0xFF3B82F6)),
-      'Shopping': (Icons.shopping_bag, const Color(0xFFEC4899)),
-      'Entertainment': (Icons.movie, const Color(0xFF8B5CF6)),
-      'Bills': (Icons.receipt, const Color(0xFFEF4444)),
-      'Bills & Utilities': (Icons.receipt, const Color(0xFFEF4444)),
-      'Health': (Icons.favorite, const Color(0xFF10B981)),
-      'Health & Fitness': (Icons.favorite, const Color(0xFF10B981)),
-      'Education': (Icons.school, const Color(0xFF14B8A6)),
-      'Salary': (Icons.work, const Color(0xFF22C55E)),
-      'Income': (Icons.arrow_downward, const Color(0xFF22C55E)),
-      'Refund': (Icons.replay, const Color(0xFF22C55E)),
-      'Interest': (Icons.savings, const Color(0xFF22C55E)),
-      'Freelance': (Icons.laptop, const Color(0xFF6366F1)),
-      'Investment': (Icons.trending_up, const Color(0xFF06B6D4)),
+      'Food': (CupertinoIcons.bag, const Color(0xFFF59E0B)),
+      'Food & Dining': (CupertinoIcons.bag, const Color(0xFFF59E0B)),
+      'Transport': (CupertinoIcons.car, const Color(0xFF3B82F6)),
+      'Transportation': (CupertinoIcons.car, const Color(0xFF3B82F6)),
+      'Shopping': (CupertinoIcons.shopping_cart, const Color(0xFFEC4899)),
+      'Entertainment': (CupertinoIcons.film, const Color(0xFF8B5CF6)),
+      'Bills': (CupertinoIcons.doc_plaintext, const Color(0xFFEF4444)),
+      'Bills & Utilities':
+          (CupertinoIcons.doc_plaintext, const Color(0xFFEF4444)),
+      'Health': (CupertinoIcons.heart, const Color(0xFF10B981)),
+      'Health & Fitness': (CupertinoIcons.heart, const Color(0xFF10B981)),
+      'Education': (CupertinoIcons.book, const Color(0xFF14B8A6)),
+      'Salary': (CupertinoIcons.briefcase, const Color(0xFF22C55E)),
+      'Income': (CupertinoIcons.arrow_down, const Color(0xFF22C55E)),
+      'Refund': (CupertinoIcons.refresh_thick, const Color(0xFF22C55E)),
+      'Interest': (CupertinoIcons.money_dollar, const Color(0xFF22C55E)),
+      'Freelance': (CupertinoIcons.briefcase, const Color(0xFF6366F1)),
+      'Investment': (CupertinoIcons.chart_bar, const Color(0xFF06B6D4)),
       'Transfer': (Icons.swap_horiz, const Color(0xFF6366F1)),
-      'Cash Withdrawal': (Icons.money, const Color(0xFFEF4444)),
+      'Cash Withdrawal':
+          (CupertinoIcons.money_dollar, const Color(0xFFEF4444)),
     };
 
-    return categoryMap[category] ?? (Icons.category, AppColors.primary);
+    return categoryMap[category] ?? (CupertinoIcons.tray_full, AppColors.primary);
   }
 }

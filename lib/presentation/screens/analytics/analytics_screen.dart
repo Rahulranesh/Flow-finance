@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../../core/widgets/app_card.dart';
-import '../../../core/widgets/app_scaffold.dart';
 import '../../../core/widgets/app_loading.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../../core/utils/extensions.dart';
@@ -48,14 +47,17 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return AppScaffold(
-      title: 'Analytics'.tr(),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.calendar_today),
-          onPressed: _selectDateRange,
-        ),
-      ],
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Analytics'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis),
+        actions: [
+          IconButton(
+            icon: const Icon(CupertinoIcons.calendar),
+            onPressed: _selectDateRange,
+          ),
+        ],
+        elevation: 0,
+      ),
       body: Column(
         children: [
           Padding(
@@ -67,22 +69,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
           ),
 
           // Date Range Display
-          Container(
+          Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  AppColors.primary.withOpacity(0.1),
-                  AppColors.secondary.withOpacity(0.1),
-                ],
-              ),
-              border: Border(
-                bottom: BorderSide(
-                  color: isDark ? AppColors.borderDark : AppColors.borderLight,
-                  width: 1,
-                ),
-              ),
-            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -93,7 +81,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
-                    Icons.date_range,
+                    CupertinoIcons.calendar,
                     size: 18,
                     color: AppColors.primary,
                   ),
@@ -107,6 +95,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                         : AppColors.textPrimaryLight,
                     fontWeight: FontWeight.w600,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -115,10 +105,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
           // Tab Bar
           TabBar(
             controller: _tabController,
-            labelStyle: AppTypography.labelMedium(
-              fontWeight: FontWeight.w600,
-            ),
-            unselectedLabelStyle: AppTypography.labelMedium(),
             tabs: [
               Tab(text: 'Trends'.tr()),
               Tab(text: 'Categories'.tr()),
@@ -170,14 +156,20 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
         children: [
           _buildSectionTitle('Income & Expense Trends'.tr(), isDark),
           const SizedBox(height: 16),
-          AppCard(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: TrendChart(
-                transactions: transactions,
-                startDate: _dateRange.start,
-                endDate: _dateRange.end,
+          Container(
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                width: 0.5,
               ),
+            ),
+            padding: const EdgeInsets.all(16),
+            child: TrendChart(
+              transactions: transactions,
+              startDate: _dateRange.start,
+              endDate: _dateRange.end,
             ),
           ),
           const SizedBox(height: 24),
@@ -195,12 +187,18 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
         children: [
           _buildSectionTitle('Expense Breakdown'.tr(), isDark),
           const SizedBox(height: 16),
-          AppCard(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: CategoryPieChart(
-                transactions: transactions,
+          Container(
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                width: 0.5,
               ),
+            ),
+            padding: const EdgeInsets.all(16),
+            child: CategoryPieChart(
+              transactions: transactions,
             ),
           ),
           const SizedBox(height: 24),
@@ -218,15 +216,21 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
         children: [
           _buildSectionTitle('Cash Flow Analysis'.tr(), isDark),
           const SizedBox(height: 16),
-          AppCard(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: CashFlowChart(
-                transactions: transactions,
-                startDate: _dateRange.start,
-                endDate: _dateRange.end,
-                showDaily: _dateRange.duration.inDays <= 31,
+          Container(
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                width: 0.5,
               ),
+            ),
+            padding: const EdgeInsets.all(16),
+            child: CashFlowChart(
+              transactions: transactions,
+              startDate: _dateRange.start,
+              endDate: _dateRange.end,
+              showDaily: _dateRange.duration.inDays <= 31,
             ),
           ),
         ],
@@ -240,6 +244,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
       style: AppTypography.titleMedium(
         color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
       ),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
     );
   }
 
@@ -270,7 +276,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                 'Total Income'.tr(),
                 totalIncome.toCurrency(),
                 AppColors.success,
-                Icons.arrow_upward,
+                CupertinoIcons.arrow_up,
               ),
             ),
             const SizedBox(width: 12),
@@ -279,7 +285,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                 'Total Expense'.tr(),
                 totalExpense.toCurrency(),
                 AppColors.error,
-                Icons.arrow_downward,
+                CupertinoIcons.arrow_down,
               ),
             ),
           ],
@@ -292,7 +298,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                 'Net Balance'.tr(),
                 balance.toCurrency(),
                 balance >= 0 ? AppColors.primary : AppColors.error,
-                Icons.account_balance_wallet,
+                CupertinoIcons.money_dollar,
               ),
             ),
             const SizedBox(width: 12),
@@ -301,7 +307,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                 'Savings Rate'.tr(),
                 '${savingsRate.toStringAsFixed(1)}%',
                 savingsRate >= 20 ? AppColors.success : AppColors.warning,
-                Icons.savings,
+                CupertinoIcons.money_dollar_circle,
               ),
             ),
           ],
@@ -312,57 +318,52 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
 
   Widget _buildMetricCard(
       String label, String value, Color color, IconData icon) {
-    return AppCard(
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              color.withOpacity(0.1),
-              color.withOpacity(0.05),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: color.withOpacity(0.2),
+          width: 0.5,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, color: color, size: 20),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  label,
+                  style: AppTypography.labelSmall(
+                    color: AppColors.textSecondary(context),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
           ),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(icon, color: color, size: 20),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    label,
-                    style: AppTypography.labelSmall(
-                      color: AppColors.textSecondaryLight,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(
-              value,
-              style: AppTypography.headlineSmall(
-                color: color,
-              ).copyWith(fontWeight: FontWeight.bold),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
+          const SizedBox(height: 12),
+          Text(
+            value,
+            style: AppTypography.headlineSmall(
+              color: color,
+            ).copyWith(fontWeight: FontWeight.bold),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
     );
   }
@@ -412,7 +413,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
           color: isDark
               ? AppColors.surfaceDark.withOpacity(0.5)
               : AppColors.surfaceLight.withOpacity(0.5),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: isDark ? AppColors.borderDark : AppColors.borderLight,
           ),
@@ -457,6 +458,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                     color: _getCategoryColor(category),
                     fontWeight: FontWeight.bold,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -489,14 +492,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                                 ],
                               ),
                               borderRadius: BorderRadius.circular(6),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: _getCategoryColor(category)
-                                      .withOpacity(0.3),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
                             ),
                           ),
                         ),
@@ -508,9 +503,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                 Text(
                   amount.toCurrency(),
                   style: AppTypography.bodySmall(
-                    color: AppColors.textSecondaryLight,
+                    color: AppColors.textSecondary(context),
                     fontWeight: FontWeight.w600,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -526,7 +523,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            Icons.analytics_outlined,
+            CupertinoIcons.chart_bar,
             size: 64,
             color: isDark
                 ? AppColors.textSecondaryDark
@@ -540,6 +537,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                   ? AppColors.textSecondaryDark
                   : AppColors.textSecondaryLight,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 8),
           Text(
@@ -549,6 +548,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                   ? AppColors.textSecondaryDark
                   : AppColors.textSecondaryLight,
             ),
+            maxLines: 2,
+            softWrap: true,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),

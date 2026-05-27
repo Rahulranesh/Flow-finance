@@ -297,7 +297,6 @@ class SpendingTrendChart extends StatelessWidget {
     final labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
     return AppCard(
-      variant: AppCardVariant.elevated,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -372,7 +371,7 @@ class ExpenseBreakdownChart extends StatelessWidget {
     ];
 
     return AppCard(
-      variant: AppCardVariant.elevated,
+
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -512,7 +511,7 @@ class CategoryComparisonChart extends StatelessWidget {
     final labels = ['Food', 'Trans', 'Shop', 'Ent'];
 
     return AppCard(
-      variant: AppCardVariant.elevated,
+
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

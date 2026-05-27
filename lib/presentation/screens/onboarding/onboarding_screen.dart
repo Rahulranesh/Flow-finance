@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,28 +23,28 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       title: 'Welcome to Flow Finance',
       subtitle:
           'Your personal finance companion for a brighter financial future.',
-      icon: Icons.account_balance_wallet,
+      icon: CupertinoIcons.creditcard_fill,
       color: AppColors.primary,
     ),
     _OnboardingPage(
       title: 'Track Your Expenses',
       subtitle:
           'Easily record and categorize your daily transactions in seconds.',
-      icon: Icons.receipt_long,
+      icon: CupertinoIcons.doc_checkmark_fill,
       color: AppColors.secondary,
     ),
     _OnboardingPage(
       title: 'Set Budgets',
       subtitle:
           'Create monthly budgets and get alerts when you\'re close to limits.',
-      icon: Icons.pie_chart,
+      icon: CupertinoIcons.chart_pie_fill,
       color: AppColors.warning,
     ),
     _OnboardingPage(
       title: 'Visualize Progress',
       subtitle:
           'Beautiful charts and insights to help you understand your spending.',
-      icon: Icons.trending_up,
+      icon: CupertinoIcons.chart_bar_fill,
       color: AppColors.success,
     ),
   ];
@@ -79,15 +80,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
+    return CupertinoPageScaffold(
+      child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
               AppColors.primary.withOpacity(0.08),
-              Theme.of(context).scaffoldBackgroundColor,
+              CupertinoColors.systemGroupedBackground.resolveFrom(context),
               AppColors.secondary.withOpacity(0.05),
             ],
           ),
@@ -100,7 +101,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 alignment: Alignment.topRight,
                 child: Padding(
                   padding: const EdgeInsets.all(16),
-                  child: TextButton(
+                  child: CupertinoButton(
+                    padding: EdgeInsets.zero,
                     onPressed: _finishOnboarding,
                     child: Text(
                       'Skip'.tr(),
@@ -137,15 +139,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: List.generate(_pages.length, (index) {
-                        return AnimatedContainer(
-                          duration: AppAnimations.fast,
+                        return Container(
                           margin: const EdgeInsets.symmetric(horizontal: 4),
                           width: _currentPage == index ? 24 : 8,
                           height: 8,
                           decoration: BoxDecoration(
                             color: _currentPage == index
-                                ? AppColors.primary
-                                : AppColors.border(context),
+                                ? CupertinoColors.activeBlue
+                                : CupertinoColors.systemGrey4,
                             borderRadius: BorderRadius.circular(4),
                           ),
                         );
@@ -155,13 +156,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     const SizedBox(height: 32),
 
                     // Next/Get Started button
-                    AppButton.primary(
-                      label: _currentPage == _pages.length - 1
-                          ? 'Get Started'.tr()
-                          : 'Next'.tr(),
-                      onPressed: _nextPage,
-                      expanded: true,
-                      size: AppButtonSize.large,
+                    SizedBox(
+                      width: double.infinity,
+                      child: CupertinoButton.filled(
+                        onPressed: _nextPage,
+                        child: Text(
+                          _currentPage == _pages.length - 1
+                              ? 'Get Started'.tr()
+                              : 'Next'.tr(),
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -179,7 +183,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Animated icon container
+          // Animated icon
           TweenAnimationBuilder<double>(
             tween: Tween(begin: 0.92, end: 1),
             duration: AppAnimations.slower,
@@ -192,44 +196,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               width: 220,
               height: 220,
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    page.color.withOpacity(0.2),
-                    page.color.withOpacity(0.05),
-                  ],
-                ),
+                color: page.color.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(44),
-                boxShadow: [
-                  BoxShadow(
-                    color: page.color.withOpacity(0.16),
-                    blurRadius: 36,
-                    offset: const Offset(0, 20),
-                  ),
-                ],
               ),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Positioned(
-                    top: 24,
-                    right: 24,
-                    child: Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.35),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-                  Icon(
-                    page.icon,
-                    size: 86,
-                    color: page.color,
-                  ),
-                ],
+              child: Icon(
+                page.icon,
+                size: 86,
+                color: page.color,
               ),
             ),
           ),
@@ -309,8 +282,8 @@ class _InitialSetupScreenState extends State<InitialSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
+    return CupertinoPageScaffold(
+      child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(

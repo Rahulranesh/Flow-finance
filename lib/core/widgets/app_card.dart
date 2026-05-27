@@ -1,246 +1,61 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
-import '../theme/app_shadows.dart';
-import '../theme/app_animations.dart';
 
-/// Modern card component with multiple elevation variants
-/// Supports tap interactions with smooth animations
-class AppCard extends StatefulWidget {
+/// Card component with flat design — no shadows, minimal border radius.
+class AppCard extends StatelessWidget {
   const AppCard({
     super.key,
     required this.child,
-    this.variant = AppCardVariant.elevated,
-    this.padding,
+    this.padding = const EdgeInsets.all(14),
     this.margin,
     this.onTap,
-    this.borderRadius,
     this.backgroundColor,
     this.height,
     this.width,
   });
 
-  const AppCard.flat({
-    super.key,
-    required this.child,
-    this.padding,
-    this.margin,
-    this.onTap,
-    this.borderRadius,
-    this.backgroundColor,
-    this.height,
-    this.width,
-  }) : variant = AppCardVariant.flat;
-
-  const AppCard.elevated({
-    super.key,
-    required this.child,
-    this.padding,
-    this.margin,
-    this.onTap,
-    this.borderRadius,
-    this.backgroundColor,
-    this.height,
-    this.width,
-  }) : variant = AppCardVariant.elevated;
-
-  const AppCard.highlighted({
-    super.key,
-    required this.child,
-    this.padding,
-    this.margin,
-    this.onTap,
-    this.borderRadius,
-    this.backgroundColor,
-    this.height,
-    this.width,
-  }) : variant = AppCardVariant.highlighted;
-
-  const AppCard.glass({
-    super.key,
-    required this.child,
-    this.padding,
-    this.margin,
-    this.onTap,
-    this.borderRadius,
-    this.backgroundColor,
-    this.height,
-    this.width,
-  }) : variant = AppCardVariant.glass;
-
   final Widget child;
-  final AppCardVariant variant;
-  final EdgeInsetsGeometry? padding;
+  final EdgeInsetsGeometry padding;
   final EdgeInsetsGeometry? margin;
   final VoidCallback? onTap;
-  final double? borderRadius;
   final Color? backgroundColor;
   final double? height;
   final double? width;
 
   @override
-  State<AppCard> createState() => _AppCardState();
-}
-
-enum AppCardVariant { flat, elevated, highlighted, glass }
-
-class _AppCardState extends State<AppCard> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _elevationAnimation;
-  bool _isHovered = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: AppAnimations.cardElevation,
-      vsync: this,
-    );
-    _elevationAnimation = Tween<double>(
-      begin: 0,
-      end: 1,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: AppAnimations.easeOut,
-    ));
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _handleTapDown(TapDownDetails details) {
-    if (widget.onTap != null) {
-      _controller.forward();
-    }
-  }
-
-  void _handleTapUp(TapUpDetails details) {
-    if (widget.onTap != null) {
-      _controller.reverse();
-    }
-  }
-
-  void _handleTapCancel() {
-    if (widget.onTap != null) {
-      _controller.reverse();
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final color = backgroundColor ??
+        (isDark ? AppColors.surfaceDark : AppColors.surfaceLight);
 
-    Widget card = AnimatedBuilder(
-      animation: _elevationAnimation,
-      builder: (context, child) {
-        return Container(
-          height: widget.height,
-          width: widget.width,
-          margin: widget.margin ?? EdgeInsets.zero,
-          padding: widget.padding ?? _getDefaultPadding(),
-          decoration: _buildDecoration(isDark),
-          child: child,
-        );
-      },
-      child: widget.child,
+    final card = Container(
+      height: height,
+      width: width,
+      margin: margin,
+      padding: padding,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isDark ? AppColors.borderDark : AppColors.borderLight,
+          width: 0.5,
+        ),
+      ),
+      child: child,
     );
 
-    if (widget.onTap != null) {
-      return GestureDetector(
-        onTapDown: _handleTapDown,
-        onTapUp: _handleTapUp,
-        onTapCancel: _handleTapCancel,
-        onTap: widget.onTap,
-        child: card,
+    if (onTap != null) {
+      return Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: onTap,
+          child: card,
+        ),
       );
     }
 
     return card;
-  }
-
-  BoxDecoration _buildDecoration(bool isDark) {
-    final baseColor = widget.backgroundColor ??
-        (isDark ? AppColors.surfaceDark : AppColors.surfaceLight);
-
-    final radius = widget.borderRadius ?? _getDefaultBorderRadius();
-
-    switch (widget.variant) {
-      case AppCardVariant.flat:
-        return BoxDecoration(
-          color: baseColor,
-          borderRadius: BorderRadius.circular(radius),
-          border: Border.all(
-            color: isDark ? AppColors.borderDark : AppColors.borderLight,
-          ),
-        );
-
-      case AppCardVariant.elevated:
-        return BoxDecoration(
-          color: baseColor,
-          borderRadius: BorderRadius.circular(radius),
-          boxShadow: _isHovered || _controller.value > 0
-              ? AppShadows.md
-              : AppShadows.sm,
-        );
-
-      case AppCardVariant.highlighted:
-        return BoxDecoration(
-          color: baseColor,
-          borderRadius: BorderRadius.circular(radius),
-          border: Border.all(
-            color: AppColors.primary.withOpacity(0.2),
-            width: 1.5,
-          ),
-          boxShadow: [
-            ...AppShadows.md,
-            BoxShadow(
-              color: AppColors.primary.withOpacity(0.08),
-              blurRadius: 20,
-              spreadRadius: -5,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        );
-
-      case AppCardVariant.glass:
-        return BoxDecoration(
-          color: baseColor.withOpacity(0.8),
-          borderRadius: BorderRadius.circular(radius),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.2),
-            width: 1,
-          ),
-          boxShadow: AppShadows.glass,
-        );
-    }
-  }
-
-  EdgeInsets _getDefaultPadding() {
-    switch (widget.variant) {
-      case AppCardVariant.flat:
-        return const EdgeInsets.all(16);
-      case AppCardVariant.elevated:
-        return const EdgeInsets.all(16);
-      case AppCardVariant.highlighted:
-        return const EdgeInsets.all(20);
-      case AppCardVariant.glass:
-        return const EdgeInsets.all(16);
-    }
-  }
-
-  double _getDefaultBorderRadius() {
-    switch (widget.variant) {
-      case AppCardVariant.flat:
-        return 12;
-      case AppCardVariant.elevated:
-        return 16;
-      case AppCardVariant.highlighted:
-        return 20;
-      case AppCardVariant.glass:
-        return 20;
-    }
   }
 }
 
@@ -273,7 +88,7 @@ class AppStatCard extends StatelessWidget {
     final cardColor = color ?? AppColors.primary;
 
     return AppCard(
-      variant: AppCardVariant.highlighted,
+
       onTap: onTap,
       backgroundColor: cardColor.withOpacity(0.05),
       child: Column(
@@ -400,7 +215,7 @@ class AppListTileCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return AppCard(
-      variant: AppCardVariant.flat,
+
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       onTap: onTap,
       child: Row(

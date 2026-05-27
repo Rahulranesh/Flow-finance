@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
@@ -204,7 +205,8 @@ class _FilterPanelState extends State<FilterPanel> {
                   ),
                 ),
                 if (_filter.isActive)
-                  TextButton(
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
                     onPressed: _clearAllFilters,
                     child: Text(
                       'Clear All'.tr(),
@@ -459,30 +461,42 @@ class _FilterPanelState extends State<FilterPanel> {
       spacing: 12,
       children: types.map((type) {
         final isSelected = _filter.types?.contains(type.type) ?? false;
-        return FilterChip(
-          selected: isSelected,
-          onSelected: (selected) {
+        return GestureDetector(
+          onTap: () {
             setState(() {
               final currentTypes = _filter.types ?? [];
-              if (selected) {
-                _filter = _filter.copyWith(types: [...currentTypes, type.type]);
-              } else {
+              if (isSelected) {
                 _filter = _filter.copyWith(
                   types: currentTypes.where((t) => t != type.type).toList(),
                 );
+              } else {
+                _filter = _filter.copyWith(types: [...currentTypes, type.type]);
               }
             });
           },
-          avatar: Icon(
-            type.icon,
-            color: isSelected ? Colors.white : type.color,
-            size: 18,
-          ),
-          label: Text(type.label),
-          selectedColor: type.color,
-          checkmarkColor: Colors.white,
-          labelStyle: TextStyle(
-            color: isSelected ? Colors.white : null,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: isSelected ? type.color.withOpacity(0.1) : AppColors.surfaceVariant(context),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: isSelected ? type.color : AppColors.border(context).withOpacity(0.5),
+                width: isSelected ? 1.5 : 0.5,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  type.icon,
+                  color: isSelected ? type.color : AppColors.textSecondary(context),
+                  size: 18,
+                ),
+                const SizedBox(width: 6),
+                Text(type.label, style: AppTypography.labelMedium(color: isSelected ? type.color : null)),
+              ],
+            ),
           ),
         );
       }).toList(),
@@ -495,23 +509,34 @@ class _FilterPanelState extends State<FilterPanel> {
       runSpacing: 8,
       children: widget.availableCategories.map((category) {
         final isSelected = _filter.categories?.contains(category) ?? false;
-        return FilterChip(
-          selected: isSelected,
-          onSelected: (selected) {
+        return GestureDetector(
+          onTap: () {
             setState(() {
               final currentCategories = _filter.categories ?? [];
-              if (selected) {
+              if (isSelected) {
                 _filter = _filter.copyWith(
-                  categories: [...currentCategories, category],
+                  categories: currentCategories.where((c) => c != category).toList(),
                 );
               } else {
                 _filter = _filter.copyWith(
-                  categories: currentCategories.where((c) => c != category).toList(),
+                  categories: [...currentCategories, category],
                 );
               }
             });
           },
-          label: Text(category),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: isSelected ? AppColors.primary.withOpacity(0.1) : AppColors.surfaceVariant(context),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: isSelected ? AppColors.primary : AppColors.border(context).withOpacity(0.5),
+                width: isSelected ? 1.5 : 0.5,
+              ),
+            ),
+            child: Text(category, style: AppTypography.labelMedium(color: isSelected ? AppColors.primary : null)),
+          ),
         );
       }).toList(),
     );
@@ -523,42 +548,75 @@ class _FilterPanelState extends State<FilterPanel> {
       runSpacing: 8,
       children: widget.wallets.map((wallet) {
         final isSelected = _filter.walletIds?.contains(wallet.id) ?? false;
-        return FilterChip(
-          selected: isSelected,
-          onSelected: (selected) {
+        return GestureDetector(
+          onTap: () {
             setState(() {
               final currentWalletIds = _filter.walletIds ?? [];
-              if (selected) {
+              if (isSelected) {
                 _filter = _filter.copyWith(
-                  walletIds: [...currentWalletIds, wallet.id],
+                  walletIds: currentWalletIds.where((id) => id != wallet.id).toList(),
                 );
               } else {
                 _filter = _filter.copyWith(
-                  walletIds: currentWalletIds.where((id) => id != wallet.id).toList(),
+                  walletIds: [...currentWalletIds, wallet.id],
                 );
               }
             });
           },
-          avatar: Container(
-            width: 8,
-            height: 8,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: wallet.color,
-              shape: BoxShape.circle,
+              color: isSelected ? wallet.color.withOpacity(0.1) : AppColors.surfaceVariant(context),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: isSelected ? wallet.color : AppColors.border(context).withOpacity(0.5),
+                width: isSelected ? 1.5 : 0.5,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: wallet.color,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Text(wallet.name, style: AppTypography.labelMedium(color: isSelected ? wallet.color : null)),
+              ],
             ),
           ),
-          label: Text(wallet.name),
         );
       }).toList(),
     );
   }
 
   Future<void> _selectStartDate() async {
-    final date = await showDatePicker(
+    final date = await showCupertinoModalPopup<DateTime>(
       context: context,
-      initialDate: _filter.startDate ?? DateTime.now(),
-      firstDate: DateTime(2020),
-      lastDate: _filter.endDate ?? DateTime.now(),
+      builder: (context) => Container(
+        height: 300,
+        padding: const EdgeInsets.only(top: 40),
+        decoration: BoxDecoration(
+          color: AppColors.surface(context),
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(14),
+          ),
+        ),
+        child: CupertinoDatePicker(
+          initialDateTime: _filter.startDate ?? DateTime.now(),
+          minimumDate: DateTime(2020),
+          maximumDate: _filter.endDate ?? DateTime.now(),
+          mode: CupertinoDatePickerMode.date,
+          onDateTimeChanged: (date) {
+            Navigator.pop(context, date);
+          },
+        ),
+      ),
     );
     if (date != null) {
       setState(() {
@@ -568,11 +626,27 @@ class _FilterPanelState extends State<FilterPanel> {
   }
 
   Future<void> _selectEndDate() async {
-    final date = await showDatePicker(
+    final date = await showCupertinoModalPopup<DateTime>(
       context: context,
-      initialDate: _filter.endDate ?? DateTime.now(),
-      firstDate: _filter.startDate ?? DateTime(2020),
-      lastDate: DateTime.now(),
+      builder: (context) => Container(
+        height: 300,
+        padding: const EdgeInsets.only(top: 40),
+        decoration: BoxDecoration(
+          color: AppColors.surface(context),
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(14),
+          ),
+        ),
+        child: CupertinoDatePicker(
+          initialDateTime: _filter.endDate ?? DateTime.now(),
+          minimumDate: _filter.startDate ?? DateTime(2020),
+          maximumDate: DateTime.now(),
+          mode: CupertinoDatePickerMode.date,
+          onDateTimeChanged: (date) {
+            Navigator.pop(context, date);
+          },
+        ),
+      ),
     );
     if (date != null) {
       setState(() {
@@ -605,10 +679,8 @@ Future<TransactionFilter?> showFilterPanel(
   required List<Wallet> wallets,
   required List<String> availableCategories,
 }) async {
-  return showModalBottomSheet<TransactionFilter>(
+  return showCupertinoModalPopup<TransactionFilter>(
     context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
     builder: (context) {
       return DraggableScrollableSheet(
         initialChildSize: 0.7,

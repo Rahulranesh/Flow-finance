@@ -11,10 +11,10 @@ class AppTheme {
   /// Border radius values for consistency
   static const double radiusXs = 6;
   static const double radiusSm = 8;
-  static const double radiusMd = 12;
-  static const double radiusLg = 16;
-  static const double radiusXl = 20;
-  static const double radius2xl = 24;
+  static const double radiusMd = 10;
+  static const double radiusLg = 12;
+  static const double radiusXl = 14;
+  static const double radius2xl = 16;
   static const double radiusFull = 9999;
 
   /// Spacing values (8px grid system)
@@ -247,13 +247,14 @@ class AppTheme {
 
       // Bottom sheet theme
       bottomSheetTheme: BottomSheetThemeData(
-        backgroundColor: isLight ? AppColors.surfaceLight : AppColors.surfaceDark,
+        backgroundColor: Colors.transparent,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
-            top: Radius.circular(radius2xl),
+            top: Radius.circular(14),
           ),
         ),
         elevation: 0,
+        surfaceTintColor: Colors.transparent,
       ),
 
       // Dialog theme

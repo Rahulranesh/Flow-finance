@@ -36,9 +36,9 @@ class AppColors {
   static const Color infoDark = Color(0xFF2563EB);
 
   // Light Theme Backgrounds
-  static const Color backgroundLight = Color(0xFFF8FAFC);
+  static const Color backgroundLight = Color(0xFFF2F2F7);
   static const Color surfaceLight = Color(0xFFFFFFFF);
-  static const Color surfaceVariantLight = Color(0xFFF1F5F9);
+  static const Color surfaceVariantLight = Color(0xFFF8F8FA);
   static const Color surfaceElevatedLight = Color(0xFFFFFFFF);
 
   // Dark Theme Backgrounds
@@ -48,10 +48,10 @@ class AppColors {
   static const Color surfaceElevatedDark = Color(0xFF1E293B);
 
   // Light Theme Text
-  static const Color textPrimaryLight = Color(0xFF0F172A);
-  static const Color textSecondaryLight = Color(0xFF64748B);
-  static const Color textTertiaryLight = Color(0xFF94A3B8);
-  static const Color textDisabledLight = Color(0xFFCBD5E1);
+  static const Color textPrimaryLight = Color(0xFF1C1C1E);
+  static const Color textSecondaryLight = Color(0xFF6B7280);
+  static const Color textTertiaryLight = Color(0xFF9CA3AF);
+  static const Color textDisabledLight = Color(0xFFD1D5DB);
 
   // Dark Theme Text
   static const Color textPrimaryDark = Color(0xFFF1F5F9);
@@ -60,9 +60,27 @@ class AppColors {
   static const Color textDisabledDark = Color(0xFF475569);
 
   // Borders
-  static const Color borderLight = Color(0xFFE2E8F0);
+  static const Color borderLight = Color(0xFFC6C6C8);
   static const Color borderDark = Color(0xFF334155);
   static const Color borderFocused = primary;
+
+  // Snackbar
+  static const Color snackbarBackgroundLight = Color(0xFF1C1C1E);
+  static const Color snackbarTextLight = Color(0xFFFFFFFF);
+  static const Color snackbarBackgroundDark = Color(0xFF2C2C2E);
+  static const Color snackbarTextDark = Color(0xFFF1F5F9);
+
+  // Navigation Bar
+  static const Color navBarBackgroundLight = Color(0xFFF2F2F7);
+  static const Color navBarBorderLight = Color(0xFFD1D1D6);
+  static const Color navBarBackgroundDark = Color(0xFF1C1C1E);
+  static const Color navBarBorderDark = Color(0xFF38383A);
+
+  // Primary background for action bars
+  static const Color actionBarBackgroundLight = Color(0xFFFFFFFF);
+  static const Color actionBarBorderLight = Color(0xFFD1D1D6);
+  static const Color actionBarBackgroundDark = Color(0xFF1C1C1E);
+  static const Color actionBarBorderDark = Color(0xFF38383A);
 
   // Income/Expense (Finance specific)
   static const Color income = Color(0xFF10B981);

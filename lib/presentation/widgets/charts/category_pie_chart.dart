@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../core/theme/app_colors.dart';
@@ -32,7 +33,7 @@ class CategoryPieChart extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
-                Icons.pie_chart_outline,
+                CupertinoIcons.chart_pie,
                 size: 64,
                 color: isDark
                     ? AppColors.textSecondaryDark.withOpacity(0.5)
@@ -67,7 +68,7 @@ class CategoryPieChart extends StatelessWidget {
                 AppColors.primary.withOpacity(0.06),
               ],
             ),
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(10),
           ),
           child: Row(
             children: [
@@ -76,7 +77,7 @@ class CategoryPieChart extends StatelessWidget {
                 height: 42,
                 decoration: BoxDecoration(
                   color: _getCategoryColor(topCategory.key).withOpacity(0.16),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
                   Icons.auto_awesome_rounded,
@@ -123,13 +124,6 @@ class CategoryPieChart extends StatelessWidget {
                 height: radius * 2,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withOpacity(0.2),
-                      blurRadius: 20,
-                      spreadRadius: 5,
-                    ),
-                  ],
                 ),
               ),
               // Pie Chart
@@ -205,7 +199,7 @@ class CategoryPieChart extends StatelessWidget {
             color: isDark
                 ? AppColors.surfaceDark.withOpacity(0.5)
                 : AppColors.surfaceLight.withOpacity(0.5),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(10),
           ),
           child: Wrap(
             spacing: 20,
@@ -231,14 +225,7 @@ class CategoryPieChart extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.4),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(
           color: Colors.white,
           width: 2,
@@ -265,30 +252,23 @@ class CategoryPieChart extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: color.withOpacity(0.3),
-          width: 1.5,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 16,
-            height: 16,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: color.withOpacity(0.4),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: color.withOpacity(0.3),
+              width: 1.5,
             ),
           ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 16,
+                height: 16,
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                ),
+              ),
           const SizedBox(width: 10),
           Flexible(
             child: Column(

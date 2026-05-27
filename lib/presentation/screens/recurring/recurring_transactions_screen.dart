@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
@@ -6,12 +7,13 @@ import '../../../core/services/currency_formatter.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/app_button.dart';
-import '../../../core/widgets/app_card.dart';
+
 import '../../../core/widgets/app_scaffold.dart';
 import '../../../core/widgets/app_loading.dart';
 import '../../../data/models/recurring_transaction_model.dart';
 import '../../../data/models/transaction_model.dart';
 import 'package:flow_finance/core/utils/extensions.dart';
+import '../../../core/widgets/cupertino_toast.dart';
 import '../../../data/repositories/recurring_transaction_repository.dart';
 
 /// Recurring transactions management screen
@@ -51,8 +53,9 @@ class _RecurringTransactionsScreenState
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        context.showSnackBar(
-          SnackBar(content: Text('Failed to load recurring transactions'.tr())),
+        CupertinoToast.show(
+          context,
+          message: 'Failed to load recurring transactions'.tr(),
         );
       }
     }
@@ -66,7 +69,7 @@ class _RecurringTransactionsScreenState
       title: 'Recurring'.tr(),
       actions: [
         IconButton(
-          icon: const Icon(Icons.add),
+          icon: const Icon(CupertinoIcons.add),
           onPressed: _createRecurring,
         ),
       ],
@@ -89,8 +92,16 @@ class _RecurringTransactionsScreenState
   }
 
   Widget _buildSummaryCard(bool isDark) {
-    return AppCard(
+    return Container(
       margin: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isDark ? AppColors.borderDark : AppColors.borderLight,
+          width: 0.5,
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -174,7 +185,7 @@ class _RecurringTransactionsScreenState
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -212,7 +223,7 @@ class _RecurringTransactionsScreenState
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            Icons.repeat,
+            CupertinoIcons.repeat,
             size: 80,
             color: isDark
                 ? AppColors.textSecondaryDark
@@ -242,7 +253,7 @@ class _RecurringTransactionsScreenState
           AppButton.primary(
             label: 'Add Recurring Transaction'.tr(),
             onPressed: _createRecurring,
-            icon: Icons.add,
+            icon: CupertinoIcons.add,
           ),
         ],
       ),
@@ -279,10 +290,8 @@ class _RecurringTransactionsScreenState
   void _showRecurringDialog({RecurringTransaction? transaction}) {
     final isEditing = transaction != null;
 
-    showModalBottomSheet(
+    showCupertinoModalPopup(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (context) => _RecurringTransactionForm(
         transaction: transaction,
         onSave: (data) async {
@@ -320,14 +329,11 @@ class _RecurringTransactionsScreenState
             Navigator.pop(context);
             _loadData();
           } catch (e) {
-            context.showSnackBar(
-              SnackBar(
-                content: Text(
-                  isEditing
-                      ? 'Failed to update transaction'.tr()
-                      : 'Failed to create transaction'.tr(),
-                ),
-              ),
+            CupertinoToast.show(
+              context,
+              message: isEditing
+                  ? 'Failed to update transaction'.tr()
+                  : 'Failed to create transaction'.tr(),
             );
           }
         },
@@ -342,29 +348,30 @@ class _RecurringTransactionsScreenState
       _loadData();
     } catch (e) {
       if (mounted) {
-        context.showSnackBar(
-          SnackBar(content: Text('Failed to update transaction'.tr())),
+        CupertinoToast.show(
+          context,
+          message: 'Failed to update transaction'.tr(),
         );
       }
     }
   }
 
   Future<void> _deleteTransaction(RecurringTransaction transaction) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showCupertinoDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => CupertinoAlertDialog(
         title: Text('Delete Recurring Transaction'.tr()),
         content:
             Text('Are you sure you want to delete "{title}"?'.tr(namedArgs: {'title': transaction.title})),
         actions: [
-          TextButton(
+          CupertinoDialogAction(
             onPressed: () => Navigator.pop(context, false),
             child: Text('Cancel'.tr()),
           ),
-          TextButton(
+          CupertinoDialogAction(
+            isDestructiveAction: true,
             onPressed: () => Navigator.pop(context, true),
-            child: Text('Delete'.tr(),
-                style: const TextStyle(color: AppColors.error)),
+            child: Text('Delete'.tr()),
           ),
         ],
       ),
@@ -377,8 +384,9 @@ class _RecurringTransactionsScreenState
         _loadData();
       } catch (e) {
         if (mounted) {
-          context.showSnackBar(
-            SnackBar(content: Text('Failed to delete transaction'.tr())),
+          CupertinoToast.show(
+            context,
+            message: 'Failed to delete transaction'.tr(),
           );
         }
       }
@@ -401,14 +409,23 @@ class _RecurringTransactionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isIncome = transaction.type == TransactionType.income;
     final color = isIncome ? AppColors.success : AppColors.error;
 
-    return AppCard(
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isDark ? AppColors.borderDark : AppColors.borderLight,
+          width: 0.5,
+        ),
+      ),
       child: InkWell(
         onTap: onEdit,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -420,10 +437,10 @@ class _RecurringTransactionCard extends StatelessWidget {
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: color.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(
-                      isIncome ? Icons.arrow_upward : Icons.arrow_downward,
+                      isIncome ? CupertinoIcons.arrow_up : CupertinoIcons.arrow_down,
                       color: color,
                       size: 20,
                     ),
@@ -488,7 +505,7 @@ class _RecurringTransactionCard extends StatelessWidget {
                         activeColor: AppColors.primary,
                       ),
                       IconButton(
-                        icon: const Icon(Icons.delete_outline,
+                        icon: const Icon(CupertinoIcons.delete_solid,
                             color: AppColors.error),
                         onPressed: onDelete,
                       ),
@@ -518,7 +535,7 @@ class _RecurringTransactionCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
         label,
@@ -533,7 +550,7 @@ class _RecurringTransactionCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Text(
@@ -616,7 +633,7 @@ class _RecurringTransactionFormState extends State<_RecurringTransactionForm> {
     return Container(
       decoration: BoxDecoration(
         color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
       ),
       child: DraggableScrollableSheet(
         initialChildSize: 0.9,
@@ -710,33 +727,74 @@ class _RecurringTransactionFormState extends State<_RecurringTransactionForm> {
                   spacing: 8,
                   children: RecurringFrequency.values.map((f) {
                     final isSelected = _frequency == f;
-                    return ChoiceChip(
-                      selected: isSelected,
-                      onSelected: (selected) {
-                        if (selected) setState(() => _frequency = f);
-                      },
-                      label: Text(f.displayName),
+                    return GestureDetector(
+                      onTap: () => setState(() => _frequency = f),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: isSelected ? AppColors.primary.withOpacity(0.1) : AppColors.surfaceVariant(context),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: isSelected ? AppColors.primary : AppColors.border(context).withOpacity(0.5),
+                            width: isSelected ? 1.5 : 0.5,
+                          ),
+                        ),
+                        child: Text(f.displayName, style: AppTypography.labelMedium(color: isSelected ? AppColors.primary : null)),
+                      ),
                     );
                   }).toList(),
                 ),
                 const SizedBox(height: 20),
 
                 // Start Date
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text('Start Date'.tr()),
-                  subtitle: Text(
-                      '${_startDate.month}/${_startDate.day}/${_startDate.year}'),
-                  trailing: const Icon(Icons.calendar_today),
-                  onTap: () async {
-                    final date = await showDatePicker(
-                      context: context,
-                      initialDate: _startDate,
-                      firstDate: DateTime(2020),
-                      lastDate: DateTime(2030),
-                    );
-                    if (date != null) setState(() => _startDate = date);
-                  },
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 12),
+                  child: GestureDetector(
+                    onTap: () async {
+                      final date = await showCupertinoModalPopup<DateTime>(
+                        context: context,
+                        builder: (context) => Container(
+                          height: 300,
+                          padding: const EdgeInsets.only(top: 40),
+                          decoration: BoxDecoration(
+                            color: AppColors.surface(context),
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(14),
+                            ),
+                          ),
+                          child: CupertinoDatePicker(
+                            initialDateTime: _startDate,
+                            minimumDate: DateTime(2020),
+                            maximumDate: DateTime(2030),
+                            mode: CupertinoDatePickerMode.date,
+                            onDateTimeChanged: (date) {
+                              Navigator.pop(context, date);
+                            },
+                          ),
+                        ),
+                      );
+                      if (date != null) setState(() => _startDate = date);
+                    },
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Start Date'.tr(), style: AppTypography.bodyLarge(fontWeight: FontWeight.w600)),
+                              const SizedBox(height: 2),
+                              Text(
+                                '${_startDate.month}/${_startDate.day}/${_startDate.year}',
+                                style: AppTypography.bodySmall(color: AppColors.textTertiary(context)),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Icon(CupertinoIcons.calendar, size: 18, color: AppColors.textTertiary(context)),
+                      ],
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 16),
 
@@ -777,24 +835,56 @@ class _RecurringTransactionFormState extends State<_RecurringTransactionForm> {
                       onChanged: (v) => setState(() => _endCondition = v!),
                     ),
                     if (_endCondition == EndConditionType.onDate)
-                      ListTile(
-                        contentPadding:
-                            const EdgeInsets.only(left: 48, right: 16),
-                        title: Text('End Date'.tr()),
-                        subtitle: Text(_endDate != null
-                            ? '${_endDate!.month}/${_endDate!.day}/${_endDate!.year}'
-                            : 'Select date'.tr()),
-                        trailing: const Icon(Icons.calendar_today),
-                        onTap: () async {
-                          final date = await showDatePicker(
-                            context: context,
-                            initialDate: _endDate ??
-                                DateTime.now().add(const Duration(days: 365)),
-                            firstDate: _startDate,
-                            lastDate: DateTime(2030),
-                          );
-                          if (date != null) setState(() => _endDate = date);
-                        },
+                      Padding(
+                        padding: const EdgeInsets.only(left: 48, right: 16, top: 12, bottom: 12),
+                        child: GestureDetector(
+                          onTap: () async {
+                            final date = await showCupertinoModalPopup<DateTime>(
+                              context: context,
+                              builder: (context) => Container(
+                                height: 300,
+                                padding: const EdgeInsets.only(top: 40),
+                                decoration: BoxDecoration(
+                                  color: AppColors.surface(context),
+                                  borderRadius: const BorderRadius.vertical(
+                                    top: Radius.circular(14),
+                                  ),
+                                ),
+                                child: CupertinoDatePicker(
+                                  initialDateTime: _endDate ??
+                                      DateTime.now().add(const Duration(days: 365)),
+                                  minimumDate: _startDate,
+                                  maximumDate: DateTime(2030),
+                                  mode: CupertinoDatePickerMode.date,
+                                  onDateTimeChanged: (date) {
+                                    Navigator.pop(context, date);
+                                  },
+                                ),
+                              ),
+                            );
+                            if (date != null) setState(() => _endDate = date);
+                          },
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('End Date'.tr(), style: AppTypography.bodyLarge(fontWeight: FontWeight.w600)),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      _endDate != null
+                                          ? '${_endDate!.month}/${_endDate!.day}/${_endDate!.year}'
+                                          : 'Select date'.tr(),
+                                      style: AppTypography.bodySmall(color: AppColors.textTertiary(context)),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Icon(CupertinoIcons.calendar, size: 18, color: AppColors.textTertiary(context)),
+                            ],
+                          ),
+                        ),
                       ),
                   ],
                 ),
@@ -825,7 +915,7 @@ class _RecurringTransactionFormState extends State<_RecurringTransactionForm> {
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
           color: isSelected ? color.withValues(alpha: 0.1) : null,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: isSelected ? color : AppColors.border(context),
           ),
@@ -834,7 +924,7 @@ class _RecurringTransactionFormState extends State<_RecurringTransactionForm> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              isExpense ? Icons.arrow_downward : Icons.arrow_upward,
+              isExpense ? CupertinoIcons.arrow_down : CupertinoIcons.arrow_up,
               color: isSelected ? color : AppColors.textSecondary(context),
               size: 18,
             ),
@@ -854,22 +944,25 @@ class _RecurringTransactionFormState extends State<_RecurringTransactionForm> {
   void _save() {
     final amount = double.tryParse(_amountController.text);
     if (amount == null || amount <= 0) {
-      context.showSnackBar(
-        SnackBar(content: Text('Please enter a valid amount'.tr())),
+      CupertinoToast.show(
+        context,
+        message: 'Please enter a valid amount'.tr(),
       );
       return;
     }
 
     if (_titleController.text.isEmpty) {
-      context.showSnackBar(
-        SnackBar(content: Text('Please enter a title'.tr())),
+      CupertinoToast.show(
+        context,
+        message: 'Please enter a title'.tr(),
       );
       return;
     }
 
     if (_categoryController.text.isEmpty) {
-      context.showSnackBar(
-        SnackBar(content: Text('Please select a category'.tr())),
+      CupertinoToast.show(
+        context,
+        message: 'Please select a category'.tr(),
       );
       return;
     }

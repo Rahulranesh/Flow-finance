@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../core/services/sync/transaction_sync_engine.dart';
 import '../../../core/theme/app_colors.dart';
@@ -6,6 +7,7 @@ import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
 import 'package:flow_finance/core/utils/extensions.dart';
+import '../../../core/widgets/cupertino_toast.dart';
 import '../../../core/widgets/app_scaffold.dart';
 
 /// Screen for viewing sync status and history
@@ -97,7 +99,7 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    isSyncing ? Icons.sync : Icons.check_circle,
+                    isSyncing ? CupertinoIcons.refresh : CupertinoIcons.check_mark_circled_solid,
                     color: Colors.white,
                   ),
                 ),
@@ -161,7 +163,7 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
           children: [
             AppButton.primary(
               label: 'Sync Now'.tr(),
-              icon: Icons.sync,
+              icon: CupertinoIcons.refresh,
               onPressed: _syncEngine.isSyncing ? null : _syncNow,
               isLoading: _syncEngine.isSyncing,
             ),
@@ -171,7 +173,7 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
                 Expanded(
                   child: AppButton.secondary(
                     label: 'Incremental'.tr(),
-                    icon: Icons.update,
+                    icon: CupertinoIcons.refresh,
                     onPressed: _syncEngine.isSyncing ? null : _syncIncremental,
                     size: AppButtonSize.small,
                   ),
@@ -180,7 +182,7 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
                 Expanded(
                   child: AppButton.secondary(
                     label: 'Full Sync'.tr(),
-                    icon: Icons.cloud_download,
+                    icon: CupertinoIcons.cloud_download,
                     onPressed: _syncEngine.isSyncing ? null : _syncFull,
                     size: AppButtonSize.small,
                   ),
@@ -239,45 +241,57 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
 
     return AppCard(
       margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        leading: Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: GestureDetector(
+          onTap: () => _showAccountDetails(account),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(CupertinoIcons.building_2_fill, color: AppColors.primary),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(account['name'] as String, style: AppTypography.bodyLarge(fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 2),
+                    Text('${account['type']} • ${account['lastSync']}', style: AppTypography.bodySmall(color: AppColors.textTertiary(context))),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: statusColor,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          status.toUpperCase(),
+                          style: AppTypography.labelSmall(color: statusColor),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                account['balance'] as String,
+                style: AppTypography.bodyMedium(fontWeight: FontWeight.w600),
+              ),
+            ],
           ),
-          child: Icon(Icons.account_balance, color: AppColors.primary),
         ),
-        title: Text(account['name'] as String),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('${account['type']} • ${account['lastSync']}'),
-            Row(
-              children: [
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: statusColor,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  status.toUpperCase(),
-                  style: AppTypography.labelSmall(color: statusColor),
-                ),
-              ],
-            ),
-          ],
-        ),
-        trailing: Text(
-          account['balance'] as String,
-          style: AppTypography.bodyMedium(fontWeight: FontWeight.w600),
-        ),
-        onTap: () => _showAccountDetails(account),
       ),
     );
   }
@@ -293,7 +307,7 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
             child: Column(
               children: [
                 Icon(
-                  Icons.history,
+                  CupertinoIcons.clock,
                   size: 48,
                   color: AppColors.textSecondaryLight,
                 ),
@@ -313,27 +327,39 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
       children: history.take(10).map((record) {
         return AppCard(
           margin: const EdgeInsets.only(bottom: 8),
-          child: ListTile(
-            leading: Icon(
-              record.success ? Icons.check_circle : Icons.error,
-              color: record.success ? AppColors.success : AppColors.error,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Icon(
+                  record.success ? CupertinoIcons.check_mark_circled_solid : CupertinoIcons.exclamationmark_circle_fill,
+                  color: record.success ? AppColors.success : AppColors.error,
+                  size: 20,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        record.success ? 'Sync Successful'.tr() : 'Sync Failed'.tr(),
+                        style: AppTypography.bodyLarge(fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${_formatTime(record.timestamp)} • ${record.transactionsAdded} transactions',
+                        style: AppTypography.bodySmall(color: AppColors.textTertiary(context)),
+                      ),
+                    ],
+                  ),
+                ),
+                if (record.error != null)
+                  GestureDetector(
+                    onTap: () => _showErrorDetails(record.error!),
+                    child: Icon(CupertinoIcons.exclamationmark_circle, color: AppColors.error),
+                  ),
+              ],
             ),
-            title: Text(
-              record.success ? 'Sync Successful'.tr() : 'Sync Failed'.tr(),
-              style: AppTypography.bodyMedium(),
-            ),
-            subtitle: Text(
-              '${_formatTime(record.timestamp)} • ${record.transactionsAdded} transactions',
-              style: AppTypography.labelSmall(
-                color: AppColors.textSecondaryLight,
-              ),
-            ),
-            trailing: record.error != null
-                ? IconButton(
-                    icon: const Icon(Icons.error_outline),
-                    onPressed: () => _showErrorDetails(record.error!),
-                  )
-                : null,
           ),
         );
       }).toList(),
@@ -356,16 +382,19 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
     final result = await _syncEngine.syncAllSources(userId);
 
     if (mounted) {
-      context.showSnackBar(
-        SnackBar(
-          content: Text(
-            result.success
-                ? 'Sync complete! Added {} transactions'.tr(args: [result.totalTransactionsAdded.toString()])
-                : 'Sync failed: {error}'.tr(namedArgs: {'error': result.error ?? ''}),
-          ),
-          backgroundColor: result.success ? AppColors.success : AppColors.error,
-        ),
-      );
+      if (result.success) {
+        CupertinoToast.show(
+          context,
+          message: 'Sync complete! Added {} transactions'.tr(args: [result.totalTransactionsAdded.toString()]),
+          type: CupertinoToastType.success,
+        );
+      } else {
+        CupertinoToast.show(
+          context,
+          message: 'Sync failed: {error}'.tr(namedArgs: {'error': result.error ?? ''}),
+          type: CupertinoToastType.error,
+        );
+      }
     }
   }
 
@@ -380,7 +409,7 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
   }
 
   void _showAccountDetails(Map<String, dynamic> account) {
-    showModalBottomSheet(
+    showCupertinoModalPopup(
       context: context,
       builder: (context) => Container(
         padding: const EdgeInsets.all(20),
@@ -457,24 +486,25 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
   }
 
   void _showDisconnectDialog(Map<String, dynamic> account) {
-    showDialog(
+    showCupertinoDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => CupertinoAlertDialog(
         title: Text('Disconnect Account?'.tr()),
         content: Text(
           'Are you sure you want to disconnect {accountName}? Your existing transactions will be preserved.'.tr(namedArgs: {'accountName': account['name'] as String}),
         ),
         actions: [
-          TextButton(
+          CupertinoDialogAction(
             onPressed: () => Navigator.pop(context),
             child: Text('Cancel'.tr()),
           ),
-          AppButton.primary(
-            label: 'Disconnect'.tr(),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
             onPressed: () {
               Navigator.pop(context);
               // Implement disconnect logic
             },
+            child: Text('Disconnect'.tr()),
           ),
         ],
       ),
@@ -482,13 +512,13 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
   }
 
   void _showErrorDetails(String error) {
-    showDialog(
+    showCupertinoDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => CupertinoAlertDialog(
         title: Text('Sync Error'.tr()),
         content: Text(error),
         actions: [
-          TextButton(
+          CupertinoDialogAction(
             onPressed: () => Navigator.pop(context),
             child: Text('OK'.tr()),
           ),

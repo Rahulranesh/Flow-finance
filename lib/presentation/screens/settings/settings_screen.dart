@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:local_auth/local_auth.dart';
@@ -9,7 +10,7 @@ import '../../../core/services/currency_formatter.dart';
 import '../../../core/services/data_export_service.dart';
 import '../../../core/theme/theme.dart';
 import '../../../core/utils/extensions.dart';
-import '../../../core/widgets/widgets.dart';
+import '../../../core/widgets/cupertino_toast.dart';
 import '../../../data/database/database.dart';
 import '../../../data/models/currency_model.dart';
 import '../../../data/models/goal_model.dart';
@@ -42,30 +43,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final emailController =
         TextEditingController(text: controller.settings.userEmail ?? '');
 
-    await showDialog<void>(
+    await showCupertinoDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => CupertinoAlertDialog(
         title: Text('Edit Profile'.tr()),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(
+            CupertinoTextField(
               controller: nameController,
-              decoration: InputDecoration(labelText: 'Name'.tr()),
+              placeholder: 'Name'.tr(),
             ),
             const SizedBox(height: 12),
-            TextField(
+            CupertinoTextField(
               controller: emailController,
-              decoration: InputDecoration(labelText: 'Email'.tr()),
+              placeholder: 'Email'.tr(),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
+        actions: <Widget>[
+          CupertinoDialogAction(
             child: Text('Cancel'.tr()),
+            onPressed: () => Navigator.pop(context),
           ),
-          TextButton(
+          CupertinoDialogAction(
+            child: Text('Save'.tr()),
             onPressed: () async {
               await controller.updateProfile(
                 name: nameController.text.trim(),
@@ -73,7 +75,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               );
               if (mounted) Navigator.pop(context);
             },
-            child: Text('Save'.tr()),
           ),
         ],
       ),
@@ -81,22 +82,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _pickCurrency(SettingsController controller) async {
-    final selected = await showModalBottomSheet<String>(
+    final selected = await showCupertinoModalPopup<String>(
       context: context,
-      showDragHandle: true,
-      builder: (context) => SafeArea(
-        child: ListView(
-          shrinkWrap: true,
-          children: SupportedCurrencies.all.map((currency) {
-            return ListTile(
-              title: Text('${currency.code} (${currency.symbol})'),
-              subtitle: Text(currency.name),
-              trailing: controller.currencyCode == currency.code
-                  ? const Icon(Icons.check)
-                  : null,
-              onTap: () => Navigator.pop(context, currency.code),
-            );
-          }).toList(),
+      builder: (context) => CupertinoActionSheet(
+        title: Text('Select Currency'.tr()),
+        actions: SupportedCurrencies.all.map((currency) {
+          return CupertinoActionSheetAction(
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text('${currency.code} (${currency.symbol})'),
+                ),
+                if (controller.currencyCode == currency.code)
+                  const Icon(CupertinoIcons.checkmark,
+                      color: CupertinoColors.activeBlue),
+              ],
+            ),
+            onPressed: () => Navigator.pop(context, currency.code),
+          );
+        }).toList(),
+        cancelButton: CupertinoActionSheetAction(
+          isDefaultAction: true,
+          child: Text('Cancel'.tr()),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
     );
@@ -110,21 +118,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
       'en': 'English',
       'ta': 'Tamil',
     };
-    final selected = await showModalBottomSheet<String>(
+    final selected = await showCupertinoModalPopup<String>(
       context: context,
-      showDragHandle: true,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: languages.entries.map((entry) {
-            return ListTile(
-              title: Text(entry.value.tr()),
-              trailing: controller.languageCode == entry.key
-                  ? const Icon(Icons.check)
-                  : null,
-              onTap: () => Navigator.pop(context, entry.key),
-            );
-          }).toList(),
+      builder: (context) => CupertinoActionSheet(
+        title: Text('Select Language'.tr()),
+        actions: languages.entries.map((entry) {
+          return CupertinoActionSheetAction(
+            child: Row(
+              children: [
+                Expanded(child: Text(entry.value.tr())),
+                if (controller.languageCode == entry.key)
+                  const Icon(CupertinoIcons.checkmark,
+                      color: CupertinoColors.activeBlue),
+              ],
+            ),
+            onPressed: () => Navigator.pop(context, entry.key),
+          );
+        }).toList(),
+        cancelButton: CupertinoActionSheetAction(
+          isDefaultAction: true,
+          child: Text('Cancel'.tr()),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
     );
@@ -143,12 +157,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final available = await _localAuth.canCheckBiometrics;
       if (!supported || !available) {
         if (mounted) {
-          context.showSnackBar(
-            SnackBar(
-              content: Text(
-                'Biometric authentication is not available on this device'.tr(),
-              ),
-            ),
+          CupertinoToast.show(
+            context,
+            message: 'Biometric authentication is not available on this device'.tr(),
           );
         }
         return;
@@ -174,318 +185,337 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _openAbout() async {
     final info = await PackageInfo.fromPlatform();
     if (!mounted) return;
-    showAboutDialog(
+    showCupertinoDialog<void>(
       context: context,
-      applicationName: 'Flow Finance'.tr(),
-      applicationVersion: info.version,
-      children: [
-        Text(
-          'Track expenses, budgets, reports, imports, and family finance workflows.'
-              .tr(),
+      builder: (context) => CupertinoAlertDialog(
+        title: Text('Flow Finance'.tr()),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Version: ${info.version}'),
+            const SizedBox(height: 8),
+            Text(
+              'Track expenses, budgets, reports, imports, and family finance workflows.'
+                  .tr(),
+            ),
+          ],
         ),
-      ],
+        actions: <Widget>[
+          CupertinoDialogAction(
+            child: Text('OK'.tr()),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ],
+      ),
     );
   }
 
   Future<void> _resetProfile(SettingsController controller) async {
     await controller.updateProfile(name: '', email: '');
     if (mounted) {
-      context.showSnackBar(SnackBar(content: Text('Profile reset'.tr())));
+      CupertinoToast.show(context, message: 'Profile reset'.tr());
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<SettingsController>(
-      builder: (context, controller, child) => AppScrollScaffold(
-        title: 'Settings'.tr(),
-        slivers: [
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      builder: (context, controller, child) => Scaffold(
+        backgroundColor: AppColors.background(context),
+        appBar: AppBar(
+          title: Text('Settings'.tr()),
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          surfaceTintColor: Colors.transparent,
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _ProfileSection(
+                name: controller.settings.userName,
+                email: controller.settings.userEmail,
+                onEdit: () => _editProfile(controller),
+              ),
+              const SizedBox(height: 32),
+              _SettingsSection(
+                title: 'Appearance'.tr(),
                 children: [
-                  _ProfileSection(
-                    name: controller.settings.userName,
-                    email: controller.settings.userEmail,
-                    onEdit: () => _editProfile(controller),
+                  _ThemeSelector(
+                    selectedTheme: controller.themeMode,
+                    onThemeSelected: (mode) =>
+                        controller.updateThemeMode(mode),
                   ),
-                  const SizedBox(height: 32),
-                  _SettingsSection(
-                    title: 'Appearance'.tr(),
-                    children: [
-                      _ThemeSelector(
-                        selectedTheme: controller.themeMode,
-                        onThemeSelected: (mode) =>
-                            controller.updateThemeMode(mode),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  _SettingsSection(
-                    title: 'Preferences'.tr(),
-                    children: [
-                      _SettingsSwitchTile(
-                        icon: Icons.notifications,
-                        iconColor: AppColors.warning,
-                        title: 'Notifications'.tr(),
-                        subtitle: 'Budget alerts and reminders'.tr(),
-                        value: controller.settings.notificationsEnabled,
-                        onChanged: controller.setNotificationsEnabled,
-                      ),
-                      const _SettingsDivider(),
-                      _SettingsSwitchTile(
-                        icon: Icons.fingerprint,
-                        iconColor: AppColors.info,
-                        title: 'Biometric Lock'.tr(),
-                        subtitle:
-                            'Require device biometrics for sensitive actions'
-                                .tr(),
-                        value: controller.settings.biometricEnabled,
-                        onChanged: (value) =>
-                            _toggleBiometric(controller, value),
-                      ),
-                      const _SettingsDivider(),
-                      _SettingsTile(
-                        icon: Icons.language,
-                        iconColor: AppColors.success,
-                        title: 'Language'.tr(),
-                        subtitle: controller.languageCode == 'ta'
-                            ? 'Tamil'.tr()
-                            : 'English'.tr(),
-                        onTap: () => _pickLanguage(controller),
-                      ),
-                      const _SettingsDivider(),
-                      _SettingsTile(
-                        icon: Icons.currency_rupee,
-                        iconColor: AppColors.income,
-                        title: 'Currency'.tr(),
-                        subtitle:
-                            '${controller.currencyCode} (${CurrencyFormatter.currentCurrency.symbol})',
-                        onTap: () => _pickCurrency(controller),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  _SettingsSection(
-                    title: 'Accounts & Features'.tr(),
-                    children: [
-                      _SettingsTile(
-                        icon: Icons.account_balance_wallet,
-                        iconColor: AppColors.income,
-                        title: 'Wallets & Accounts'.tr(),
-                        subtitle: 'Manage your cash and bank accounts'.tr(),
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const WalletsScreen()),
-                        ),
-                      ),
-                      const _SettingsDivider(),
-                      _SettingsTile(
-                        icon: Icons.repeat,
-                        iconColor: AppColors.primary,
-                        title: 'Recurring Transactions'.tr(),
-                        subtitle: 'Manage subscriptions and repeat bills'.tr(),
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const RecurringTransactionsScreen()),
-                        ),
-                      ),
-                      const _SettingsDivider(),
-                      _SettingsTile(
-                        icon: Icons.account_balance,
-                        iconColor: AppColors.info,
-                        title: 'Bank Integration'.tr(),
-                        subtitle: 'Connect your real bank accounts'.tr(),
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const BankConnectScreen()),
-                        ),
-                      ),
-                      const _SettingsDivider(),
-                      _SettingsTile(
-                        icon: Icons.auto_awesome,
-                        iconColor: AppColors.warning,
-                        title: 'Automation & Rules'.tr(),
-                        subtitle: 'Smart routing and categorization'.tr(),
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const AutomationScreen()),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  _SettingsSection(
-                    title: 'Sync & Integration'.tr(),
-                    children: [
-                      _SettingsTile(
-                        icon: Icons.sms,
-                        iconColor: AppColors.primary,
-                        title: 'SMS Sync'.tr(),
-                        subtitle:
-                            'Import bank and UPI transactions from SMS'.tr(),
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const SmsSyncScreen()),
-                        ),
-                      ),
-                      const _SettingsDivider(),
-                      _SettingsTile(
-                        icon: Icons.payment,
-                        iconColor: AppColors.secondary,
-                        title: 'Google Pay Sync'.tr(),
-                        subtitle:
-                            'Import Google Pay transactions from SMS'.tr(),
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const GooglePaySyncScreen(),
-                          ),
-                        ),
-                      ),
-                      const _SettingsDivider(),
-                      _SettingsTile(
-                        icon: Icons.flag,
-                        iconColor: AppColors.success,
-                        title: 'Goals'.tr(),
-                        subtitle: 'Create and track savings goals'.tr(),
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const GoalsScreen()),
-                        ),
-                      ),
-                      const _SettingsDivider(),
-                      _SettingsTile(
-                        icon: Icons.family_restroom,
-                        iconColor: AppColors.warning,
-                        title: 'Family Mode'.tr(),
-                        subtitle:
-                            'Shared budgets and expense collaboration'.tr(),
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const FamilyScreen()),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  _SettingsSection(
-                    title: 'Data'.tr(),
-                    children: [
-                      _SettingsTile(
-                        icon: Icons.backup,
-                        iconColor: AppColors.primary,
-                        title: 'Backup & Share'.tr(),
-                        subtitle: 'Create a portable JSON backup'.tr(),
-                        onTap: () async {
-                          await BackupService(context.read<AppDatabase>())
-                              .shareCompressedBackup();
-                        },
-                      ),
-                      const _SettingsDivider(),
-                      _SettingsTile(
-                        icon: Icons.table_chart,
-                        iconColor: AppColors.secondary,
-                        title: 'Export CSV'.tr(),
-                        subtitle:
-                            'Share all transactions as spreadsheet data'.tr(),
-                        onTap: () => _shareExport(ExportFormat.csv),
-                      ),
-                      const _SettingsDivider(),
-                      _SettingsTile(
-                        icon: Icons.picture_as_pdf,
-                        iconColor: AppColors.warning,
-                        title: 'Export PDF'.tr(),
-                        subtitle: 'Share a printable finance report'.tr(),
-                        onTap: () => _shareExport(ExportFormat.pdf),
-                      ),
-                      const _SettingsDivider(),
-                      _SettingsTile(
-                        icon: Icons.delete_outline,
-                        iconColor: AppColors.expense,
-                        title: 'Clear Data'.tr(),
-                        subtitle:
-                            'Delete transactions, budgets, and custom data'
-                                .tr(),
-                        onTap: () async {
-                          await BackupService(context.read<AppDatabase>())
-                              .clearAllData();
-                          await context
-                              .read<TransactionBloc>()
-                              .loadTransactions();
-                          await context.read<BudgetBloc>().loadBudgets();
-                          await context
-                              .read<GoalRepository>()
-                              .saveGoals(const <Goal>[]);
-                          if (mounted) {
-                            context.showSnackBar(
-                              SnackBar(content: Text('App data cleared'.tr())),
-                            );
-                          }
-                        },
-                        isDestructive: true,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  _SettingsSection(
-                    title: 'About'.tr(),
-                    children: [
-                      _SettingsTile(
-                        icon: Icons.info,
-                        iconColor: AppColors.info,
-                        title: 'About Flow Finance'.tr(),
-                        subtitle: 'Version and app details'.tr(),
-                        onTap: _openAbout,
-                      ),
-                      const _SettingsDivider(),
-                      _SettingsTile(
-                        icon: Icons.star,
-                        iconColor: AppColors.warning,
-                        title: 'Rate App'.tr(),
-                        subtitle: 'Open your app store review page'.tr(),
-                        onTap: () async {
-                          await launchUrl(
-                            Uri.parse('https://play.google.com/store'),
-                            mode: LaunchMode.externalApplication,
-                          );
-                        },
-                      ),
-                      const _SettingsDivider(),
-                      _SettingsTile(
-                        icon: Icons.help_outline,
-                        iconColor: AppColors.success,
-                        title: 'Help & Support'.tr(),
-                        subtitle: 'Contact support via email'.tr(),
-                        onTap: () async {
-                          await launchUrl(
-                            Uri.parse('mailto:support@flowfinance.app'),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 32),
-                  AppButton.secondary(
-                    label: 'Reset Profile'.tr(),
-                    onPressed: () => _resetProfile(controller),
-                    expanded: true,
-                  ),
-                  const SizedBox(height: 40),
                 ],
               ),
-            ),
+              const SizedBox(height: 24),
+              _SettingsSection(
+                title: 'Preferences'.tr(),
+                children: [
+                  _SettingsSwitchTile(
+                    icon: CupertinoIcons.bell,
+                    iconColor: AppColors.warning,
+                    title: 'Notifications'.tr(),
+                    subtitle: 'Budget alerts and reminders'.tr(),
+                    value: controller.settings.notificationsEnabled,
+                    onChanged: controller.setNotificationsEnabled,
+                  ),
+                  const _SettingsDivider(),
+                  _SettingsSwitchTile(
+                    icon: Icons.fingerprint,
+                    iconColor: AppColors.info,
+                    title: 'Biometric Lock'.tr(),
+                    subtitle:
+                        'Require device biometrics for sensitive actions'
+                            .tr(),
+                    value: controller.settings.biometricEnabled,
+                    onChanged: (value) =>
+                        _toggleBiometric(controller, value),
+                  ),
+                  const _SettingsDivider(),
+                  _SettingsTile(
+                    icon: CupertinoIcons.globe,
+                    iconColor: AppColors.success,
+                    title: 'Language'.tr(),
+                    subtitle: controller.languageCode == 'ta'
+                        ? 'Tamil'.tr()
+                        : 'English'.tr(),
+                    onTap: () => _pickLanguage(controller),
+                  ),
+                  const _SettingsDivider(),
+                  _SettingsTile(
+                    icon: Icons.currency_rupee,
+                    iconColor: AppColors.income,
+                    title: 'Currency'.tr(),
+                    subtitle:
+                        '${controller.currencyCode} (${CurrencyFormatter.currentCurrency.symbol})',
+                    onTap: () => _pickCurrency(controller),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              _SettingsSection(
+                title: 'Accounts & Features'.tr(),
+                children: [
+                  _SettingsTile(
+                    icon: CupertinoIcons.bag,
+                    iconColor: AppColors.income,
+                    title: 'Wallets & Accounts'.tr(),
+                    subtitle: 'Manage your cash and bank accounts'.tr(),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const WalletsScreen()),
+                    ),
+                  ),
+                  const _SettingsDivider(),
+                  _SettingsTile(
+                    icon: CupertinoIcons.repeat,
+                    iconColor: AppColors.primary,
+                    title: 'Recurring Transactions'.tr(),
+                    subtitle: 'Manage subscriptions and repeat bills'.tr(),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const RecurringTransactionsScreen()),
+                    ),
+                  ),
+                  const _SettingsDivider(),
+                  _SettingsTile(
+                    icon: CupertinoIcons.building_2_fill,
+                    iconColor: AppColors.info,
+                    title: 'Bank Integration'.tr(),
+                    subtitle: 'Connect your real bank accounts'.tr(),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const BankConnectScreen()),
+                    ),
+                  ),
+                  const _SettingsDivider(),
+                  _SettingsTile(
+                    icon: Icons.auto_awesome,
+                    iconColor: AppColors.warning,
+                    title: 'Automation & Rules'.tr(),
+                    subtitle: 'Smart routing and categorization'.tr(),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const AutomationScreen()),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              _SettingsSection(
+                title: 'Sync & Integration'.tr(),
+                children: [
+                  _SettingsTile(
+                    icon: CupertinoIcons.chat_bubble,
+                    iconColor: AppColors.primary,
+                    title: 'SMS Sync'.tr(),
+                    subtitle:
+                        'Import bank and UPI transactions from SMS'.tr(),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const SmsSyncScreen()),
+                    ),
+                  ),
+                  const _SettingsDivider(),
+                  _SettingsTile(
+                    icon: CupertinoIcons.creditcard,
+                    iconColor: AppColors.secondary,
+                    title: 'Google Pay Sync'.tr(),
+                    subtitle:
+                        'Import Google Pay transactions from SMS'.tr(),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const GooglePaySyncScreen(),
+                      ),
+                    ),
+                  ),
+                  const _SettingsDivider(),
+                  _SettingsTile(
+                    icon: CupertinoIcons.flag,
+                    iconColor: AppColors.success,
+                    title: 'Goals'.tr(),
+                    subtitle: 'Create and track savings goals'.tr(),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const GoalsScreen()),
+                    ),
+                  ),
+                  const _SettingsDivider(),
+                  _SettingsTile(
+                    icon: CupertinoIcons.person_2,
+                    iconColor: AppColors.warning,
+                    title: 'Family Mode'.tr(),
+                    subtitle:
+                        'Shared budgets and expense collaboration'.tr(),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const FamilyScreen()),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              _SettingsSection(
+                title: 'Data'.tr(),
+                children: [
+                  _SettingsTile(
+                    icon: CupertinoIcons.cloud,
+                    iconColor: AppColors.primary,
+                    title: 'Backup & Share'.tr(),
+                    subtitle: 'Create a portable JSON backup'.tr(),
+                    onTap: () async {
+                      await BackupService(context.read<AppDatabase>())
+                          .shareCompressedBackup();
+                    },
+                  ),
+                  const _SettingsDivider(),
+                  _SettingsTile(
+                    icon: CupertinoIcons.doc,
+                    iconColor: AppColors.secondary,
+                    title: 'Export CSV'.tr(),
+                    subtitle:
+                        'Share all transactions as spreadsheet data'.tr(),
+                    onTap: () => _shareExport(ExportFormat.csv),
+                  ),
+                  const _SettingsDivider(),
+                  _SettingsTile(
+                    icon: CupertinoIcons.doc_richtext,
+                    iconColor: AppColors.warning,
+                    title: 'Export PDF'.tr(),
+                    subtitle: 'Share a printable finance report'.tr(),
+                    onTap: () => _shareExport(ExportFormat.pdf),
+                  ),
+                  const _SettingsDivider(),
+                  _SettingsTile(
+                    icon: CupertinoIcons.delete,
+                    iconColor: AppColors.expense,
+                    title: 'Clear Data'.tr(),
+                    subtitle:
+                        'Delete transactions, budgets, and custom data'
+                            .tr(),
+                    onTap: () async {
+                      await BackupService(context.read<AppDatabase>())
+                          .clearAllData();
+                      await context
+                          .read<TransactionBloc>()
+                          .loadTransactions();
+                      await context.read<BudgetBloc>().loadBudgets();
+                      await context
+                          .read<GoalRepository>()
+                          .saveGoals(const <Goal>[]);
+                      if (mounted) {
+                        CupertinoToast.show(
+                          context,
+                          message: 'App data cleared'.tr(),
+                        );
+                      }
+                    },
+                    isDestructive: true,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              _SettingsSection(
+                title: 'About'.tr(),
+                children: [
+                  _SettingsTile(
+                    icon: CupertinoIcons.info,
+                    iconColor: AppColors.info,
+                    title: 'About Flow Finance'.tr(),
+                    subtitle: 'Version and app details'.tr(),
+                    onTap: _openAbout,
+                  ),
+                  const _SettingsDivider(),
+                  _SettingsTile(
+                    icon: CupertinoIcons.star,
+                    iconColor: AppColors.warning,
+                    title: 'Rate App'.tr(),
+                    subtitle: 'Open your app store review page'.tr(),
+                    onTap: () async {
+                      await launchUrl(
+                        Uri.parse('https://play.google.com/store'),
+                        mode: LaunchMode.externalApplication,
+                      );
+                    },
+                  ),
+                  const _SettingsDivider(),
+                  _SettingsTile(
+                    icon: CupertinoIcons.question_circle,
+                    iconColor: AppColors.success,
+                    title: 'Help & Support'.tr(),
+                    subtitle: 'Contact support via email'.tr(),
+                    onTap: () async {
+                      await launchUrl(
+                        Uri.parse('mailto:support@flowfinance.app'),
+                      );
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                child: CupertinoButton(
+                  color: AppColors.surfaceVariant(context),
+                  borderRadius: BorderRadius.circular(10),
+                  child: Text('Reset Profile'.tr()),
+                  onPressed: () => _resetProfile(controller),
+                ),
+              ),
+              const SizedBox(height: 40),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -518,56 +548,68 @@ class _ProfileSection extends StatelessWidget {
         .map((part) => part[0].toUpperCase())
         .join();
 
-    return AppCard(
-      variant: AppCardVariant.elevated,
-      child: Row(
-        children: [
-          Container(
-            width: 64,
-            height: 64,
+    return Row(
+      children: [
+        Container(
+          width: 64,
+          height: 64,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [AppColors.primary, AppColors.primaryDark],
+            ),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Center(
+            child: Text(
+              initials.isEmpty ? 'U'.tr() : initials,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                resolvedName,
+                style: AppTypography.titleLarge(),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                resolvedEmail,
+                style: AppTypography.bodyMedium(
+                  color: AppColors.textSecondary(context),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+        GestureDetector(
+          onTap: onEdit,
+          child: Container(
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppColors.primary, AppColors.primaryDark],
-              ),
-              borderRadius: BorderRadius.circular(20),
+              color: AppColors.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
             ),
-            child: Center(
-              child: Text(
-                initials.isEmpty ? 'U'.tr() : initials,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+            child: const Icon(
+              CupertinoIcons.pencil,
+              color: AppColors.primary,
+              size: 20,
             ),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  resolvedName,
-                  style: AppTypography.titleLarge(),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  resolvedEmail,
-                  style: AppTypography.bodyMedium(
-                    color: AppColors.textSecondary(context),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          AppIconButton(
-            icon: Icons.edit,
-            onPressed: onEdit,
-            variant: AppIconButtonVariant.filled,
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -587,19 +629,20 @@ class _SettingsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: AppTypography.labelLarge(
-            color: AppColors.textSecondary(context),
+        Padding(
+          padding: const EdgeInsets.only(left: 4),
+          child: Text(
+            title,
+            style: AppTypography.labelLarge(
+              color: AppColors.textSecondary(context),
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
         const SizedBox(height: 12),
-        AppCard(
-          variant: AppCardVariant.flat,
-          padding: EdgeInsets.zero,
-          child: Column(
-            children: children,
-          ),
+        Column(
+          children: children,
         ),
       ],
     );
@@ -626,45 +669,63 @@ class _SettingsTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: iconColor.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Icon(
-          icon,
-          color: iconColor,
-          size: 20,
-        ),
-      ),
-      title: Text(
-        title,
-        style: AppTypography.bodyLarge(
-          color: isDestructive ? AppColors.error : null,
-          fontWeight: FontWeight.w600,
-        ),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      subtitle: subtitle != null
-          ? Text(
-              subtitle!,
-              style: AppTypography.bodySmall(
-                color: AppColors.textTertiary(context),
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            )
-          : null,
-      trailing: Icon(
-        Icons.chevron_right,
-        color: AppColors.textTertiary(context),
-      ),
+    return GestureDetector(
       onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: iconColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                icon,
+                color: iconColor,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: AppTypography.bodyLarge(
+                      color: isDestructive ? AppColors.error : null,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (subtitle != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Text(
+                        subtitle!,
+                        style: AppTypography.bodySmall(
+                          color: AppColors.textTertiary(context),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Icon(
+              CupertinoIcons.chevron_right,
+              color: AppColors.textTertiary(context),
+              size: 18,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -689,42 +750,61 @@ class _SettingsSwitchTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: iconColor.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Icon(
-          icon,
-          color: iconColor,
-          size: 20,
-        ),
-      ),
-      title: Text(
-        title,
-        style: AppTypography.bodyLarge(
-          fontWeight: FontWeight.w600,
-        ),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      subtitle: subtitle != null
-          ? Text(
-              subtitle!,
-              style: AppTypography.bodySmall(
-                color: AppColors.textTertiary(context),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: () => onChanged(!value),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: iconColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            )
-          : null,
-      trailing: Switch(
-        value: value,
-        onChanged: onChanged,
+              child: Icon(
+                icon,
+                color: iconColor,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: AppTypography.bodyLarge(
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (subtitle != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Text(
+                        subtitle!,
+                        style: AppTypography.bodySmall(
+                          color: AppColors.textTertiary(context),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            CupertinoSwitch(
+              value: value,
+              onChanged: onChanged,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -756,7 +836,7 @@ class _ThemeSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themes = ThemeMode.values;
+    const themes = ThemeMode.values;
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -772,7 +852,7 @@ class _ThemeSelector extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(
-                  Icons.dark_mode,
+                  CupertinoIcons.moon_fill,
                   color: AppColors.primary,
                   size: 20,
                 ),
@@ -787,6 +867,8 @@ class _ThemeSelector extends StatelessWidget {
                       style: AppTypography.bodyLarge(
                         fontWeight: FontWeight.w600,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -794,6 +876,8 @@ class _ThemeSelector extends StatelessWidget {
                       style: AppTypography.bodySmall(
                         color: AppColors.textTertiary(context),
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
@@ -823,6 +907,8 @@ class _ThemeSelector extends StatelessWidget {
                         style: AppTypography.labelMedium(
                           color: isSelected ? Colors.white : null,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ),

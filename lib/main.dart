@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -8,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 // Core
 import 'core/services/notification_service.dart';
 import 'core/services/firebase_notification_service.dart';
+import 'core/services/admob_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/app_colors.dart';
 import 'core/services/smart_rules_engine.dart';
@@ -185,6 +187,12 @@ class _AppInitializerState extends State<AppInitializer> {
         debugPrint('Notification initialization failed: $e');
       }
 
+      try {
+        await AdMobService().initialize();
+      } catch (e) {
+        debugPrint('AdMob initialization failed: $e');
+      }
+
       // Load initial data
       final transactionBloc = context.read<TransactionBloc>();
       final budgetBloc = context.read<BudgetBloc>();
@@ -235,6 +243,7 @@ class _AppInitializerState extends State<AppInitializer> {
     context.watch<SettingsController>();
     if (_isLoading) {
       return Scaffold(
+        backgroundColor: AppColors.backgroundLight,
         body: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -250,7 +259,6 @@ class _AppInitializerState extends State<AppInitializer> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Animated logo
                 TweenAnimationBuilder<double>(
                   tween: Tween(begin: 0.8, end: 1.0),
                   duration: const Duration(milliseconds: 800),
@@ -266,16 +274,9 @@ class _AppInitializerState extends State<AppInitializer> {
                             colors: [AppColors.primary, AppColors.secondary],
                           ),
                           borderRadius: BorderRadius.circular(24),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.primary.withOpacity(0.3),
-                              blurRadius: 20,
-                              offset: const Offset(0, 10),
-                            ),
-                          ],
                         ),
                         child: const Icon(
-                          Icons.account_balance_wallet,
+                          CupertinoIcons.money_dollar_circle_fill,
                           color: Colors.white,
                           size: 48,
                         ),
@@ -285,22 +286,14 @@ class _AppInitializerState extends State<AppInitializer> {
                 ),
                 const SizedBox(height: 32),
                 Text(
-                  'Flow Finance'.tr(),
+                  'Flow Finance',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: AppColors.primary,
                       ),
                 ),
                 const SizedBox(height: 24),
-                const SizedBox(
-                  width: 40,
-                  height: 40,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 3,
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(AppColors.primary),
-                  ),
-                ),
+                const CupertinoActivityIndicator(radius: 14),
               ],
             ),
           ),
@@ -314,8 +307,8 @@ class _AppInitializerState extends State<AppInitializer> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.error_outline,
+              const Icon(
+                CupertinoIcons.exclamationmark_circle,
                 size: 64,
                 color: AppColors.error,
               ),

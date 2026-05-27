@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../core/theme/theme.dart';
 import '../../../core/widgets/widgets.dart';
@@ -63,12 +64,10 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
       _showImportSetupIfNeeded(force: true);
     } else {
       if (mounted) {
-        context.showSnackBar(
-          SnackBar(
-            content:
-                Text('SMS permissions are required to sync transactions'.tr()),
-          ),
-        );
+        CupertinoToast.show(
+        context,
+        message: 'SMS permissions are required to sync transactions'.tr(),
+      );
       }
     }
   }
@@ -95,7 +94,7 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
             colorScheme: ColorScheme.light(
               primary: AppColors.primary,
               onPrimary: Colors.white,
-              surface: Colors.white,
+              surface: AppColors.surfaceLight,
               onSurface: Colors.black,
             ),
           ),
@@ -112,12 +111,9 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
   }
 
   Future<void> _showImportSetupSheet() async {
-    await showModalBottomSheet<void>(
+    await showCupertinoModalPopup<void>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (context) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
         final textSecondary = AppColors.textSecondary(context);
 
         return StatefulBuilder(
@@ -141,9 +137,9 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
               child: Container(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
                 decoration: BoxDecoration(
-                  color: isDark ? AppColors.surfaceDark : Colors.white,
+                  color: AppColors.surface(context),
                   borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(28),
+                    top: Radius.circular(10),
                   ),
                 ),
                 child: Column(
@@ -156,7 +152,7 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
                         height: 5,
                         decoration: BoxDecoration(
                           color: textSecondary.withOpacity(0.25),
-                          borderRadius: BorderRadius.circular(999),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                       ),
                     ),
@@ -202,7 +198,7 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
                         await _selectDateRange();
                         setSheetState(() {});
                       },
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(10),
                       child: Ink(
                         padding: const EdgeInsets.all(18),
                         decoration: BoxDecoration(
@@ -212,7 +208,7 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
                               AppColors.secondary.withOpacity(0.12),
                             ],
                           ),
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(10),
                           border: Border.all(
                             color: AppColors.primary.withOpacity(0.25),
                           ),
@@ -224,10 +220,10 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
                               height: 48,
                               decoration: BoxDecoration(
                                 color: AppColors.primary.withOpacity(0.14),
-                                borderRadius: BorderRadius.circular(14),
+                                borderRadius: BorderRadius.circular(10),
                               ),
                               child: Icon(
-                                Icons.calendar_month_rounded,
+                                CupertinoIcons.calendar,
                                 color: AppColors.primary,
                               ),
                             ),
@@ -255,7 +251,7 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
                               ),
                             ),
                             Icon(
-                              Icons.arrow_forward_ios_rounded,
+                              CupertinoIcons.chevron_forward,
                               size: 16,
                               color: textSecondary,
                             ),
@@ -270,7 +266,7 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
                         Navigator.of(context).pop();
                         await _syncTransactions();
                       },
-                      icon: Icons.sync_rounded,
+                      icon: CupertinoIcons.refresh,
                       expanded: true,
                     ),
                   ],
@@ -285,11 +281,10 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
 
   Future<void> _syncTransactions() async {
     if (_dateRange == null) {
-      context.showSnackBar(
-        SnackBar(
-          content: Text('Please select a date range first'.tr()),
-          backgroundColor: AppColors.warning,
-        ),
+      CupertinoToast.show(
+        context,
+        message: 'Please select a date range first'.tr(),
+        type: CupertinoToastType.warning,
       );
       return;
     }
@@ -310,18 +305,14 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
       });
 
       if (mounted) {
-        context.showSnackBar(
-          SnackBar(
-            content: Text(
-              'Found {} transactions from {} to {}'
-                  .tr(args: [
-                    allTransactions.length.toString(),
-                    _formatDate(_dateRange!.start),
-                    _formatDate(_dateRange!.end),
-                  ]),
-            ),
-            duration: const Duration(seconds: 3),
-          ),
+        CupertinoToast.show(
+          context,
+          message: 'Found {} transactions from {} to {}'
+              .tr(args: [
+                allTransactions.length.toString(),
+                _formatDate(_dateRange!.start),
+                _formatDate(_dateRange!.end),
+              ]),
         );
       }
     } catch (e) {
@@ -330,11 +321,10 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
       });
 
       if (mounted) {
-        context.showSnackBar(
-          SnackBar(
-            content: Text('${'Error syncing'.tr()}: $e'),
-            backgroundColor: AppColors.error,
-          ),
+        CupertinoToast.show(
+          context,
+          message: '${'Error syncing'.tr()}: $e',
+          type: CupertinoToastType.error,
         );
       }
     }
@@ -351,19 +341,19 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
       actions: _hasPermission
           ? [
               IconButton(
-                icon: const Icon(Icons.tune_rounded),
+                icon: const Icon(CupertinoIcons.slider_horizontal_3),
                 onPressed: _showImportSetupSheet,
                 tooltip: 'Import setup'.tr(),
               ),
               IconButton(
-                icon: const Icon(Icons.date_range),
+                icon: const Icon(CupertinoIcons.calendar),
                 onPressed: _selectDateRange,
                 tooltip: 'Select Date Range'.tr(),
               ),
             ]
           : null,
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CupertinoActivityIndicator())
           : !_hasPermission
               ? _buildPermissionRequest()
               : _buildMainContent(),
@@ -384,7 +374,7 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
                 Row(
                   children: [
                     Icon(
-                      Icons.calendar_month,
+                      CupertinoIcons.calendar,
                       color: AppColors.primary,
                       size: 24,
                     ),
@@ -407,37 +397,18 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
                         AppColors.secondary.withOpacity(0.06),
                       ],
                     ),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.info_outline_rounded,
-                        color: AppColors.primary,
-                        size: 18,
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          'Choose from and to dates before scanning so imports stay accurate and fast.'
-                              .tr(),
-                          style: AppTypography.bodySmall(
-                            color: AppColors.textSecondary(context),
-                          ),
-                        ),
-                      ),
-                    ],
+                    borderRadius: BorderRadius.circular(10),
                   ),
                 ),
                 const SizedBox(height: 16),
                 InkWell(
                   onTap: _selectDateRange,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10),
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: AppColors.primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(10),
                       border: Border.all(
                         color: AppColors.primary.withOpacity(0.3),
                         width: 1.5,
@@ -467,7 +438,7 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
                           ],
                         ),
                         Icon(
-                          Icons.arrow_forward,
+                          CupertinoIcons.chevron_forward,
                           color: AppColors.primary,
                         ),
                         Column(
@@ -498,7 +469,7 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
                 AppButton.primary(
                   label: 'Scan SMS transactions'.tr(),
                   onPressed: _syncTransactions,
-                  icon: Icons.sync,
+                  icon: CupertinoIcons.refresh,
                   expanded: true,
                 ),
               ],
@@ -524,7 +495,7 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.sms,
+              CupertinoIcons.chat_bubble_2_fill,
               size: 80,
               color: AppColors.primary.withOpacity(0.5),
             ),
@@ -547,7 +518,7 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
             AppButton.primary(
               label: 'Grant Permission'.tr(),
               onPressed: _requestPermissions,
-              icon: Icons.check_circle,
+              icon: CupertinoIcons.check_mark_circled_solid,
             ),
           ],
         ),
@@ -563,7 +534,7 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             AppEmptyState(
-              icon: Icons.inbox,
+              icon: CupertinoIcons.tray_full_fill,
               title: 'No transactions found'.tr(),
               subtitle: _dateRange != null
                   ? 'No SMS transactions found in the selected date range. Try a different period.'
@@ -647,7 +618,7 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
                 AppButton.secondary(
                   label: 'Change range'.tr(),
                   onPressed: _showImportSetupSheet,
-                  icon: Icons.refresh,
+                  icon: CupertinoIcons.refresh,
                   expanded: true,
                 ),
               ],
@@ -672,13 +643,7 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: Theme.of(context).scaffoldBackgroundColor,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 10,
-                offset: const Offset(0, -5),
-              ),
-            ],
+
           ),
           child: SafeArea(
             child: AppButton.primary(
@@ -689,16 +654,12 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
                           _transactions,
                         );
                 if (!mounted) return;
-                context.showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      imported == 0
-                          ? 'No new SMS transactions to import'.tr()
-                          : 'Successfully imported {} transactions!'
-                              .tr(args: [imported.toString()]),
-                    ),
-                    backgroundColor: imported > 0 ? AppColors.success : null,
-                  ),
+                CupertinoToast.show(
+                  context,
+                  message: imported == 0
+                      ? 'No new SMS transactions to import'.tr()
+                      : 'Successfully imported {} transactions!'
+                          .tr(args: [imported.toString()]),
                 );
                 Navigator.pop(context);
               },
@@ -738,10 +699,10 @@ class _TransactionItem extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: (isExpense ? AppColors.error : AppColors.success)
                       .withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
-                  isExpense ? Icons.arrow_downward : Icons.arrow_upward,
+                  isExpense ? CupertinoIcons.arrow_down : CupertinoIcons.arrow_up,
                   color: isExpense ? AppColors.error : AppColors.success,
                 ),
               ),
@@ -802,15 +763,21 @@ class _QuickRangeChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ActionChip(
-      onPressed: onTap,
-      backgroundColor: AppColors.primary.withOpacity(0.08),
-      side: BorderSide(color: AppColors.primary.withOpacity(0.16)),
-      label: Text(
-        label,
-        style: AppTypography.labelMedium(
-          color: AppColors.primary,
-          fontWeight: FontWeight.w600,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: AppColors.primary.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppColors.primary.withOpacity(0.5)),
+        ),
+        child: Text(
+          label,
+          style: AppTypography.labelMedium(
+            color: AppColors.primary,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );
@@ -828,7 +795,7 @@ class _InfoPill extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         color: AppColors.primary.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(999),
+                  borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
         label,

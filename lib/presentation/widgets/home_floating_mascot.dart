@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../core/theme/app_colors.dart';
@@ -21,10 +22,8 @@ class _HomeFloatingMascotState extends State<HomeFloatingMascot> {
   }
 
   void _showFeatureAssistant() {
-    showModalBottomSheet(
+    showCupertinoModalPopup(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (context) => const AppFeatureAssistantSheet(),
     );
   }
@@ -46,14 +45,7 @@ class _HomeFloatingMascotState extends State<HomeFloatingMascot> {
               height: 110,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withOpacity(0.2),
-                    blurRadius: 20,
-                    spreadRadius: 5,
-                    offset: const Offset(0, 8),
-                  )
-                ],
+
               ),
               child: const FlowMascotAvatar(size: 110),
             ),
@@ -67,16 +59,10 @@ class _HomeFloatingMascotState extends State<HomeFloatingMascot> {
                   decoration: BoxDecoration(
                     color: AppColors.surface(context),
                     shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      )
-                    ],
+
                   ),
                   child: const Icon(
-                    Icons.close,
+                    CupertinoIcons.xmark,
                     size: 14,
                     color: AppColors.textSecondaryLight,
                   ),
@@ -100,7 +86,7 @@ class AppFeatureAssistantSheet extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface(context),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
       ),
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
       child: Column(
@@ -138,37 +124,37 @@ class AppFeatureAssistantSheet extends StatelessWidget {
               child: Column(
                 children: [
                   _FeatureTile(
-                    icon: Icons.auto_awesome,
+                    icon: CupertinoIcons.sparkles,
                     iconColor: AppColors.primary,
                     title: 'AI Insights',
                     subtitle: 'Get smart financial analysis and suggestions',
                   ),
                   _FeatureTile(
-                    icon: Icons.pie_chart,
+                    icon: CupertinoIcons.chart_pie,
                     iconColor: AppColors.secondary,
                     title: 'Budgets & Goals',
                     subtitle: 'Track your spending limits and savings',
                   ),
                   _FeatureTile(
-                    icon: Icons.sms,
+                    icon: CupertinoIcons.chat_bubble_2_fill,
                     iconColor: AppColors.success,
                     title: 'SMS & Google Pay Sync',
                     subtitle: 'Automatically import transactions',
                   ),
                   _FeatureTile(
-                    icon: Icons.family_restroom,
+                    icon: CupertinoIcons.person_3_fill,
                     iconColor: AppColors.warning,
                     title: 'Family Mode',
                     subtitle: 'Share budgets and track expenses together',
                   ),
                   _FeatureTile(
-                    icon: Icons.repeat,
+                    icon: CupertinoIcons.repeat,
                     iconColor: AppColors.income,
                     title: 'Recurring Bills',
                     subtitle: 'Manage your subscriptions automatically',
                   ),
                   _FeatureTile(
-                    icon: Icons.account_balance,
+                    icon: CupertinoIcons.building_2_fill,
                     iconColor: AppColors.info,
                     title: 'Bank Integration',
                     subtitle: 'Connect your real bank accounts securely',
@@ -213,7 +199,7 @@ class _FeatureTile extends StatelessWidget {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: iconColor.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, color: iconColor),
           ),
