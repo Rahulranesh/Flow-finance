@@ -46,64 +46,51 @@ extension BuildContextExtension on BuildContext {
   /// Get the navigator
   NavigatorState get navigator => Navigator.of(this);
 
-  /// Get the scaffold messenger
-  ScaffoldMessengerState get scaffoldMessenger => ScaffoldMessenger.of(this);
-
-  /// Show a Cupertino-styled toast notification
-  void showSnackBar(SnackBar snackBar) {
+  /// Get the scaffold messenger (safe — returns null if no Material ancestor)
+  ScaffoldMessengerState? get scaffoldMessenger {
     try {
-      ScaffoldMessenger.of(this).showSnackBar(snackBar);
+      return ScaffoldMessenger.of(this);
     } catch (_) {
-      // Fallback to Cupertino toast when no Material ancestor exists
-      CupertinoToast.show(
-        this,
-        message: (snackBar.content as Text?)?.data ?? '',
-        type: CupertinoToastType.info,
-      );
+      return null;
     }
   }
 
-  /// Show a mascot-styled Cupertino toast notification
+  /// Show a premium Cupertino-styled toast with Lottie mascot
+  void showSnackBar(SnackBar snackBar) {
+    CupertinoToast.show(
+      this,
+      message: (snackBar.content is Text ? (snackBar.content as Text).data : snackBar.content.toString()) ?? '',
+      type: CupertinoToastType.info,
+    );
+  }
+
+  /// Show a premium mascot Lottie toast notification
   void showMascotSnackBar(
     String message, {
     MascotSnackBarType type = MascotSnackBarType.info,
   }) {
-    try {
-      ScaffoldMessenger.of(this).showSnackBar(buildMascotSnackBar(this, message, type: type));
-    } catch (_) {
-      // Fallback to Cupertino toast when no Material ancestor exists
-      final toastType = switch (type) {
+    CupertinoToast.show(
+      this,
+      message: message,
+      type: switch (type) {
         MascotSnackBarType.success => CupertinoToastType.success,
         MascotSnackBarType.error => CupertinoToastType.error,
         MascotSnackBarType.warning => CupertinoToastType.warning,
         MascotSnackBarType.info => CupertinoToastType.info,
-      };
-      CupertinoToast.show(this, message: message, type: toastType);
-    }
+      },
+    );
   }
 
-  /// Hide the current snackbar
-  void hideSnackBar() {
-    try {
-      ScaffoldMessenger.of(this).hideCurrentSnackBar();
-    } catch (_) {}
-  }
+  /// Hide snackbar (no-op — CupertinoToast dismisses automatically)
+  void hideSnackBar() {}
 
-  /// Show a material banner
+  /// Show a premium Cupertino-styled notification (alias)
   void showMaterialBanner(MaterialBanner banner) {
-    try {
-      ScaffoldMessenger.of(this).showMaterialBanner(banner);
-    } catch (_) {
-      CupertinoToast.show(this, message: 'Notification', type: CupertinoToastType.info);
-    }
+    CupertinoToast.show(this, message: 'Notification', type: CupertinoToastType.info);
   }
 
-  /// Hide the current material banner
-  void hideMaterialBanner() {
-    try {
-      ScaffoldMessenger.of(this).hideCurrentMaterialBanner();
-    } catch (_) {}
-  }
+  /// Hide banner (no-op — CupertinoToast dismisses automatically)
+  void hideMaterialBanner() {}
 
   /// Navigate to a new screen
   Future<T?> push<T>(Widget screen) {

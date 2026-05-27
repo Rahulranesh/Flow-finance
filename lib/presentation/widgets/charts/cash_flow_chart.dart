@@ -125,8 +125,10 @@ class CashFlowChart extends StatelessWidget {
                   axisNameSize: 20,
                   sideTitles: SideTitles(
                     showTitles: true,
-                    reservedSize: 60,
+                    reservedSize: 56,
+                    interval: _getHorizontalInterval(),
                     getTitlesWidget: (value, meta) {
+                      if (value == meta.min) return const SizedBox.shrink();
                       return Text(
                         value.toCurrency(decimalDigits: 0),
                         style: AppTypography.labelSmall(
@@ -150,15 +152,20 @@ class CashFlowChart extends StatelessWidget {
                   axisNameSize: 20,
                   sideTitles: SideTitles(
                     showTitles: true,
+                    reservedSize: 32,
                     getTitlesWidget: (value, meta) {
                       final index = value.toInt();
                       if (index < 0 || index >= barGroups.length) {
                         return const SizedBox.shrink();
                       }
-
+                      // Only show every Nth label to avoid crowding
+                      final step = _getBottomLabelInterval(barGroups.length).toInt();
+                      if (index % step != 0) {
+                        return const SizedBox.shrink();
+                      }
                       final date = _getDateForIndex(index);
                       return Padding(
-                        padding: const EdgeInsets.only(top: 8),
+                        padding: const EdgeInsets.only(top: 6),
                         child: Text(
                           showDaily
                               ? '${date.month}/${date.day}'
@@ -527,5 +534,13 @@ class CashFlowChart extends StatelessWidget {
 
   double _getHorizontalInterval() {
     return _getMaxY() / 5;
+  }
+
+  double _getBottomLabelInterval(int count) {
+    if (count <= 7) return 1;
+    if (count <= 14) return 2;
+    if (count <= 31) return 5;
+    if (count <= 90) return 10;
+    return 15;
   }
 }

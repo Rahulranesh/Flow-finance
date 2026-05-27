@@ -882,10 +882,12 @@ void _showBalanceDetailsSheet(
 }) {
   showCupertinoModalPopup<void>(
     context: context,
-    builder: (context) => Container(
+    builder: (context) => Material(
+      color: Colors.transparent,
+      child: Container(
       decoration: BoxDecoration(
         color: AppColors.background(context),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: SafeArea(
         top: false,
@@ -1008,6 +1010,7 @@ void _showBalanceDetailsSheet(
           ),
         ),
       ),
+    ),
     ),
   );
 }

@@ -7,7 +7,6 @@ import '../../../core/services/currency_formatter.dart';
 import '../../../core/services/sms_transaction_service.dart';
 import '../../../data/models/transaction_model.dart';
 import '../../blocs/transaction_bloc.dart';
-import 'package:flow_finance/core/utils/extensions.dart';
 import 'package:provider/provider.dart';
 
 /// SMS Sync screen for syncing transactions from SMS
@@ -116,7 +115,9 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
       builder: (context) {
         final textSecondary = AppColors.textSecondary(context);
 
-        return StatefulBuilder(
+        return Material(
+          color: Colors.transparent,
+          child: StatefulBuilder(
           builder: (context, setSheetState) {
             void setQuickRange(int days) {
               final now = DateTime.now();
@@ -139,7 +140,7 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
                 decoration: BoxDecoration(
                   color: AppColors.surface(context),
                   borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(10),
+                    top: Radius.circular(20),
                   ),
                 ),
                 child: Column(
@@ -222,7 +223,7 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
                                 color: AppColors.primary.withOpacity(0.14),
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              child: Icon(
+                              child: const Icon(
                                 CupertinoIcons.calendar,
                                 color: AppColors.primary,
                               ),
@@ -274,6 +275,7 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
               ),
             );
           },
+        ),
         );
       },
     );

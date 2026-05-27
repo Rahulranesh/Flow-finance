@@ -4,7 +4,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../../core/widgets/app_loading.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../../core/utils/extensions.dart';
 import '../../../data/models/transaction_model.dart';
@@ -68,37 +67,76 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
             ),
           ),
 
-          // Date Range Display
+          // Date Range Selector — tappable pill
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(8),
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
+            child: GestureDetector(
+              onTap: _selectDateRange,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.primary.withOpacity(0.3),
+                    width: 1.5,
                   ),
-                  child: Icon(
-                    CupertinoIcons.calendar,
-                    size: 18,
-                    color: AppColors.primary,
-                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withOpacity(0.06),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 12),
-                Text(
-                  '${_formatDate(_dateRange.start)} - ${_formatDate(_dateRange.end)}',
-                  style: AppTypography.bodyMedium(
-                    color: isDark
-                        ? AppColors.textPrimaryDark
-                        : AppColors.textPrimaryLight,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        CupertinoIcons.calendar,
+                        size: 16,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Date Range',
+                          style: AppTypography.labelSmall(
+                            color: AppColors.textSecondary(context),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${_formatDate(_dateRange.start)}  →  ${_formatDate(_dateRange.end)}',
+                          style: AppTypography.bodyMedium(
+                            color: isDark
+                                ? AppColors.textPrimaryDark
+                                : AppColors.textPrimaryLight,
+                          ).copyWith(fontWeight: FontWeight.w700),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    Icon(
+                      CupertinoIcons.chevron_down,
+                      size: 14,
+                      color: AppColors.primary.withOpacity(0.7),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
 
@@ -601,6 +639,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
   }
 
   String _formatDate(DateTime date) {
-    return '${date.month}/${date.day}/${date.year}';
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 }
