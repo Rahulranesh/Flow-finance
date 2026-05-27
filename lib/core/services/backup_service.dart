@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:archive/archive.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:archive/archive_io.dart';
 import 'package:drift/drift.dart';
 import 'package:path_provider/path_provider.dart';
@@ -119,7 +120,7 @@ class BackupService {
       if (!backup.containsKey('version')) {
         return RestoreResult(
           success: false,
-          message: 'Invalid backup format: missing version',
+          message: 'Invalid backup format: missing version'.tr(),
         );
       }
 
@@ -182,7 +183,7 @@ class BackupService {
 
       return RestoreResult(
         success: true,
-        message: 'Backup restored successfully',
+        message: 'Backup restored successfully'.tr(),
         transactionsCount: transactionsData?.length ?? 0,
         budgetsCount: budgetsData?.length ?? 0,
         categoriesCount: categoriesData?.length ?? 0,
@@ -190,7 +191,7 @@ class BackupService {
     } catch (e) {
       return RestoreResult(
         success: false,
-        message: 'Restore failed: ${e.toString()}',
+        message: 'Restore failed: {error}'.tr(namedArgs: {'error': e.toString()}),
       );
     }
   }

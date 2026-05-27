@@ -479,11 +479,15 @@ class _WalletTransferDialogState extends State<WalletTransferDialog> {
                       children: [
                         Icon(Icons.swap_horiz, size: 16, color: AppColors.warning),
                         const SizedBox(width: 6),
-                        Text(
-                          'Cross-Currency Transfer'.tr(),
-                          style: AppTypography.labelMedium(
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.warning,
+                        Flexible(
+                          child: Text(
+                            'Cross-Currency Transfer'.tr(),
+                            style: AppTypography.labelMedium(
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.warning,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],

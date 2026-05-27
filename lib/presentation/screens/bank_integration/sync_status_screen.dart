@@ -299,7 +299,7 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'No sync history yet',
+                  'No sync history yet'.tr(),
                   style: AppTypography.bodyMedium(),
                 ),
               ],
@@ -319,7 +319,7 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
               color: record.success ? AppColors.success : AppColors.error,
             ),
             title: Text(
-              record.success ? 'Sync Successful' : 'Sync Failed',
+              record.success ? 'Sync Successful'.tr() : 'Sync Failed'.tr(),
               style: AppTypography.bodyMedium(),
             ),
             subtitle: Text(
@@ -360,8 +360,8 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
         SnackBar(
           content: Text(
             result.success
-                ? 'Sync complete! Added ${result.totalTransactionsAdded} transactions'
-                : 'Sync failed: ${result.error}',
+                ? 'Sync complete! Added {} transactions'.tr(args: [result.totalTransactionsAdded.toString()])
+                : 'Sync failed: {error}'.tr(namedArgs: {'error': result.error ?? ''}),
           ),
           backgroundColor: result.success ? AppColors.success : AppColors.error,
         ),
@@ -413,7 +413,7 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: AppButton.secondary(
-                    label: 'Disconnect',
+                    label: 'Disconnect'.tr(),
                     onPressed: () {
                       Navigator.pop(context);
                       _showDisconnectDialog(account);
@@ -434,15 +434,22 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: AppTypography.bodySmall(
-              color: AppColors.textSecondaryLight,
+          Expanded(
+            child: Text(
+              label,
+              style: AppTypography.bodySmall(
+                color: AppColors.textSecondaryLight,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
+          const SizedBox(width: 8),
           Text(
             value,
             style: AppTypography.bodyMedium(fontWeight: FontWeight.w500),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -455,7 +462,7 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
       builder: (context) => AlertDialog(
         title: Text('Disconnect Account?'.tr()),
         content: Text(
-          'Are you sure you want to disconnect ${account['name']}? Your existing transactions will be preserved.',
+          'Are you sure you want to disconnect {accountName}? Your existing transactions will be preserved.'.tr(namedArgs: {'accountName': account['name'] as String}),
         ),
         actions: [
           TextButton(

@@ -295,6 +295,8 @@ class _NavItem extends StatelessWidget {
                         ? AppColors.textTertiaryDark
                         : AppColors.textTertiaryLight,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),

@@ -647,6 +647,8 @@ class _SettingsTile extends StatelessWidget {
           color: isDestructive ? AppColors.error : null,
           fontWeight: FontWeight.w600,
         ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
       ),
       subtitle: subtitle != null
           ? Text(
@@ -654,6 +656,8 @@ class _SettingsTile extends StatelessWidget {
               style: AppTypography.bodySmall(
                 color: AppColors.textTertiary(context),
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             )
           : null,
       trailing: Icon(
@@ -705,6 +709,8 @@ class _SettingsSwitchTile extends StatelessWidget {
         style: AppTypography.bodyLarge(
           fontWeight: FontWeight.w600,
         ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
       ),
       subtitle: subtitle != null
           ? Text(
@@ -712,6 +718,8 @@ class _SettingsSwitchTile extends StatelessWidget {
               style: AppTypography.bodySmall(
                 color: AppColors.textTertiary(context),
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             )
           : null,
       trailing: Switch(

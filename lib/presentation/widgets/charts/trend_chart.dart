@@ -68,14 +68,14 @@ class TrendChart extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            if (showIncome) _buildLegendItem('Income'.tr(), AppColors.success),
+            if (showIncome) Flexible(child: _buildLegendItem('Income'.tr(), AppColors.success)),
             if (showExpense) ...[
-              const SizedBox(width: 16),
-              _buildLegendItem('Expense'.tr(), AppColors.error),
+              const SizedBox(width: 8),
+              Flexible(child: _buildLegendItem('Expense'.tr(), AppColors.error)),
             ],
             if (showBalance) ...[
-              const SizedBox(width: 16),
-              _buildLegendItem('Balance'.tr(), AppColors.primary),
+              const SizedBox(width: 8),
+              Flexible(child: _buildLegendItem('Balance'.tr(), AppColors.primary)),
             ],
           ],
         ),

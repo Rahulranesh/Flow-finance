@@ -196,7 +196,7 @@ class _FilterPanelState extends State<FilterPanel> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Filters',
+                  'Filters'.tr(),
                   style: AppTypography.titleLarge(
                     color: isDark
                         ? AppColors.textPrimaryDark
@@ -207,7 +207,7 @@ class _FilterPanelState extends State<FilterPanel> {
                   TextButton(
                     onPressed: _clearAllFilters,
                     child: Text(
-                      'Clear All',
+                      'Clear All'.tr(),
                       style: AppTypography.labelMedium(
                         color: AppColors.error,
                       ),
@@ -310,14 +310,14 @@ class _FilterPanelState extends State<FilterPanel> {
           child: _buildDateButton(
             label: _filter.startDate != null
                 ? '${_filter.startDate!.month}/${_filter.startDate!.day}/${_filter.startDate!.year}'
-                : 'Start Date',
+                : 'Start Date'.tr(),
             onTap: () => _selectStartDate(),
             isSelected: _filter.startDate != null,
           ),
         ),
         const SizedBox(width: 12),
         Text(
-          'to',
+          'to'.tr(),
           style: AppTypography.bodyMedium(
             color: AppColors.textSecondaryLight,
           ),
@@ -327,7 +327,7 @@ class _FilterPanelState extends State<FilterPanel> {
           child: _buildDateButton(
             label: _filter.endDate != null
                 ? '${_filter.endDate!.month}/${_filter.endDate!.day}/${_filter.endDate!.year}'
-                : 'End Date',
+                : 'End Date'.tr(),
             onTap: () => _selectEndDate(),
             isSelected: _filter.endDate != null,
           ),
@@ -391,7 +391,7 @@ class _FilterPanelState extends State<FilterPanel> {
       children: [
         Expanded(
           child: _buildAmountInput(
-            hint: 'Min',
+            hint: 'Min'.tr(),
             value: _filter.minAmount,
             onChanged: (value) {
               setState(() {
@@ -402,7 +402,7 @@ class _FilterPanelState extends State<FilterPanel> {
         ),
         const SizedBox(width: 12),
         Text(
-          'to',
+          'to'.tr(),
           style: AppTypography.bodyMedium(
             color: AppColors.textSecondaryLight,
           ),
@@ -410,7 +410,7 @@ class _FilterPanelState extends State<FilterPanel> {
         const SizedBox(width: 12),
         Expanded(
           child: _buildAmountInput(
-            hint: 'Max',
+            hint: 'Max'.tr(),
             value: _filter.maxAmount,
             onChanged: (value) {
               setState(() {
@@ -451,8 +451,8 @@ class _FilterPanelState extends State<FilterPanel> {
 
   Widget _buildTypeFilter() {
     final types = [
-      _TypeOption('Income', TransactionType.income, Icons.arrow_upward, AppColors.success),
-      _TypeOption('Expense', TransactionType.expense, Icons.arrow_downward, AppColors.error),
+      _TypeOption('Income'.tr(), TransactionType.income, Icons.arrow_upward, AppColors.success),
+      _TypeOption('Expense'.tr(), TransactionType.expense, Icons.arrow_downward, AppColors.error),
     ];
 
     return Wrap(

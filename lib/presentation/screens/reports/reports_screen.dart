@@ -528,8 +528,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
             const SizedBox(height: 16),
             ListTile(
               leading: const Icon(Icons.table_chart, color: AppColors.success),
-              title: Text('Export as CSV'.tr()),
-              subtitle: Text('Spreadsheet format for Excel/Google Sheets'.tr()),
+              title: Text('Export as CSV'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis),
+              subtitle: Text('Spreadsheet format for Excel/Google Sheets'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis),
               onTap: () {
                 Navigator.pop(context);
                 _exportToCsv();
@@ -537,8 +537,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.picture_as_pdf, color: AppColors.error),
-              title: Text('Export as PDF'.tr()),
-              subtitle: Text('Document format for sharing/printing'.tr()),
+              title: Text('Export as PDF'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis),
+              subtitle: Text('Document format for sharing/printing'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis),
               onTap: () {
                 Navigator.pop(context);
                 _exportToPdf();

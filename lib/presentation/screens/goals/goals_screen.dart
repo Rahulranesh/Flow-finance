@@ -386,10 +386,14 @@ class _GoalCard extends StatelessWidget {
                 color: AppColors.textSecondary(context),
               ),
               const SizedBox(width: 8),
-              Text(
-                '${goal.daysRemaining} ${'days remaining'.tr()}',
-                style: AppTypography.bodySmall(
-                  color: AppColors.textSecondary(context),
+              Flexible(
+                child: Text(
+                  '${goal.daysRemaining} ${'days remaining'.tr()}',
+                  style: AppTypography.bodySmall(
+                    color: AppColors.textSecondary(context),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],

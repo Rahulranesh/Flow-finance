@@ -548,12 +548,17 @@ class _OverviewTab extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: AppTypography.bodyMedium(
-            fontWeight: isBold ? FontWeight.w600 : null,
+        Expanded(
+          child: Text(
+            label,
+            style: AppTypography.bodyMedium(
+              fontWeight: isBold ? FontWeight.w600 : null,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
+        const SizedBox(width: 8),
         Text(
           '\$${amount.toStringAsFixed(2)}',
           style: AppTypography.bodyLarge(
@@ -574,16 +579,12 @@ class _OverviewTab extends StatelessWidget {
             Icon(icon, color: AppColors.primary),
             const SizedBox(height: 8),
             Text(
-              value,
-              style: AppTypography.titleLarge().copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
               label,
               style: AppTypography.labelSmall(
                 color: AppColors.textSecondaryLight,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -636,12 +637,16 @@ class _MembersTab extends StatelessWidget {
             style: AppTypography.bodyMedium(
               fontWeight: isCurrentUser ? FontWeight.w600 : null,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           subtitle: Text(
             member.role.displayName,
             style: AppTypography.labelSmall(
               color: AppColors.textSecondaryLight,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           trailing: canEdit && !isCurrentUser
               ? PopupMenuButton<String>(

@@ -15,6 +15,9 @@ import '../transactions/transactions_screen.dart';
 import '../reports/reports_screen.dart';
 import '../../widgets/home_floating_mascot.dart';
 import '../wallets/wallets_screen.dart';
+import '../family/family_screen.dart';
+import '../analytics/analytics_screen.dart';
+import '../goals/goals_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -162,7 +165,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      const HomeFloatingMascot(),
+      HomeFloatingMascot(),
     ],
   ),
   floatingActionButton: AppFAB(
@@ -341,10 +344,14 @@ class _MiniStat extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            Text(
-              label,
-              style: AppTypography.bodySmall(
-                color: Colors.white.withOpacity(0.7),
+            Flexible(
+              child: Text(
+                label,
+                style: AppTypography.bodySmall(
+                  color: Colors.white.withOpacity(0.7),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
@@ -353,6 +360,8 @@ class _MiniStat extends StatelessWidget {
         Text(
           amount,
           style: AppTypography.titleMedium(color: Colors.white),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
       ],
     );
@@ -363,7 +372,7 @@ class _MiniStat extends StatelessWidget {
 class _QuickActionsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final actions = [
+    final firstRow = [
       _ActionItem(
         icon: Icons.add_circle,
         label: 'Manual',
@@ -418,11 +427,75 @@ class _QuickActionsRow extends StatelessWidget {
       ),
     ];
 
+    final secondRow = [
+      _ActionItem(
+        icon: Icons.people,
+        label: 'Family Mode',
+        color: AppColors.info,
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const FamilyScreen(),
+            ),
+          );
+        },
+      ),
+      _ActionItem(
+        icon: Icons.analytics,
+        label: 'Analytics',
+        color: AppColors.primary,
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const AnalyticsScreen(),
+            ),
+          );
+        },
+      ),
+      _ActionItem(
+        icon: Icons.account_balance,
+        label: 'Wallets & Accounts',
+        color: AppColors.warning,
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const WalletsScreen(),
+            ),
+          );
+        },
+      ),
+      _ActionItem(
+        icon: Icons.flag,
+        label: 'Goals',
+        color: AppColors.success,
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const GoalsScreen(),
+            ),
+          );
+        },
+      ),
+    ];
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: actions.map((action) => _buildActionButton(action)).toList(),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: firstRow.map((action) => _buildActionButton(action)).toList(),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: secondRow.map((action) => _buildActionButton(action)).toList(),
+          ),
+        ],
       ),
     );
   }
@@ -447,9 +520,15 @@ class _QuickActionsRow extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          Text(
-            action.label.tr(),
-            style: AppTypography.labelMedium(),
+          SizedBox(
+            width: 56,
+            child: Text(
+              action.label.tr(),
+              style: AppTypography.labelMedium(),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
           ),
         ],
       ),
@@ -610,7 +689,7 @@ class _SectionHeaderDelegate extends SliverPersistentHeaderDelegate {
           if (actionLabel != null)
             TextButton(
               onPressed: onAction,
-              child: Text(actionLabel!),
+              child: Text(actionLabel!, maxLines: 1, overflow: TextOverflow.ellipsis),
             ),
         ],
       ),
@@ -778,12 +857,12 @@ void _showBalanceDetailsSheet(
                       spacing: 10,
                       runSpacing: 10,
                       children: [
-                        _sheetPill('Income ${income.toCurrency()}'),
-                        _sheetPill('Expense ${expense.toCurrency()}'),
+                        _sheetPill('Income {amount}'.tr(namedArgs: {'amount': income.toCurrency()})),
+                        _sheetPill('Expense {amount}'.tr(namedArgs: {'amount': expense.toCurrency()})),
                         _sheetPill(
                           income > 0
-                              ? 'Savings ${(balance / income * 100).toStringAsFixed(1)}%'
-                              : 'Savings 0%',
+                              ? 'Savings {percent}%'.tr(namedArgs: {'percent': (balance / income * 100).toStringAsFixed(1)})
+                              : 'Savings 0%'.tr(),
                         ),
                       ],
                     ),
@@ -805,9 +884,13 @@ void _showBalanceDetailsSheet(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    title: Text(transaction.title),
+                    title: Text(transaction.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis),
                     subtitle: Text(
                       '${transaction.category} • ${transaction.date.toDateTime()}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     trailing: Text(
                       '${transaction.type == TransactionType.expense ? '-' : '+'}${transaction.amount.toCurrency()}',

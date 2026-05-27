@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import 'flow_mascot.dart';
@@ -179,13 +180,13 @@ class _MascotSnackBarContentState extends State<MascotSnackBarContent>
   String _typeLabel(MascotSnackBarType type) {
     switch (type) {
       case MascotSnackBarType.success:
-        return 'SUCCESS';
+        return 'SUCCESS'.tr();
       case MascotSnackBarType.error:
-        return 'ERROR';
+        return 'ERROR'.tr();
       case MascotSnackBarType.warning:
-        return 'WARNING';
+        return 'WARNING'.tr();
       case MascotSnackBarType.info:
-        return 'INFO';
+        return 'INFO'.tr();
     }
   }
 

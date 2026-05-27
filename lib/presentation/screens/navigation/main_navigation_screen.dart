@@ -19,20 +19,20 @@ class MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = const [
-    HomeScreen(),
-    TransactionsScreen(),
-    AnalyticsScreen(),
-    BudgetsScreen(),
-    SettingsScreen(),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final screens = <Widget>[
+      HomeScreen(),
+      TransactionsScreen(),
+      AnalyticsScreen(),
+      BudgetsScreen(),
+      SettingsScreen(),
+    ];
+
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
-        children: _screens,
+        children: screens,
       ),
       floatingActionButton: _currentIndex == 0 || _currentIndex == 1
           ? FloatingActionButton.extended(
@@ -105,6 +105,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 fontSize: 10,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),

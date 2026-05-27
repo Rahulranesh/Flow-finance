@@ -410,9 +410,13 @@ class _AIInsightsScreenState extends State<AIInsightsScreen> {
           ),
           child: Icon(icon, color: color),
         ),
-        title: Text(alert.title,
-            style: AppTypography.bodyMedium(fontWeight: FontWeight.w600)),
-        subtitle: Text(alert.message, style: AppTypography.bodySmall()),
+        title: Text(alert.title.tr(),
+            style: AppTypography.bodyMedium(fontWeight: FontWeight.w600),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis),
+        subtitle: Text(alert.message, style: AppTypography.bodySmall(),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis),
         trailing: Container(
           width: 8,
           height: 8,
@@ -433,12 +437,16 @@ class _AIInsightsScreenState extends State<AIInsightsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  '30-Day Spending Forecast'.tr(),
-                  style: AppTypography.titleMedium(),
+                Expanded(
+                  child: Text(
+                    '30-Day Spending Forecast'.tr(),
+                    style: AppTypography.titleMedium(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
+                const SizedBox(width: 8),
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -508,8 +516,12 @@ class _AIInsightsScreenState extends State<AIInsightsScreen> {
                     ? AppColors.error
                     : AppColors.warning,
               ),
-              title: Text(anomaly.transaction.title),
-              subtitle: Text(anomaly.reason, style: AppTypography.bodySmall()),
+              title: Text(anomaly.transaction.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis),
+              subtitle: Text(anomaly.reason, style: AppTypography.bodySmall(),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis),
               trailing: Text(
                 CurrencyFormatter.format(anomaly.transaction.amount),
                 style: AppTypography.bodyMedium(

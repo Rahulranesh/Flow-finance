@@ -666,7 +666,7 @@ class _SmartRuleDialogState extends State<_SmartRuleDialog> {
                           contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                         ),
                         items: RuleType.values.map((t) {
-                          return DropdownMenuItem(value: t, child: Text(_ruleTypeName(t)));
+                          return DropdownMenuItem(value: t, child: Text(_ruleTypeName(t).tr()));
                         }).toList(),
                         onChanged: (v) => setState(() => _ruleType = v!),
                       ),

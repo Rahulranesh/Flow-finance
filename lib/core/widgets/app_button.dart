@@ -173,9 +173,13 @@ class _AppButtonState extends State<AppButton>
             ),
           )
         else
-          Text(
-            widget.label,
-            style: _getTextStyle().copyWith(color: config.foregroundColor),
+          Flexible(
+            child: Text(
+              widget.label,
+              style: _getTextStyle().copyWith(color: config.foregroundColor),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         if (widget.icon != null && widget.iconPosition == IconPosition.right) ...[
           SizedBox(width: _getIconSpacing()),

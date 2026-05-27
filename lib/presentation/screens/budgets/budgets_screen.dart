@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 import '../../../core/theme/theme.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../../core/utils/extensions.dart';
 import '../../../data/models/transaction_model.dart';
 import '../../blocs/blocs.dart';
-import '../reports/reports_screen.dart';
 
 /// Budgets overview screen
 class BudgetsScreen extends StatelessWidget {
@@ -19,12 +19,7 @@ class BudgetsScreen extends StatelessWidget {
       actions: [
         AppIconButton(
           icon: Icons.add,
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const ReportsScreen()),
-            );
-          },
+          onPressed: () => _showCreateBudgetDialog(context),
           variant: AppIconButtonVariant.filled,
         ),
         const SizedBox(width: 16),
@@ -163,30 +158,36 @@ class _MonthlyOverviewCard extends StatelessWidget {
               AppLinearProgress(
                 value: percentage.clamp(0.0, 1.0),
                 label:
-                    'Spent: ${totalSpent.toCurrency()} / ${totalBudget.toCurrency()}',
+                    '${'Spent'.tr()}: ${totalSpent.toCurrency()} / ${totalBudget.toCurrency()}',
                 showPercentage: true,
                 height: 12,
               ),
               const SizedBox(height: 16),
               Row(
                 children: [
-                  _StatItem(
-                    label: 'Spent'.tr(),
-                    value: totalSpent.toCurrency(),
-                    color: AppColors.expense,
+                  Expanded(
+                    child: _StatItem(
+                      label: 'Spent'.tr(),
+                      value: totalSpent.toCurrency(),
+                      color: AppColors.expense,
+                    ),
                   ),
-                  const SizedBox(width: 24),
-                  _StatItem(
-                    label: 'Remaining'.tr(),
-                    value: remaining.toCurrency(),
-                    color: AppColors.income,
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _StatItem(
+                      label: 'Remaining'.tr(),
+                      value: remaining.toCurrency(),
+                      color: AppColors.income,
+                    ),
                   ),
-                  const SizedBox(width: 24),
-                  _StatItem(
-                    label: 'Days Left'.tr(),
-                    value:
-                        '${DateTime.now().endOfMonth.difference(DateTime.now()).inDays}',
-                    color: AppColors.primary,
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _StatItem(
+                      label: 'Days Left'.tr(),
+                      value:
+                          '${DateTime.now().endOfMonth.difference(DateTime.now()).inDays}',
+                      color: AppColors.primary,
+                    ),
                   ),
                 ],
               ),
@@ -230,6 +231,8 @@ class _StatItem extends StatelessWidget {
               style: AppTypography.caption(
                 color: AppColors.textTertiary(context),
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -383,19 +386,7 @@ class _BudgetList extends StatelessWidget {
   }
 
   IconData _getCategoryIcon(String iconName) {
-    final iconMap = <String, IconData>{
-      'restaurant': Icons.restaurant,
-      'directions_car': Icons.directions_car,
-      'shopping_bag': Icons.shopping_bag,
-      'movie': Icons.movie,
-      'receipt': Icons.receipt,
-      'favorite': Icons.favorite,
-      'school': Icons.school,
-      'work': Icons.work,
-      'laptop': Icons.laptop,
-      'trending_up': Icons.trending_up,
-    };
-    return iconMap[iconName] ?? Icons.category;
+    return _categoryIcon(iconName);
   }
 
   void _showBudgetDetails(BuildContext context, BudgetProgress progress) {
@@ -539,8 +530,8 @@ class _SpendingInsights extends StatelessWidget {
                       children: [
                         Text(
                           alertBudget.isNotEmpty
-                              ? 'Budget Alert'
-                              : 'Budgets Healthy',
+                              ? 'Budget Alert'.tr()
+                              : 'Budgets Healthy'.tr(),
                           style: AppTypography.bodyLarge(
                             fontWeight: FontWeight.w600,
                           ),
@@ -548,8 +539,11 @@ class _SpendingInsights extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           alertBudget.isNotEmpty
-                              ? '${alertBudget.first.category.name} is at ${(alertBudget.first.percentage * 100).toStringAsFixed(0)}% of its limit.'
-                              : 'No budget categories are close to their limits right now.',
+                              ? '{category} is at {percentage}% of its limit.'.tr(namedArgs: {
+                                  'category': alertBudget.first.category.name.tr(),
+                                  'percentage': (alertBudget.first.percentage * 100).toStringAsFixed(0)
+                                })
+                              : 'No budget categories are close to their limits right now.'.tr(),
                           style: AppTypography.bodySmall(
                             color: AppColors.textSecondary(context),
                           ),
@@ -654,4 +648,123 @@ class _InsightItem extends StatelessWidget {
       ],
     );
   }
+}
+
+IconData _categoryIcon(String iconName) {
+  const iconMap = <String, IconData>{
+    'restaurant': Icons.restaurant,
+    'directions_car': Icons.directions_car,
+    'shopping_bag': Icons.shopping_bag,
+    'movie': Icons.movie,
+    'receipt': Icons.receipt,
+    'favorite': Icons.favorite,
+    'school': Icons.school,
+    'work': Icons.work,
+    'laptop': Icons.laptop,
+    'trending_up': Icons.trending_up,
+  };
+  return iconMap[iconName] ?? Icons.category;
+}
+
+void _showCreateBudgetDialog(BuildContext context) {
+  String? selectedCategoryId;
+  final amountController = TextEditingController();
+  final categories = Category.defaultCategories;
+
+  showDialog(
+    context: context,
+    builder: (context) => StatefulBuilder(
+      builder: (context, setState) => AlertDialog(
+        title: Text('Create Budget'.tr()),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Category'.tr(),
+              style: AppTypography.bodyMedium(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<String>(
+              value: selectedCategoryId,
+              items: categories.map((cat) => DropdownMenuItem(
+                value: cat.id,
+                child: Row(
+                  children: [
+                    Icon(_categoryIcon(cat.iconName), size: 20, color: cat.color),
+                    const SizedBox(width: 8),
+                    Text(cat.name),
+                  ],
+                ),
+              )).toList(),
+              onChanged: (val) => setState(() => selectedCategoryId = val),
+              decoration: InputDecoration(
+                hintText: 'Select a category'.tr(),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Budget Amount'.tr(),
+              style: AppTypography.bodyMedium(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: amountController,
+              decoration: InputDecoration(
+                hintText: '0.00'.tr(),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+              ),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'.tr()),
+          ),
+          AppButton.primary(
+            label: 'Create'.tr(),
+            onPressed: () async {
+              final amount = double.tryParse(amountController.text);
+              if (selectedCategoryId == null || amount == null || amount <= 0) {
+                context.showSnackBar(
+                  SnackBar(content: Text('Please fill in all fields'.tr())),
+                );
+                return;
+              }
+
+              final budget = Budget(
+                id: const Uuid().v4(),
+                categoryId: selectedCategoryId!,
+                limit: amount,
+                period: BudgetPeriod.monthly,
+                startDate: DateTime.now(),
+              );
+
+              await context.read<BudgetBloc>().addBudget(budget);
+              if (context.mounted) Navigator.pop(context);
+            },
+          ),
+        ],
+      ),
+    ),
+  );
 }

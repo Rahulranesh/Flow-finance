@@ -437,6 +437,8 @@ class ExpenseBreakdownChart extends StatelessWidget {
               Text(
                 item.$1,
                 style: AppTypography.caption(),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),

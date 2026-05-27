@@ -57,7 +57,7 @@ class QuickSettingsButton extends StatelessWidget {
             children: [
               Icon(Icons.sms, size: 20, color: AppColors.primary),
               const SizedBox(width: 12),
-              Text('SMS Sync'.tr()),
+              Flexible(child: Text('SMS Sync'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis)),
             ],
           ),
         ),
@@ -67,7 +67,7 @@ class QuickSettingsButton extends StatelessWidget {
             children: [
               Icon(Icons.payment, size: 20, color: AppColors.secondary),
               const SizedBox(width: 12),
-              Text('Google Pay Sync'.tr()),
+              Flexible(child: Text('Google Pay Sync'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis)),
             ],
           ),
         ),
@@ -77,7 +77,7 @@ class QuickSettingsButton extends StatelessWidget {
             children: [
               Icon(Icons.flag, size: 20, color: AppColors.success),
               const SizedBox(width: 12),
-              Text('Goals'.tr()),
+              Flexible(child: Text('Goals'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis)),
             ],
           ),
         ),
@@ -89,7 +89,7 @@ class QuickSettingsButton extends StatelessWidget {
               Icon(Icons.settings,
                   size: 20, color: AppColors.textSecondary(context)),
               const SizedBox(width: 12),
-              Text('All Settings'.tr()),
+              Flexible(child: Text('All Settings'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis)),
             ],
           ),
         ),

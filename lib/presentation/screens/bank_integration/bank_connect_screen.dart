@@ -170,7 +170,7 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
             children: [
               Text(country['flag'] as String),
               const SizedBox(width: 8),
-              Text(country['name'] as String),
+              Text((country['name'] as String).tr()),
             ],
           ),
           selected: isSelected,
@@ -208,9 +208,9 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
               provider['icon'] as IconData,
               color: isSelected ? AppColors.primary : null,
             ),
-            title: Text(provider['name'] as String),
+            title: Text((provider['name'] as String).tr()),
             subtitle: Text(
-              provider['description'] as String,
+              (provider['description'] as String).tr(),
               style: AppTypography.bodySmall(
                 color: AppColors.textSecondaryLight,
               ),
@@ -320,7 +320,7 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
                 : _buildBankIcon(),
             title: Text(institution.name),
             subtitle: Text(
-              'Supports: ${institution.supportedFeatures.take(3).join(', ')}',
+              '${'Supports'.tr()}: ${institution.supportedFeatures.take(3).join(', ')}',
               style: AppTypography.labelSmall(
                 color: AppColors.textSecondaryLight,
               ),

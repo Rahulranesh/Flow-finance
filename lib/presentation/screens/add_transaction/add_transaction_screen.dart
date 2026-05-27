@@ -76,7 +76,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
       final transaction = Transaction(
         id: const Uuid().v4(),
-        title: _isExpense ? _selectedCategory : 'Income'.tr(),
+        title: _isExpense ? _selectedCategory.tr() : 'Income'.tr(),
         amount: amount,
         type: _isExpense ? TransactionType.expense : TransactionType.income,
         category: _selectedCategory,
@@ -398,7 +398,7 @@ class _CategorySelector extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        category.name,
+                        category.name.tr(),
                         style: AppTypography.caption(),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -753,7 +753,7 @@ class _WalletSelector extends StatelessWidget {
                         if (wallet.isDefault) ...[
                           const SizedBox(width: 4),
                           Text(
-                            '(Default)',
+                            '(Default)'.tr(),
                             style: AppTypography.labelSmall(
                               color: AppColors.textSecondary(context),
                             ),
