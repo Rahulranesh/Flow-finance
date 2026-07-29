@@ -6,7 +6,6 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
-import 'package:flow_finance/core/utils/extensions.dart';
 import '../../../core/widgets/cupertino_toast.dart';
 import '../../../core/widgets/app_scaffold.dart';
 
@@ -411,9 +410,15 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
   void _showAccountDetails(Map<String, dynamic> account) {
     showCupertinoModalPopup(
       context: context,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
+      builder: (context) => Material(
+        color: Colors.transparent,
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.surface(context),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          padding: const EdgeInsets.all(20),
+          child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -452,6 +457,7 @@ class _SyncStatusScreenState extends State<SyncStatusScreen> {
               ],
             ),
           ],
+        ),
         ),
       ),
     );

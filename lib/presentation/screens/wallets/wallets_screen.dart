@@ -13,9 +13,10 @@ import '../../../core/widgets/app_loading.dart';
 import '../../../data/models/wallet_model.dart';
 import '../../../data/models/currency_model.dart';
 import '../../blocs/wallet_bloc.dart';
-import '../../../core/utils/extensions.dart';
 import '../../../core/widgets/cupertino_toast.dart';
 import 'add_wallet_screen.dart';
+
+import '../../blocs/settings_controller.dart';
 
 class WalletsScreen extends StatefulWidget {
   const WalletsScreen({super.key});
@@ -35,6 +36,7 @@ class _WalletsScreenState extends State<WalletsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<SettingsController>();
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return AppScaffold(
@@ -302,19 +304,20 @@ class _WalletsScreenState extends State<WalletsScreen> {
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                const SizedBox(height: 4),
+                  ),),
+                const SizedBox(height: 2),
                 if (!wallet.isDefault)
                   GestureDetector(
                     onTap: () => bloc.setDefaultWallet(wallet.id),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       child: Text(
-                        'Set as Default'.tr(),
+                       'Make Default'.tr(),
                         style: AppTypography.labelSmall(
                           color: AppColors.primary,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ),

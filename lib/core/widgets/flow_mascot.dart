@@ -3,11 +3,45 @@ import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../theme/app_typography.dart';
 import 'app_card.dart';
+
+enum MascotMood { happy, sorrow, achieve }
+
+String mascotAsset(MascotMood mood, [AppAccentColor? accent]) {
+  final activeAccent = accent ?? AppColors.currentAccent;
+  switch (activeAccent) {
+    case AppAccentColor.gold:
+      switch (mood) {
+        case MascotMood.happy:
+          return 'assets/images/mascot_happy.png';
+        case MascotMood.sorrow:
+          return 'assets/images/mascot_sorrow.png';
+        case MascotMood.achieve:
+          return 'assets/images/mascot_achieve.png';
+      }
+    case AppAccentColor.greenGold:
+      switch (mood) {
+        case MascotMood.happy:
+          return 'assets/images/mascot_green_happy.png';
+        case MascotMood.sorrow:
+          return 'assets/images/mascot_green_sorrow.png';
+        case MascotMood.achieve:
+          return 'assets/images/mascot_green_achieve.png';
+      }
+    case AppAccentColor.blue:
+      switch (mood) {
+        case MascotMood.happy:
+          return 'assets/images/mascot_blue_happy.png';
+        case MascotMood.sorrow:
+          return 'assets/images/mascot_blue_sorrow.png';
+        case MascotMood.achieve:
+          return 'assets/images/mascot_blue_achieve.png';
+      }
+  }
+}
 
 // ─── Mascot Bubble ────────────────────────────────────────────────────────────
 
@@ -18,21 +52,23 @@ class FlowMascotBubble extends StatelessWidget {
     this.subtitle,
     this.actionLabel,
     this.onAction,
+    this.mood = MascotMood.happy,
   });
 
   final String message;
   final String? subtitle;
   final String? actionLabel;
   final VoidCallback? onAction;
+  final MascotMood mood;
 
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(24),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const FlowMascotAvatar(size: 58),
+          FlowMascotAvatar(size: 58, mood: mood),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
@@ -90,12 +126,14 @@ class FlowMascotAvatar extends StatefulWidget {
     this.celebrating = false,
     this.showGlow = true,
     this.showParticles = false,
+    this.mood = MascotMood.happy,
   });
 
   final double size;
   final bool celebrating;
   final bool showGlow;
   final bool showParticles;
+  final MascotMood mood;
 
   @override
   State<FlowMascotAvatar> createState() => _FlowMascotAvatarState();
@@ -182,7 +220,13 @@ class _FlowMascotAvatarState extends State<FlowMascotAvatar>
                   height: s * 1.0,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withOpacity(0.15 + 0.10 * glowPulse),
+                        blurRadius: s * (0.3 + 0.1 * glowPulse),
+                        spreadRadius: s * 0.05,
+                      ),
+                    ],
                   ),
                 ),
 
@@ -202,14 +246,14 @@ class _FlowMascotAvatarState extends State<FlowMascotAvatar>
                       height: p.size,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: (p.phase < 0.5 ? AppColors.primary : AppColors.secondary)
+                        color: (p.phase < 0.5 ? AppColors.primary : AppColors.primaryLight)
                             .withOpacity(opacity),
                       ),
                     ),
                   );
                 }),
 
-              // ── 3D transformed lottie ────────────────────────────────────
+              // ── 3D transformed mascot ────────────────────────────────────
               Transform.translate(
                 offset: Offset(0, floatY),
                 child: Transform(
@@ -234,15 +278,13 @@ class _FlowMascotAvatarState extends State<FlowMascotAvatar>
                           ),
                         ),
                       ),
-                      // Lottie avatar
+                      // Mascot image
                       SizedBox(
                         width: s,
                         height: s,
-                        child: Lottie.asset(
-                          'assets/mascot.json',
+                        child: Image.asset(
+                          mascotAsset(widget.mood),
                           fit: BoxFit.contain,
-                          repeat: true,
-                          animate: true,
                         ),
                       ),
                       // Shimmer overlay

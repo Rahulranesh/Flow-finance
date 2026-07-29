@@ -7,7 +7,6 @@ import '../../../core/services/currency_formatter.dart';
 import '../../../core/services/google_pay_service.dart';
 import '../../../data/models/transaction_model.dart';
 import '../../blocs/transaction_bloc.dart';
-import 'package:flow_finance/core/utils/extensions.dart';
 import 'package:provider/provider.dart';
 
 /// Google Pay Sync screen

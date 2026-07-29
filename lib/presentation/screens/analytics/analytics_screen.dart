@@ -12,6 +12,8 @@ import '../../widgets/charts/trend_chart.dart';
 import '../../widgets/charts/category_pie_chart.dart';
 import '../../widgets/charts/cash_flow_chart.dart';
 
+import '../../blocs/settings_controller.dart';
+
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
 
@@ -44,11 +46,13 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
 
   @override
   Widget build(BuildContext context) {
+    context.watch<SettingsController>();
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Analytics'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis),
+        title: Text('Analytics'.tr(),
+            maxLines: 1, overflow: TextOverflow.ellipsis),
         actions: [
           IconButton(
             icon: const Icon(CupertinoIcons.calendar),
@@ -73,9 +77,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
             child: GestureDetector(
               onTap: _selectDateRange,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
-                  color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+                  color:
+                      isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: AppColors.primary.withOpacity(0.3),
@@ -98,7 +104,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                         color: AppColors.primary.withOpacity(0.12),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         CupertinoIcons.calendar,
                         size: 16,
                         color: AppColors.primary,
@@ -602,9 +608,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
       AppColors.success,
       AppColors.warning,
       AppColors.error,
-      const Color(0xFF9C27B0),
-      const Color(0xFF00BCD4),
-      const Color(0xFFFF9800),
+      const Color(0xFF6B7280),
+      const Color(0xFF6B7280),
+      const Color(0xFFC7A252),
     ];
 
     int hash = 0;
@@ -639,7 +645,20 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
   }
 
   String _formatDate(DateTime date) {
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 }

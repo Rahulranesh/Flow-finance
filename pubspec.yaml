@@ -163,7 +163,6 @@ flutter:
     - assets/static/
     - assets/icons/fun/
     - assets/translations/
-    - assets/translations/generated/
     - assets/static/generated/
     - assets/static/generated/currencies.json
     - assets/static/language-names.json

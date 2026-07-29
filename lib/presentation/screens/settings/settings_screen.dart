@@ -11,10 +11,13 @@ import '../../../core/services/data_export_service.dart';
 import '../../../core/theme/theme.dart';
 import '../../../core/utils/extensions.dart';
 import '../../../core/widgets/cupertino_toast.dart';
+import '../../../core/widgets/flow_mascot.dart';
 import '../../../data/database/database.dart';
 import '../../../data/models/currency_model.dart';
 import '../../../data/models/goal_model.dart';
 import '../../../data/repositories/goal_repository.dart';
+import '../../blocs/premium_controller.dart';
+import 'paywall_screen.dart';
 import 'sms_sync_screen.dart';
 import 'google_pay_sync_screen.dart';
 import '../family/family_screen.dart';
@@ -113,21 +116,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  static const Map<String, String> _supportedLanguages = {
+    'en': 'English',
+    'ta': 'தமிழ் (Tamil)',
+    'hi': 'हिंदी (Hindi)',
+    'es': 'Español (Spanish)',
+    'fr': 'Français (French)',
+    'de': 'Deutsch (German)',
+    'zh': '中文 (Chinese)',
+    'ja': '日本語 (Japanese)',
+    'ar': 'العربية (Arabic)',
+    'pt': 'Português (Portuguese)',
+    'ru': 'Русский (Russian)',
+    'ml': 'മലയാളം (Malayalam)',
+    'te': 'తెలుగు (Telugu)',
+    'bn': 'বাংলা (Bengali)',
+    'mr': 'मराठी (Marathi)',
+  };
+
   Future<void> _pickLanguage(SettingsController controller) async {
-    const languages = {
-      'en': 'English',
-      'ta': 'Tamil',
-    };
     final selected = await showCupertinoModalPopup<String>(
       context: context,
       builder: (context) => CupertinoActionSheet(
         title: Text('Select Language'.tr()),
-        actions: languages.entries.map((entry) {
+        actions: _supportedLanguages.entries.map((entry) {
           return CupertinoActionSheetAction(
             child: Row(
               children: [
-                Expanded(child: Text(entry.value.tr())),
-                if (controller.languageCode == entry.key)
+                Expanded(child: Text(entry.value)),
+                if (context.locale.languageCode == entry.key || controller.languageCode == entry.key)
                   const Icon(CupertinoIcons.checkmark,
                       color: CupertinoColors.activeBlue),
               ],
@@ -217,6 +234,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  void _navigatePremiumOrScreen(BuildContext context, Widget screen) {
+    final isPremium = context.read<PremiumController>().isPremium;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => isPremium ? screen : const PaywallScreen(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<SettingsController>(
@@ -238,6 +265,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 email: controller.settings.userEmail,
                 onEdit: () => _editProfile(controller),
               ),
+              const SizedBox(height: 24),
+              _PremiumBanner(),
               const SizedBox(height: 32),
               _SettingsSection(
                 title: 'Appearance'.tr(),
@@ -246,6 +275,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     selectedTheme: controller.themeMode,
                     onThemeSelected: (mode) =>
                         controller.updateThemeMode(mode),
+                  ),
+                  const _SettingsDivider(),
+                  _AccentColorSelector(
+                    selectedAccent: controller.accentColor,
+                    onAccentSelected: (accent) =>
+                        controller.updateAccentColor(accent),
                   ),
                 ],
               ),
@@ -278,9 +313,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     icon: CupertinoIcons.globe,
                     iconColor: AppColors.success,
                     title: 'Language'.tr(),
-                    subtitle: controller.languageCode == 'ta'
-                        ? 'Tamil'.tr()
-                        : 'English'.tr(),
+                    subtitle: _supportedLanguages[context.locale.languageCode] ??
+                        _supportedLanguages[controller.languageCode] ??
+                        controller.languageCode.toUpperCase(),
                     onTap: () => _pickLanguage(controller),
                   ),
                   const _SettingsDivider(),
@@ -315,10 +350,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     iconColor: AppColors.primary,
                     title: 'Recurring Transactions'.tr(),
                     subtitle: 'Manage subscriptions and repeat bills'.tr(),
-                    onTap: () => Navigator.push(
+                    onTap: () => _navigatePremiumOrScreen(
                       context,
-                      MaterialPageRoute(
-                          builder: (context) => const RecurringTransactionsScreen()),
+                      const RecurringTransactionsScreen(),
                     ),
                   ),
                   const _SettingsDivider(),
@@ -327,10 +361,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     iconColor: AppColors.info,
                     title: 'Bank Integration'.tr(),
                     subtitle: 'Connect your real bank accounts'.tr(),
-                    onTap: () => Navigator.push(
+                    onTap: () => _navigatePremiumOrScreen(
                       context,
-                      MaterialPageRoute(
-                          builder: (context) => const BankConnectScreen()),
+                      const BankConnectScreen(),
                     ),
                   ),
                   const _SettingsDivider(),
@@ -357,10 +390,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     title: 'SMS Sync'.tr(),
                     subtitle:
                         'Import bank and UPI transactions from SMS'.tr(),
-                    onTap: () => Navigator.push(
+                    onTap: () => _navigatePremiumOrScreen(
                       context,
-                      MaterialPageRoute(
-                          builder: (context) => const SmsSyncScreen()),
+                      const SmsSyncScreen(),
                     ),
                   ),
                   const _SettingsDivider(),
@@ -370,11 +402,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     title: 'Google Pay Sync'.tr(),
                     subtitle:
                         'Import Google Pay transactions from SMS'.tr(),
-                    onTap: () => Navigator.push(
+                    onTap: () => _navigatePremiumOrScreen(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => const GooglePaySyncScreen(),
-                      ),
+                      const GooglePaySyncScreen(),
                     ),
                   ),
                   const _SettingsDivider(),
@@ -396,10 +426,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     title: 'Family Mode'.tr(),
                     subtitle:
                         'Shared budgets and expense collaboration'.tr(),
-                    onTap: () => Navigator.push(
+                    onTap: () => _navigatePremiumOrScreen(
                       context,
-                      MaterialPageRoute(
-                          builder: (context) => const FamilyScreen()),
+                      const FamilyScreen(),
                     ),
                   ),
                 ],
@@ -521,6 +550,86 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 }
 
+// ─── Premium Banner ────────────────────────────────────────────────────────────
+
+class _PremiumBanner extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final isPremium = context.watch<PremiumController>().isPremium;
+    final gold = AppColors.warning;
+    final goldDark = AppColors.warningDark;
+
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const PaywallScreen()),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: isPremium
+              ? LinearGradient(
+                  colors: [gold, goldDark],
+                )
+              : LinearGradient(
+                  colors: [
+                    gold.withOpacity(0.12),
+                    goldDark.withOpacity(0.08),
+                  ],
+                ),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isPremium ? gold : gold.withOpacity(0.25),
+            width: isPremium ? 1.5 : 0.5,
+          ),
+        ),
+        child: Row(
+          children: [
+            FlowMascotAvatar(
+              size: 44,
+              showGlow: isPremium,
+              mood: isPremium ? MascotMood.achieve : MascotMood.happy,
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isPremium ? 'Premium Active'.tr() : 'Go Premium'.tr(),
+                    style: AppTypography.bodyLarge(
+                      fontWeight: FontWeight.w600,
+                      color: isPremium ? gold : null,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    isPremium
+                        ? 'All features unlocked. Thank you!'.tr()
+                        : 'Unlock AI insights, bank sync, family mode & more'.tr(),
+                    style: AppTypography.bodySmall(
+                      color: AppColors.textTertiary(context),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              isPremium ? CupertinoIcons.checkmark_seal_fill : CupertinoIcons.chevron_right,
+              color: isPremium ? gold : AppColors.textTertiary(context),
+              size: 20,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// Profile section with avatar and name
 class _ProfileSection extends StatelessWidget {
   const _ProfileSection({
@@ -554,7 +663,7 @@ class _ProfileSection extends StatelessWidget {
           width: 64,
           height: 64,
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
+            gradient: LinearGradient(
               colors: [AppColors.primary, AppColors.primaryDark],
             ),
             borderRadius: BorderRadius.circular(12),
@@ -602,7 +711,7 @@ class _ProfileSection extends StatelessWidget {
               color: AppColors.primary.withOpacity(0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(
+            child: Icon(
               CupertinoIcons.pencil,
               color: AppColors.primary,
               size: 20,
@@ -670,6 +779,7 @@ class _SettingsTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -750,11 +860,11 @@ class _SettingsSwitchTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: GestureDetector(
-        behavior: HitTestBehavior.translucent,
-        onTap: () => onChanged(!value),
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => onChanged(!value),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
           children: [
             Container(
@@ -851,7 +961,7 @@ class _ThemeSelector extends StatelessWidget {
                   color: AppColors.primary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(
+                child: Icon(
                   CupertinoIcons.moon_fill,
                   color: AppColors.primary,
                   size: 20,
@@ -915,6 +1025,146 @@ class _ThemeSelector extends StatelessWidget {
                 ),
               );
             }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Accent color selector widget
+class _AccentColorSelector extends StatelessWidget {
+  const _AccentColorSelector({
+    required this.selectedAccent,
+    required this.onAccentSelected,
+  });
+
+  final AppAccentColor selectedAccent;
+  final ValueChanged<AppAccentColor> onAccentSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    const accents = AppAccentColor.values;
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  CupertinoIcons.color_filter,
+                  color: AppColors.primary,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Accent Color'.tr(),
+                      style: AppTypography.bodyLarge(
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Choose primary accent color'.tr(),
+                      style: AppTypography.bodySmall(
+                        color: AppColors.textTertiary(context),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: accents.map((accent) {
+                final isSelected = accent == selectedAccent;
+                return GestureDetector(
+                  onTap: () => onAccentSelected(accent),
+                  child: AnimatedContainer(
+                    duration: AppAnimations.fast,
+                    margin: const EdgeInsets.only(right: 10),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? accent.primary.withOpacity(0.15)
+                          : AppColors.surfaceVariant(context),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: isSelected ? accent.primary : Colors.transparent,
+                        width: isSelected ? 1.5 : 0.5,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 22,
+                          height: 16,
+                          child: Stack(
+                            children: [
+                              Container(
+                                width: 14,
+                                height: 14,
+                                decoration: BoxDecoration(
+                                  color: accent.primary,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              Positioned(
+                                left: 8,
+                                child: Container(
+                                  width: 14,
+                                  height: 14,
+                                  decoration: BoxDecoration(
+                                    color: accent.primaryLight,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? AppColors.surface(context)
+                                          : AppColors.surfaceVariant(context),
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          accent.label.tr(),
+                          style: AppTypography.labelMedium(
+                            color: isSelected ? accent.primary : null,
+                            fontWeight:
+                                isSelected ? FontWeight.w700 : FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
           ),
         ],
       ),

@@ -8,6 +8,9 @@ import '../../data/models/transaction_model.dart';
 
 /// PDF export service for generating transaction reports
 class PdfExportService {
+  static const PdfColor _pdfGold = PdfColor.fromInt(0xFFB8860B);
+  static const PdfColor _pdfGrey = PdfColor.fromInt(0xFF6B7280);
+
   /// Export transactions to PDF
   static Future<void> exportTransactionsToPdf({
     required List<Transaction> transactions,
@@ -74,10 +77,13 @@ class PdfExportService {
             child: pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceAround,
               children: [
-                _buildSummaryItem('Total Income', totalIncome, PdfColors.green),
+                _buildSummaryItem('Total Income', totalIncome, _pdfGold),
                 _buildSummaryItem('Total Expense', totalExpense, PdfColors.red),
-                _buildSummaryItem('Balance', balance, 
-                    balance >= 0 ? PdfColors.blue : PdfColors.red),
+                _buildSummaryItem(
+                  'Balance',
+                  balance,
+                  balance >= 0 ? _pdfGrey : PdfColors.red,
+                ),
               ],
             ),
           ),
@@ -120,7 +126,7 @@ class PdfExportService {
                     _buildTableCell(transaction.category),
                     _buildTableCell(
                       '${isExpense ? '-' : '+'}₹${transaction.amount.toStringAsFixed(2)}',
-                      color: isExpense ? PdfColors.red : PdfColors.green,
+                      color: isExpense ? PdfColors.red : _pdfGold,
                     ),
                   ],
                 );

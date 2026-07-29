@@ -54,15 +54,22 @@ class _GoalsScreenState extends State<GoalsScreen> {
 
     await showCupertinoModalPopup<void>(
       context: context,
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(
-          left: 20,
-          right: 20,
-          top: 8,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-        ),
-        child: StatefulBuilder(
-          builder: (context, setModalState) => Column(
+      builder: (context) => Material(
+        color: Colors.transparent,
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.surface(context),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 16,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+          ),
+          child: StatefulBuilder(
+            builder: (context, setModalState) => SingleChildScrollView(
+              child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
@@ -216,6 +223,8 @@ class _GoalsScreenState extends State<GoalsScreen> {
                 },
               ),
             ],
+          ),
+        ),
           ),
         ),
       ),
@@ -435,59 +444,69 @@ class _GoalCard extends StatelessWidget {
   void _showGoalDetails(BuildContext context) {
     showCupertinoModalPopup<void>(
       context: context,
-      builder: (context) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(goal.name, style: AppTypography.headlineSmall(), maxLines: 2, overflow: TextOverflow.ellipsis),
-              const SizedBox(height: 8),
-              Text(
-                '${goal.currentAmount.toCurrency()} of ${goal.targetAmount.toCurrency()}',
-                style: AppTypography.titleLarge(color: goal.color),
-              ),
-              const SizedBox(height: 16),
-              Text(goal.description.isEmpty
-                  ? 'No description added.'.tr()
-                  : goal.description),
-              const SizedBox(height: 16),
-              Text('${'Category'.tr()}: ${goal.category}'),
-              const SizedBox(height: 8),
-              Text('${'Target date'.tr()}: ${goal.targetDate.toLongDate()}'),
-              const SizedBox(height: 8),
-              Text('${'Remaining'.tr()}: ${goal.remainingAmount.toCurrency()}'),
-              const SizedBox(height: 16),
-              Row(
+      builder: (context) => Material(
+        color: Colors.transparent,
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.surface(context),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: AppButton.secondary(
-                      label: 'Edit'.tr(),
-                      onPressed: () {
-                        Navigator.pop(context);
-                        onEdit();
-                      },
-                    ),
+                  Text(goal.name, style: AppTypography.headlineSmall(), maxLines: 2, overflow: TextOverflow.ellipsis),
+                  const SizedBox(height: 8),
+                  Text(
+                    '${goal.currentAmount.toCurrency()} of ${goal.targetAmount.toCurrency()}',
+                    style: AppTypography.titleLarge(color: goal.color),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: AppButton.danger(
-                      label: 'Delete'.tr(),
-                      onPressed: () async {
-                        await context
-                            .read<GoalRepository>()
-                            .deleteGoal(goal.id);
-                        if (context.mounted) {
-                          Navigator.pop(context);
-                          await onRefresh();
-                        }
-                      },
-                    ),
+                  const SizedBox(height: 16),
+                  Text(goal.description.isEmpty
+                      ? 'No description added.'.tr()
+                      : goal.description),
+                  const SizedBox(height: 16),
+                  Text('${'Category'.tr()}: ${goal.category}'),
+                  const SizedBox(height: 8),
+                  Text('${'Target date'.tr()}: ${goal.targetDate.toLongDate()}'),
+                  const SizedBox(height: 8),
+                  Text('${'Remaining'.tr()}: ${goal.remainingAmount.toCurrency()}'),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: AppButton.secondary(
+                          label: 'Edit'.tr(),
+                          onPressed: () {
+                            Navigator.pop(context);
+                            onEdit();
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: AppButton.danger(
+                          label: 'Delete'.tr(),
+                          onPressed: () async {
+                            await context
+                                .read<GoalRepository>()
+                                .deleteGoal(goal.id);
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                              await onRefresh();
+                            }
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
+            ),
           ),
         ),
       ),

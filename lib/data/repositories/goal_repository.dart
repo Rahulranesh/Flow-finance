@@ -60,19 +60,19 @@ class GoalRepository {
   static Color colorForCategory(GoalCategory category) {
     switch (category) {
       case GoalCategory.savings:
-        return const Color(0xFF22C55E);
+        return const Color(0xFFB8860B);
       case GoalCategory.investment:
-        return const Color(0xFF3B82F6);
+        return const Color(0xFF9CA3AF);
       case GoalCategory.purchase:
-        return const Color(0xFFF59E0B);
+        return const Color(0xFFD4AF37);
       case GoalCategory.travel:
-        return const Color(0xFF8B5CF6);
+        return const Color(0xFFC7A252);
       case GoalCategory.education:
-        return const Color(0xFF14B8A6);
+        return const Color(0xFF6B7280);
       case GoalCategory.emergency:
         return const Color(0xFFEF4444);
       case GoalCategory.retirement:
-        return const Color(0xFF6366F1);
+        return const Color(0xFFB8860B);
       case GoalCategory.other:
         return const Color(0xFF64748B);
     }

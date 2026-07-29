@@ -6,8 +6,8 @@ import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import '../theme/app_animations.dart';
 import '../theme/app_shadows.dart';
-import 'package:lottie/lottie.dart';
 import 'app_button.dart';
+import 'flow_mascot.dart';
 
 /// Modern loading states and skeleton screens
 class AppLoading {
@@ -27,11 +27,9 @@ class AppLoading {
                 SizedBox(
                   width: 80,
                   height: 80,
-                  child: Lottie.asset(
-                    'assets/mascot.json',
+                  child: Image.asset(
+                    mascotAsset(MascotMood.happy),
                     fit: BoxFit.contain,
-                    repeat: true,
-                    animate: true,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -410,11 +408,9 @@ class AppEmptyState extends StatelessWidget {
               SizedBox(
                 width: 120,
                 height: 120,
-                child: Lottie.asset(
-                  'assets/mascot.json',
+                child: Image.asset(
+                  mascotAsset(MascotMood.sorrow),
                   fit: BoxFit.contain,
-                  repeat: true,
-                  animate: true,
                 ),
               ),
             const SizedBox(height: 24),
@@ -479,11 +475,9 @@ class AppErrorState extends StatelessWidget {
             SizedBox(
               width: 120,
               height: 120,
-              child: Lottie.asset(
-                'assets/mascot.json',
+              child: Image.asset(
+                mascotAsset(MascotMood.sorrow),
                 fit: BoxFit.contain,
-                repeat: true,
-                animate: true,
               ),
             ),
             const SizedBox(height: 24),

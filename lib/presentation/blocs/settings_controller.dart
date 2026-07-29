@@ -4,6 +4,8 @@ import '../../core/services/notification_service.dart';
 import '../../data/models/transaction_model.dart';
 import '../../data/repositories/settings_repository.dart';
 
+import '../../core/theme/app_colors.dart';
+
 /// App-wide settings controller backed by the settings repository.
 class SettingsController extends ChangeNotifier {
   SettingsController(this._repository);
@@ -16,6 +18,7 @@ class SettingsController extends ChangeNotifier {
   UserSettings get settings => _settings;
   bool get isLoading => _isLoading;
   ThemeMode get themeMode => _settings.themeMode;
+  AppAccentColor get accentColor => _settings.accentColor;
   String get currencyCode => _settings.currency;
   String get languageCode => _settings.language;
 
@@ -25,17 +28,20 @@ class SettingsController extends ChangeNotifier {
 
     final storedCurrency = await _repository.getCurrency();
     final storedLanguage = await _repository.getLanguage();
+    final storedAccent = await _repository.getAccentColor();
 
     _settings = UserSettings(
       currency: storedCurrency == 'USD' ? 'USD' : 'INR',
-      language: storedLanguage == 'ta' ? 'ta' : 'en',
+      language: storedLanguage.isNotEmpty ? storedLanguage : 'en',
       themeMode: await _repository.getThemeMode(),
+      accentColor: storedAccent,
       notificationsEnabled: await _repository.getNotificationsEnabled(),
       biometricEnabled: await _repository.getBiometricEnabled(),
       userName: await _repository.getUserName(),
       userEmail: await _repository.getUserEmail(),
     );
 
+    AppColors.setAccent(_settings.accentColor);
     CurrencyFormatter.updateCurrency(_settings.currency);
     _isLoading = false;
     notifyListeners();
@@ -44,6 +50,13 @@ class SettingsController extends ChangeNotifier {
   Future<void> updateThemeMode(ThemeMode mode) async {
     await _repository.setThemeMode(mode);
     _settings = _settings.copyWith(themeMode: mode);
+    notifyListeners();
+  }
+
+  Future<void> updateAccentColor(AppAccentColor accent) async {
+    await _repository.setAccentColor(accent);
+    AppColors.setAccent(accent);
+    _settings = _settings.copyWith(accentColor: accent);
     notifyListeners();
   }
 
@@ -56,9 +69,8 @@ class SettingsController extends ChangeNotifier {
   }
 
   Future<void> updateLanguage(String languageCode) async {
-    final normalized = languageCode == 'ta' ? 'ta' : 'en';
-    await _repository.setLanguage(normalized);
-    _settings = _settings.copyWith(language: normalized);
+    await _repository.setLanguage(languageCode);
+    _settings = _settings.copyWith(language: languageCode);
     notifyListeners();
   }
 

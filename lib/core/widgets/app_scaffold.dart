@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
-import 'app_button.dart';
 
 /// Modern scaffold with consistent styling and navigation
 class AppScaffold extends StatelessWidget {
@@ -61,11 +60,17 @@ class AppScaffold extends StatelessWidget {
               scrolledUnderElevation: 0,
               leading: leading ??
                   (showBackButton && Navigator.canPop(context)
-                      ? AppIconButton(
-                          icon: CupertinoIcons.back,
+                      ? CupertinoButton(
+                          padding: EdgeInsets.zero,
                           onPressed:
                               onBackPressed ?? () => Navigator.pop(context),
-                          variant: AppIconButtonVariant.filled,
+                          child: Icon(
+                            CupertinoIcons.back,
+                            size: 22,
+                            color: isDark
+                                ? AppColors.textPrimaryDark
+                                : AppColors.textPrimaryLight,
+                          ),
                         )
                       : null),
               actions: actions,
@@ -136,11 +141,17 @@ class AppScrollScaffold extends StatelessWidget {
               pinned: pinnedHeader,
               leading: leading ??
                   (showBackButton && Navigator.canPop(context)
-                      ? AppIconButton(
-                          icon: CupertinoIcons.back,
+                      ? CupertinoButton(
+                          padding: EdgeInsets.zero,
                           onPressed:
                               onBackPressed ?? () => Navigator.pop(context),
-                          variant: AppIconButtonVariant.filled,
+                          child: Icon(
+                            CupertinoIcons.back,
+                            size: 22,
+                            color: isDark
+                                ? AppColors.textPrimaryDark
+                                : AppColors.textPrimaryLight,
+                          ),
                         )
                       : null),
               actions: actions,

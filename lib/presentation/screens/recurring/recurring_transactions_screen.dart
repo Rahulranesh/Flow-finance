@@ -12,7 +12,6 @@ import '../../../core/widgets/app_scaffold.dart';
 import '../../../core/widgets/app_loading.dart';
 import '../../../data/models/recurring_transaction_model.dart';
 import '../../../data/models/transaction_model.dart';
-import 'package:flow_finance/core/utils/extensions.dart';
 import '../../../core/widgets/cupertino_toast.dart';
 import '../../../data/repositories/recurring_transaction_repository.dart';
 
@@ -292,7 +291,9 @@ class _RecurringTransactionsScreenState
 
     showCupertinoModalPopup(
       context: context,
-      builder: (context) => _RecurringTransactionForm(
+      builder: (context) => Material(
+        color: Colors.transparent,
+        child: _RecurringTransactionForm(
         transaction: transaction,
         onSave: (data) async {
           try {
@@ -337,6 +338,7 @@ class _RecurringTransactionsScreenState
             );
           }
         },
+        ),
       ),
     );
   }

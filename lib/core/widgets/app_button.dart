@@ -80,8 +80,9 @@ class AppButton extends StatelessWidget {
     };
 
     final textColor = switch (variant) {
-      AppButtonVariant.primary => Colors.white,
-      AppButtonVariant.secondary => isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+      AppButtonVariant.primary => AppColors.textPrimaryLight,
+      AppButtonVariant.secondary =>
+        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
       AppButtonVariant.ghost => AppColors.primary,
       AppButtonVariant.danger => Colors.white,
     };

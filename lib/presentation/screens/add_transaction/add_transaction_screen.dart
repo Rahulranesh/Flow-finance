@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
@@ -23,43 +22,48 @@ class AddTransactionScreen extends StatefulWidget {
 
 class _AddTransactionScreenState extends State<AddTransactionScreen> {
   final TextEditingController _noteController = TextEditingController();
-  String _amount = '0';
+  final TextEditingController _amountController = TextEditingController();
   bool _isExpense = true;
   String _selectedCategory = 'Food';
   String? _selectedWalletId;
   DateTime _selectedDate = DateTime.now();
   bool _isLoading = false;
+  final FocusNode _amountFocus = FocusNode();
 
   final List<_Category> _categories = [
-    _Category('Food', Icons.restaurant, const Color(0xFFF59E0B)),
-    _Category('Shopping', CupertinoIcons.bag, const Color(0xFFEC4899)),
-    _Category('Transport', CupertinoIcons.car, const Color(0xFF3B82F6)),
-    _Category('Entertainment', CupertinoIcons.film, const Color(0xFF8B5CF6)),
+    _Category('Food', Icons.restaurant, const Color(0xFFD4AF37)),
+    _Category('Shopping', CupertinoIcons.bag, const Color(0xFF6B7280)),
+    _Category('Transport', CupertinoIcons.car, const Color(0xFF9CA3AF)),
+    _Category('Entertainment', CupertinoIcons.film, const Color(0xFFC7A252)),
     _Category('Health', CupertinoIcons.heart, const Color(0xFFEF4444)),
     _Category('Bills', CupertinoIcons.doc_text, const Color(0xFF64748B)),
-    _Category('Education', CupertinoIcons.book, const Color(0xFF14B8A6)),
-    _Category('Salary', CupertinoIcons.briefcase, const Color(0xFF22C55E)),
-    _Category('Freelance', Icons.laptop, const Color(0xFF6366F1)),
+    _Category('Education', CupertinoIcons.book, const Color(0xFF6B7280)),
+    _Category('Salary', CupertinoIcons.briefcase, const Color(0xFFB8860B)),
+    _Category('Freelance', Icons.laptop, const Color(0xFFB8860B)),
   ];
 
   @override
   void dispose() {
     _noteController.dispose();
+    _amountController.dispose();
+    _amountFocus.dispose();
     super.dispose();
   }
 
   Future<void> _saveTransaction() async {
+    final amountText = _amountController.text.trim();
     // Validate amount
     final amountError =
-        FormValidators.positiveNumber(_amount, fieldName: 'Amount');
+        FormValidators.positiveNumber(amountText, fieldName: 'Amount');
     if (amountError != null) {
       context.showMascotSnackBar(amountError, type: MascotSnackBarType.error);
       return;
     }
 
-    final amount = double.parse(_amount);
+    final amount = double.parse(amountText);
     if (amount <= 0) {
-      context.showMascotSnackBar('Please enter a valid amount'.tr(), type: MascotSnackBarType.error);
+      context.showMascotSnackBar('Please enter a valid amount'.tr(),
+          type: MascotSnackBarType.error);
       return;
     }
 
@@ -95,49 +99,20 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       }
 
       if (mounted) {
-        context.showMascotSnackBar('Transaction saved successfully'.tr(), type: MascotSnackBarType.success);
+        context.showMascotSnackBar('Transaction saved successfully'.tr(),
+            type: MascotSnackBarType.success);
         context.pop();
       }
     } catch (e) {
       if (mounted) {
-        context.showMascotSnackBar('Failed to save transaction'.tr(), type: MascotSnackBarType.error);
+        context.showMascotSnackBar('Failed to save transaction'.tr(),
+            type: MascotSnackBarType.error);
       }
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
       }
     }
-  }
-
-  void _onNumberPressed(String number) {
-    HapticFeedback.lightImpact();
-    setState(() {
-      if (_amount == '0') {
-        _amount = number;
-      } else {
-        _amount += number;
-      }
-    });
-  }
-
-  void _onBackspace() {
-    HapticFeedback.lightImpact();
-    setState(() {
-      if (_amount.length > 1) {
-        _amount = _amount.substring(0, _amount.length - 1);
-      } else {
-        _amount = '0';
-      }
-    });
-  }
-
-  void _onDecimal() {
-    HapticFeedback.lightImpact();
-    setState(() {
-      if (!_amount.contains('.')) {
-        _amount += '.';
-      }
-    });
   }
 
   @override
@@ -154,7 +129,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
               child: FlowMascotBubble(
                 message: _isExpense
                     ? 'What did you spend on?'.tr()
@@ -162,12 +137,17 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 subtitle: 'One step at a time. No forms, no pressure.'.tr(),
               ),
             ),
-            _AmountDisplay(
-              amount: _amount,
+            _AmountField(
+              controller: _amountController,
+              focusNode: _amountFocus,
+              autofocus: true,
               isExpense: _isExpense,
               onToggleType: () {
                 setState(() {
                   _isExpense = !_isExpense;
+                });
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  _amountFocus.requestFocus();
                 });
               },
             ),
@@ -184,14 +164,18 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         });
                       },
                     ),
+                    const SizedBox(height: 16),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: FlowMascotBubble(
-                        message: 'Smart pick: {category}'.tr(namedArgs: {'category': _selectedCategory}),
+                        message: 'Smart pick: {category}'
+                            .tr(namedArgs: {'category': _selectedCategory}),
                         subtitle:
-                            'Tap a category above or keep moving if this is correct.'.tr(),
+                            'Tap a category above or keep moving if this is correct.'
+                                .tr(),
                       ),
                     ),
+                    const SizedBox(height: 12),
                     _WalletSelector(
                       selectedWalletId: _selectedWalletId,
                       onWalletSelected: (walletId) {
@@ -213,12 +197,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 ),
               ),
             ),
-            _NumberPad(
-              onNumberPressed: _onNumberPressed,
-              onBackspace: _onBackspace,
-              onDecimal: _onDecimal,
-              isExpense: _isExpense,
-            ),
             Padding(
               padding: const EdgeInsets.all(20),
               child: AppButton.primary(
@@ -236,71 +214,102 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   }
 }
 
-/// Amount display section
-class _AmountDisplay extends StatelessWidget {
-  final String amount;
+/// Amount input field with Cupertino text field
+class _AmountField extends StatelessWidget {
+  final TextEditingController controller;
+  final FocusNode focusNode;
   final bool isExpense;
   final VoidCallback onToggleType;
+  final bool autofocus;
 
-  const _AmountDisplay({
-    required this.amount,
+  const _AmountField({
+    required this.controller,
+    required this.focusNode,
     required this.isExpense,
     required this.onToggleType,
+    this.autofocus = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final accentColor = isExpense ? AppColors.expense : AppColors.income;
     return Container(
-      padding: const EdgeInsets.all(24),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: BoxDecoration(
         color: AppColors.surface(context),
-        borderRadius: const BorderRadius.vertical(
-          bottom: Radius.circular(10),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.border(context).withOpacity(0.5),
+          width: 0.5,
         ),
       ),
       child: Column(
         children: [
           // Type Toggle
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _TypeButton(
-                label: 'Expense'.tr(),
-                isSelected: isExpense,
-                color: AppColors.expense,
-                onTap: onToggleType,
-              ),
-              const SizedBox(width: 12),
-              _TypeButton(
-                label: 'Income'.tr(),
-                isSelected: !isExpense,
-                color: AppColors.income,
-                onTap: onToggleType,
-              ),
-            ],
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _TypeButton(
+                  label: 'Expense',
+                  isSelected: isExpense,
+                  color: AppColors.expense,
+                  onTap: onToggleType,
+                ),
+                const SizedBox(width: 12),
+                _TypeButton(
+                  label: 'Income',
+                  isSelected: !isExpense,
+                  color: AppColors.income,
+                  onTap: onToggleType,
+                ),
+              ],
+            ),
           ),
-
-          const SizedBox(height: 24),
-
-          // Amount
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                CurrencyFormatter.currentCurrency.symbol,
-                style: AppTypography.displayMedium(
-                  color: AppColors.textSecondary(context),
+          const SizedBox(height: 16),
+          // Amount Field
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: CupertinoTextField(
+              controller: controller,
+              focusNode: focusNode,
+              autofocus: autofocus,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              textInputAction: TextInputAction.done,
+              placeholder: '0.00',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 36,
+                fontWeight: FontWeight.w700,
+                color: accentColor,
+              ),
+              decoration: BoxDecoration(
+                color: accentColor.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: accentColor.withOpacity(0.15),
+                  width: 1,
                 ),
               ),
-              const SizedBox(width: 4),
-              Text(
-                amount,
-                style: AppTypography.displayLarge(
-                  color: isExpense ? AppColors.expense : AppColors.income,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              prefix: Padding(
+                padding: const EdgeInsets.only(right: 4),
+                child: Text(
+                  CurrencyFormatter.currentCurrency.symbol,
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w600,
+                    color: accentColor.withOpacity(0.6),
+                  ),
                 ),
               ),
-            ],
+              clearButtonMode: OverlayVisibilityMode.editing,
+              onSubmitted: (_) => FocusScope.of(context).unfocus(),
+            ),
           ),
+          const SizedBox(height: 8),
         ],
       ),
     );
@@ -328,10 +337,13 @@ class _TypeButton extends StatelessWidget {
         duration: AppAnimations.fast,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.12) : AppColors.surfaceVariant(context),
+          color: isSelected
+              ? color.withOpacity(0.12)
+              : AppColors.surfaceVariant(context),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isSelected ? color : AppColors.border(context).withOpacity(0.5),
+            color:
+                isSelected ? color : AppColors.border(context).withOpacity(0.5),
             width: isSelected ? 1.5 : 0.5,
           ),
         ),
@@ -339,7 +351,11 @@ class _TypeButton extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              isSelected ? (color == AppColors.expense ? CupertinoIcons.arrow_down_right : CupertinoIcons.arrow_up_right) : CupertinoIcons.minus,
+              isSelected
+                  ? (color == AppColors.expense
+                      ? CupertinoIcons.arrow_down_right
+                      : CupertinoIcons.arrow_up_right)
+                  : CupertinoIcons.minus,
               size: 16,
               color: isSelected ? color : AppColors.textTertiary(context),
             ),
@@ -502,7 +518,7 @@ class _DateAndNoteSection extends StatelessWidget {
                       color: AppColors.primary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       CupertinoIcons.calendar,
                       color: AppColors.primary,
                       size: 20,
@@ -568,159 +584,6 @@ class _DateAndNoteSection extends StatelessWidget {
       'Dec'
     ];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
-  }
-}
-
-/// Number pad
-class _NumberPad extends StatelessWidget {
-  final ValueChanged<String> onNumberPressed;
-  final VoidCallback onBackspace;
-  final VoidCallback onDecimal;
-  final bool isExpense;
-
-  const _NumberPad({
-    required this.onNumberPressed,
-    required this.onBackspace,
-    required this.onDecimal,
-    this.isExpense = true,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final accentColor = isExpense ? AppColors.expense : AppColors.income;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              _NumberButton('1', onNumberPressed, accentColor: accentColor),
-              _NumberButton('2', onNumberPressed, accentColor: accentColor),
-              _NumberButton('3', onNumberPressed, accentColor: accentColor),
-            ],
-          ),
-          Row(
-            children: [
-              _NumberButton('4', onNumberPressed, accentColor: accentColor),
-              _NumberButton('5', onNumberPressed, accentColor: accentColor),
-              _NumberButton('6', onNumberPressed, accentColor: accentColor),
-            ],
-          ),
-          Row(
-            children: [
-              _NumberButton('7', onNumberPressed, accentColor: accentColor),
-              _NumberButton('8', onNumberPressed, accentColor: accentColor),
-              _NumberButton('9', onNumberPressed, accentColor: accentColor),
-            ],
-          ),
-          Row(
-            children: [
-              _NumberButton('.', onDecimal, isSpecial: true, accentColor: accentColor),
-              _NumberButton('0', onNumberPressed, accentColor: accentColor),
-              _ActionButton(
-                icon: CupertinoIcons.delete_left,
-                onTap: onBackspace,
-                accentColor: accentColor,
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _NumberButton extends StatelessWidget {
-  final String label;
-  final VoidCallback? onSpecialTap;
-  final ValueChanged<String>? onNumberTap;
-  final bool isSpecial;
-  final Color accentColor;
-
-  const _NumberButton(
-    this.label,
-    dynamic onTap, {
-    this.isSpecial = false,
-    this.accentColor = AppColors.expense,
-  })  : onSpecialTap = onTap is VoidCallback ? onTap : null,
-        onNumberTap = onTap is ValueChanged<String> ? onTap : null;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: () {
-          if (onNumberTap != null) {
-            onNumberTap!(label);
-          } else if (onSpecialTap != null) {
-            onSpecialTap!();
-          }
-        },
-        child: Container(
-          height: 64,
-          margin: const EdgeInsets.all(6),
-          decoration: BoxDecoration(
-            color: isSpecial
-                ? accentColor.withOpacity(0.08)
-                : AppColors.surface(context),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: isSpecial ? accentColor.withOpacity(0.2) : AppColors.border(context).withOpacity(0.5),
-              width: 0.5,
-            ),
-          ),
-          child: Center(
-            child: Text(
-              label,
-              style: AppTypography.headlineSmall(
-                color: isSpecial ? accentColor : null,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ActionButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onTap;
-  final Color accentColor;
-
-  const _ActionButton({
-    required this.icon,
-    required this.onTap,
-    this.accentColor = AppColors.expense,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        onLongPress: onTap,
-        child: Container(
-          height: 64,
-          margin: const EdgeInsets.all(6),
-          decoration: BoxDecoration(
-            color: accentColor.withOpacity(0.08),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: accentColor.withOpacity(0.2),
-              width: 0.5,
-            ),
-          ),
-          child: Center(
-            child: Icon(
-              icon,
-              color: accentColor,
-              size: 24,
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }
 
@@ -797,20 +660,30 @@ class _WalletSelector extends StatelessWidget {
                     context: context,
                     builder: (ctx) => CupertinoActionSheet(
                       title: Text('Select Wallet'.tr()),
-                      actions: wallets.map((w) => CupertinoActionSheetAction(
-                        child: Row(
-                          children: [
-                            Container(width: 8, height: 8, decoration: BoxDecoration(color: w.color, shape: BoxShape.circle)),
-                            const SizedBox(width: 8),
-                            Text(w.name),
-                            if (w.isDefault) ...[
-                              const SizedBox(width: 4),
-                              Text('(Default)'.tr(), style: AppTypography.labelSmall(color: AppColors.textSecondary(ctx))),
-                            ],
-                          ],
-                        ),
-                        onPressed: () => Navigator.pop(ctx, w.id),
-                      )).toList(),
+                      actions: wallets
+                          .map((w) => CupertinoActionSheetAction(
+                                child: Row(
+                                  children: [
+                                    Container(
+                                        width: 8,
+                                        height: 8,
+                                        decoration: BoxDecoration(
+                                            color: w.color,
+                                            shape: BoxShape.circle)),
+                                    const SizedBox(width: 8),
+                                    Text(w.name),
+                                    if (w.isDefault) ...[
+                                      const SizedBox(width: 4),
+                                      Text('(Default)'.tr(),
+                                          style: AppTypography.labelSmall(
+                                              color: AppColors.textSecondary(
+                                                  ctx))),
+                                    ],
+                                  ],
+                                ),
+                                onPressed: () => Navigator.pop(ctx, w.id),
+                              ))
+                          .toList(),
                       cancelButton: CupertinoActionSheetAction(
                         isDefaultAction: true,
                         child: Text('Cancel'.tr()),
@@ -822,7 +695,8 @@ class _WalletSelector extends StatelessWidget {
                 },
                 child: Row(
                   children: [
-                    Icon(CupertinoIcons.chevron_down, color: AppColors.textSecondary(context), size: 18),
+                    Icon(CupertinoIcons.chevron_down,
+                        color: AppColors.textSecondary(context), size: 18),
                   ],
                 ),
               ),

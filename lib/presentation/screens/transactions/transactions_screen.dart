@@ -9,7 +9,6 @@ import '../../../data/models/models.dart';
 import '../../blocs/blocs.dart';
 import '../../widgets/transaction_details_sheet.dart';
 
-
 /// Transactions list screen with filtering and search
 class TransactionsScreen extends StatefulWidget {
   const TransactionsScreen({super.key});
@@ -36,13 +35,15 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<SettingsController>();
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       backgroundColor:
           isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
       appBar: AppBar(
-        title: Text('Transactions'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis),
+        title: Text('Transactions'.tr(),
+            maxLines: 1, overflow: TextOverflow.ellipsis),
         centerTitle: false,
         backgroundColor:
             isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
@@ -60,21 +61,27 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                   CupertinoActionSheetAction(
                     child: Text('All Transactions'.tr()),
                     onPressed: () {
-                      context.read<TransactionBloc>().setFilter(TransactionFilter.all);
+                      context
+                          .read<TransactionBloc>()
+                          .setFilter(TransactionFilter.all);
                       Navigator.pop(context);
                     },
                   ),
                   CupertinoActionSheetAction(
                     child: Text('Income Only'.tr()),
                     onPressed: () {
-                      context.read<TransactionBloc>().setFilter(TransactionFilter.income);
+                      context
+                          .read<TransactionBloc>()
+                          .setFilter(TransactionFilter.income);
                       Navigator.pop(context);
                     },
                   ),
                   CupertinoActionSheetAction(
                     child: Text('Expenses Only'.tr()),
                     onPressed: () {
-                      context.read<TransactionBloc>().setFilter(TransactionFilter.expense);
+                      context
+                          .read<TransactionBloc>()
+                          .setFilter(TransactionFilter.expense);
                       Navigator.pop(context);
                     },
                   ),
@@ -171,7 +178,8 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                           color: AppColors.error,
                         ),
                         const SizedBox(height: 16),
-                        Text(bloc.error!, maxLines: 1, overflow: TextOverflow.ellipsis),
+                        Text(bloc.error!,
+                            maxLines: 1, overflow: TextOverflow.ellipsis),
                         const SizedBox(height: 16),
                         AppButton.secondary(
                           label: 'Retry'.tr(),
@@ -403,29 +411,31 @@ class _TransactionItem extends StatelessWidget {
 
   (IconData, Color) _getCategoryData(String category) {
     final categoryMap = <String, (IconData, Color)>{
-      'Food': (CupertinoIcons.bag, const Color(0xFFF59E0B)),
-      'Food & Dining': (CupertinoIcons.bag, const Color(0xFFF59E0B)),
-      'Transport': (CupertinoIcons.car, const Color(0xFF3B82F6)),
-      'Transportation': (CupertinoIcons.car, const Color(0xFF3B82F6)),
-      'Shopping': (CupertinoIcons.shopping_cart, const Color(0xFFEC4899)),
-      'Entertainment': (CupertinoIcons.film, const Color(0xFF8B5CF6)),
+      'Food': (CupertinoIcons.bag, const Color(0xFFD4AF37)),
+      'Food & Dining': (CupertinoIcons.bag, const Color(0xFFD4AF37)),
+      'Transport': (CupertinoIcons.car, const Color(0xFF9CA3AF)),
+      'Transportation': (CupertinoIcons.car, const Color(0xFF9CA3AF)),
+      'Shopping': (CupertinoIcons.shopping_cart, const Color(0xFF6B7280)),
+      'Entertainment': (CupertinoIcons.film, const Color(0xFFC7A252)),
       'Bills': (CupertinoIcons.doc_plaintext, const Color(0xFFEF4444)),
-      'Bills & Utilities':
-          (CupertinoIcons.doc_plaintext, const Color(0xFFEF4444)),
-      'Health': (CupertinoIcons.heart, const Color(0xFF10B981)),
-      'Health & Fitness': (CupertinoIcons.heart, const Color(0xFF10B981)),
-      'Education': (CupertinoIcons.book, const Color(0xFF14B8A6)),
-      'Salary': (CupertinoIcons.briefcase, const Color(0xFF22C55E)),
-      'Income': (CupertinoIcons.arrow_down, const Color(0xFF22C55E)),
-      'Refund': (CupertinoIcons.refresh_thick, const Color(0xFF22C55E)),
-      'Interest': (CupertinoIcons.money_dollar, const Color(0xFF22C55E)),
-      'Freelance': (CupertinoIcons.briefcase, const Color(0xFF6366F1)),
-      'Investment': (CupertinoIcons.chart_bar, const Color(0xFF06B6D4)),
-      'Transfer': (Icons.swap_horiz, const Color(0xFF6366F1)),
-      'Cash Withdrawal':
-          (CupertinoIcons.money_dollar, const Color(0xFFEF4444)),
+      'Bills & Utilities': (
+        CupertinoIcons.doc_plaintext,
+        const Color(0xFFEF4444)
+      ),
+      'Health': (CupertinoIcons.heart, const Color(0xFFB8860B)),
+      'Health & Fitness': (CupertinoIcons.heart, const Color(0xFFB8860B)),
+      'Education': (CupertinoIcons.book, const Color(0xFF6B7280)),
+      'Salary': (CupertinoIcons.briefcase, const Color(0xFFB8860B)),
+      'Income': (CupertinoIcons.arrow_down, const Color(0xFFB8860B)),
+      'Refund': (CupertinoIcons.refresh_thick, const Color(0xFFB8860B)),
+      'Interest': (CupertinoIcons.money_dollar, const Color(0xFFB8860B)),
+      'Freelance': (CupertinoIcons.briefcase, const Color(0xFFB8860B)),
+      'Investment': (CupertinoIcons.chart_bar, const Color(0xFF9CA3AF)),
+      'Transfer': (Icons.swap_horiz, const Color(0xFFB8860B)),
+      'Cash Withdrawal': (CupertinoIcons.money_dollar, const Color(0xFFEF4444)),
     };
 
-    return categoryMap[category] ?? (CupertinoIcons.tray_full, AppColors.primary);
+    return categoryMap[category] ??
+        (CupertinoIcons.tray_full, AppColors.primary);
   }
 }

@@ -6,7 +6,6 @@ import '../../../core/services/currency_formatter.dart';
 import '../../../core/theme/theme.dart';
 import '../../../core/widgets/widgets.dart';
 import '../../../data/models/wallet_model.dart';
-import '../../../core/utils/extensions.dart';
 import '../../blocs/wallet_bloc.dart';
 
 /// Add/Edit wallet screen
@@ -34,11 +33,11 @@ class _AddWalletScreenState extends State<AddWalletScreen> {
     AppColors.success,
     AppColors.warning,
     AppColors.error,
-    const Color(0xFF9C27B0),
-    const Color(0xFF00BCD4),
-    const Color(0xFFFF9800),
-    const Color(0xFF4CAF50),
-    const Color(0xFFE91E63),
+    const Color(0xFF6B7280),
+    const Color(0xFF6B7280),
+    const Color(0xFFC7A252),
+    const Color(0xFFB8860B),
+    const Color(0xFFD1D5DB),
   ];
 
   final List<IconData> _icons = [
@@ -145,12 +144,17 @@ class _AddWalletScreenState extends State<AddWalletScreen> {
                   },
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
-                      color: isSelected ? AppColors.primary.withOpacity(0.1) : AppColors.surfaceVariant(context),
+                      color: isSelected
+                          ? AppColors.primary.withOpacity(0.1)
+                          : AppColors.surfaceVariant(context),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: isSelected ? AppColors.primary : AppColors.border(context).withOpacity(0.5),
+                        color: isSelected
+                            ? AppColors.primary
+                            : AppColors.border(context).withOpacity(0.5),
                         width: isSelected ? 1.5 : 0.5,
                       ),
                     ),
@@ -160,10 +164,14 @@ class _AddWalletScreenState extends State<AddWalletScreen> {
                         Icon(
                           _getTypeIcon(type),
                           size: 18,
-                          color: isSelected ? AppColors.primary : AppColors.textSecondary(context),
+                          color: isSelected
+                              ? AppColors.primary
+                              : AppColors.textSecondary(context),
                         ),
                         const SizedBox(width: 6),
-                        Text(_getTypeName(type), style: AppTypography.labelMedium(color: isSelected ? AppColors.primary : null)),
+                        Text(_getTypeName(type),
+                            style: AppTypography.labelMedium(
+                                color: isSelected ? AppColors.primary : null)),
                       ],
                     ),
                   ),
@@ -201,7 +209,8 @@ class _AddWalletScreenState extends State<AddWalletScreen> {
                       ),
                     ),
                     child: isSelected
-                        ? const Icon(CupertinoIcons.check_mark, color: Colors.white)
+                        ? const Icon(CupertinoIcons.check_mark,
+                            color: Colors.white)
                         : null,
                   ),
                 );

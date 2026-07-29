@@ -682,24 +682,27 @@ Future<TransactionFilter?> showFilterPanel(
   return showCupertinoModalPopup<TransactionFilter>(
     context: context,
     builder: (context) {
-      return DraggableScrollableSheet(
-        initialChildSize: 0.7,
-        minChildSize: 0.5,
-        maxChildSize: 0.9,
-        expand: false,
-        builder: (context, scrollController) {
-          return FilterPanel(
-            initialFilter: initialFilter,
-            wallets: wallets,
-            availableCategories: availableCategories,
-            onFilterChanged: (filter) {
-              Navigator.pop(context, filter);
-            },
-            onClearFilters: () {
-              Navigator.pop(context, const TransactionFilter());
-            },
-          );
-        },
+      return Material(
+        color: Colors.transparent,
+        child: DraggableScrollableSheet(
+          initialChildSize: 0.7,
+          minChildSize: 0.5,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (context, scrollController) {
+            return FilterPanel(
+              initialFilter: initialFilter,
+              wallets: wallets,
+              availableCategories: availableCategories,
+              onFilterChanged: (filter) {
+                Navigator.pop(context, filter);
+              },
+              onClearFilters: () {
+                Navigator.pop(context, const TransactionFilter());
+              },
+            );
+          },
+        ),
       );
     },
   );

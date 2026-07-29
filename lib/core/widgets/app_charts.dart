@@ -22,130 +22,135 @@ class AppCharts {
         final primaryColor = lineColor ?? AppColors.primary;
         final secondaryColor = fillColor ?? primaryColor.withOpacity(0.1);
 
-        return LineChart(
-          LineChartData(
-            gridData: FlGridData(
-              show: showGrid,
-              drawVerticalLine: false,
-              horizontalInterval: 1,
-              getDrawingHorizontalLine: (value) {
-                return FlLine(
-                  color: isDark ? AppColors.borderDark : AppColors.borderLight,
-                  strokeWidth: 1,
-                  dashArray: [5, 5],
-                );
-              },
-            ),
-            titlesData: FlTitlesData(
-              show: true,
-              rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-              topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-              bottomTitles: AxisTitles(
-                axisNameWidget: Text(
-                  'Date',
-                  style: AppTypography.caption(
-                    color: AppColors.textTertiary(context),
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(8, 12, 16, 8),
+          child: LineChart(
+            LineChartData(
+              gridData: FlGridData(
+                show: showGrid,
+                drawVerticalLine: true,
+                horizontalInterval: 1,
+                verticalInterval: 1,
+                getDrawingHorizontalLine: (value) {
+                  return FlLine(
+                    color: (isDark ? AppColors.borderDark : AppColors.borderLight).withOpacity(0.5),
+                    strokeWidth: 1,
+                    dashArray: [4, 4],
+                  );
+                },
+                getDrawingVerticalLine: (value) {
+                  return FlLine(
+                    color: (isDark ? AppColors.borderDark : AppColors.borderLight).withOpacity(0.25),
+                    strokeWidth: 1,
+                    dashArray: [4, 4],
+                  );
+                },
+              ),
+              titlesData: FlTitlesData(
+                show: true,
+                rightTitles:
+                    const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                bottomTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 32,
+                    interval: 1,
+                    getTitlesWidget: (value, meta) {
+                      final index = value.toInt();
+                      if (index >= 0 && index < labels.length) {
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(
+                            labels[index],
+                            style: AppTypography.caption(
+                              color: AppColors.textTertiary(context),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
                   ),
                 ),
-                axisNameSize: 18,
-                sideTitles: SideTitles(
-                  showTitles: true,
-                  reservedSize: 30,
-                  interval: 1,
-                  getTitlesWidget: (value, meta) {
-                    final index = value.toInt();
-                    if (index >= 0 && index < labels.length) {
+                leftTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 52,
+                    interval: 2,
+                    getTitlesWidget: (value, meta) {
                       return Padding(
-                        padding: const EdgeInsets.only(top: 8),
+                        padding: const EdgeInsets.only(right: 6),
                         child: Text(
-                          labels[index],
+                          '\$${value.toInt()}',
                           style: AppTypography.caption(
                             color: AppColors.textTertiary(context),
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       );
-                    }
-                    return const SizedBox.shrink();
-                  },
-                ),
-              ),
-              leftTitles: AxisTitles(
-                axisNameWidget: Text(
-                  'Amount',
-                  style: AppTypography.caption(
-                    color: AppColors.textTertiary(context),
+                    },
                   ),
                 ),
-                axisNameSize: 18,
-                sideTitles: SideTitles(
-                  showTitles: true,
-                  reservedSize: 40,
-                  interval: 2,
-                  getTitlesWidget: (value, meta) {
-                    return Text(
-                      '\$${value.toInt()}',
-                      style: AppTypography.caption(
-                        color: AppColors.textTertiary(context),
-                      ),
-                    );
-                  },
-                ),
               ),
-            ),
-            borderData: FlBorderData(show: false),
-            minX: 0,
-            maxX: spots.length - 1.0,
-            minY: 0,
-            lineBarsData: [
-              LineChartBarData(
-                spots: spots,
-                isCurved: curved,
-                gradient: LinearGradient(
-                  colors: [primaryColor, primaryColor.withOpacity(0.8)],
-                ),
-                barWidth: 3,
-                isStrokeCapRound: true,
-                dotData: FlDotData(
-                  show: true,
-                  getDotPainter: (spot, percent, barData, index) {
-                    return FlDotCirclePainter(
-                      radius: 4,
-                      color: primaryColor,
-                      strokeWidth: 2,
-                      strokeColor: AppColors.surface(context),
-                    );
-                  },
-                ),
-                belowBarData: BarAreaData(
-                  show: true,
+              borderData: FlBorderData(show: false),
+              minX: 0,
+              maxX: spots.isEmpty ? 1.0 : spots.length - 1.0,
+              minY: 0,
+              lineBarsData: [
+                LineChartBarData(
+                  spots: spots,
+                  isCurved: curved,
                   gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      secondaryColor,
-                      secondaryColor.withOpacity(0),
-                    ],
+                    colors: [primaryColor, primaryColor.withOpacity(0.8)],
+                  ),
+                  barWidth: 3,
+                  isStrokeCapRound: true,
+                  dotData: FlDotData(
+                    show: true,
+                    getDotPainter: (spot, percent, barData, index) {
+                      return FlDotCirclePainter(
+                        radius: 4,
+                        color: primaryColor,
+                        strokeWidth: 2,
+                        strokeColor: AppColors.surface(context),
+                      );
+                    },
+                  ),
+                  belowBarData: BarAreaData(
+                    show: true,
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        secondaryColor,
+                        secondaryColor.withOpacity(0),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
-            lineTouchData: LineTouchData(
-              touchTooltipData: LineTouchTooltipData(
-                getTooltipColor: (touchedSpot) => AppColors.surface(context),
-                tooltipRoundedRadius: 12,
-                tooltipBorder: BorderSide(
-                  color: AppColors.border(context),
+              ],
+              lineTouchData: LineTouchData(
+                touchTooltipData: LineTouchTooltipData(
+                  getTooltipColor: (touchedSpot) => AppColors.surface(context),
+                  tooltipRoundedRadius: 12,
+                  tooltipBorder: BorderSide(
+                    color: AppColors.border(context),
+                  ),
+                  getTooltipItems: (touchedSpots) {
+                    return touchedSpots.map((spot) {
+                      return LineTooltipItem(
+                        '\$${spot.y.toStringAsFixed(0)}',
+                        AppTypography.labelMedium(
+                          color: AppColors.textPrimary(context),
+                        ),
+                      );
+                    }).toList();
+                  },
                 ),
-                getTooltipItems: (touchedSpots) {
-                  return touchedSpots.map((spot) {
-                    return LineTooltipItem(
-                      '\$${spot.y.toStringAsFixed(0)}',
-                      AppTypography.labelMedium(
-                        color: AppColors.textPrimary(context),
-                      ),
-                    );
-                  }).toList();
-                },
               ),
             ),
           ),
@@ -206,7 +211,8 @@ class AppCharts {
             ),
             titlesData: FlTitlesData(
               show: true,
-              rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              rightTitles:
+                  AxisTitles(sideTitles: SideTitles(showTitles: false)),
               topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
               bottomTitles: AxisTitles(
                 axisNameWidget: Text(
@@ -334,35 +340,35 @@ class ExpenseBreakdownChart extends StatelessWidget {
   Widget build(BuildContext context) {
     final sections = [
       PieChartSectionData(
-        color: const Color(0xFFF59E0B),
+        color: const Color(0xFFD4AF37),
         value: 35,
         title: '35%',
         radius: 60,
         titleStyle: AppTypography.labelSmall(color: Colors.white),
       ),
       PieChartSectionData(
-        color: const Color(0xFF3B82F6),
+        color: const Color(0xFF9CA3AF),
         value: 25,
         title: '25%',
         radius: 60,
         titleStyle: AppTypography.labelSmall(color: Colors.white),
       ),
       PieChartSectionData(
-        color: const Color(0xFFEC4899),
+        color: const Color(0xFF6B7280),
         value: 20,
         title: '20%',
         radius: 60,
         titleStyle: AppTypography.labelSmall(color: Colors.white),
       ),
       PieChartSectionData(
-        color: const Color(0xFF8B5CF6),
+        color: const Color(0xFFC7A252),
         value: 15,
         title: '15%',
         radius: 60,
         titleStyle: AppTypography.labelSmall(color: Colors.white),
       ),
       PieChartSectionData(
-        color: const Color(0xFF10B981),
+        color: const Color(0xFFB8860B),
         value: 5,
         title: '5%',
         radius: 60,
@@ -371,7 +377,6 @@ class ExpenseBreakdownChart extends StatelessWidget {
     ];
 
     return AppCard(
-
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -409,11 +414,11 @@ class ExpenseBreakdownChart extends StatelessWidget {
 
   Widget _buildLegend() {
     final items = [
-      ('Food', const Color(0xFFF59E0B)),
-      ('Transport', const Color(0xFF3B82F6)),
-      ('Shopping', const Color(0xFFEC4899)),
-      ('Entertainment', const Color(0xFF8B5CF6)),
-      ('Others', const Color(0xFF10B981)),
+      ('Food', const Color(0xFFD4AF37)),
+      ('Transport', const Color(0xFF9CA3AF)),
+      ('Shopping', const Color(0xFF6B7280)),
+      ('Entertainment', const Color(0xFFC7A252)),
+      ('Others', const Color(0xFFB8860B)),
     ];
 
     return Column(
@@ -460,7 +465,7 @@ class CategoryComparisonChart extends StatelessWidget {
           BarChartRodData(
             toY: 800,
             gradient: const LinearGradient(
-              colors: [Color(0xFFF59E0B), Color(0xFFFBBF24)],
+              colors: [Color(0xFFD4AF37), Color(0xFFF6E6A7)],
             ),
             width: 20,
             borderRadius: BorderRadius.circular(4),
@@ -473,7 +478,7 @@ class CategoryComparisonChart extends StatelessWidget {
           BarChartRodData(
             toY: 600,
             gradient: const LinearGradient(
-              colors: [Color(0xFF3B82F6), Color(0xFF60A5FA)],
+              colors: [Color(0xFF9CA3AF), Color(0xFFD1D5DB)],
             ),
             width: 20,
             borderRadius: BorderRadius.circular(4),
@@ -486,7 +491,7 @@ class CategoryComparisonChart extends StatelessWidget {
           BarChartRodData(
             toY: 450,
             gradient: const LinearGradient(
-              colors: [Color(0xFFEC4899), Color(0xFFF472B6)],
+              colors: [Color(0xFF6B7280), Color(0xFF9CA3AF)],
             ),
             width: 20,
             borderRadius: BorderRadius.circular(4),
@@ -499,7 +504,7 @@ class CategoryComparisonChart extends StatelessWidget {
           BarChartRodData(
             toY: 300,
             gradient: const LinearGradient(
-              colors: [Color(0xFF8B5CF6), Color(0xFFA78BFA)],
+              colors: [Color(0xFFC7A252), Color(0xFFD4AF37)],
             ),
             width: 20,
             borderRadius: BorderRadius.circular(4),
@@ -511,7 +516,6 @@ class CategoryComparisonChart extends StatelessWidget {
     final labels = ['Food', 'Trans', 'Shop', 'Ent'];
 
     return AppCard(
-
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

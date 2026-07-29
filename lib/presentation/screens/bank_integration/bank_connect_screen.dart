@@ -9,7 +9,6 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_scaffold.dart';
-import 'package:flow_finance/core/utils/extensions.dart';
 import '../../../core/widgets/cupertino_toast.dart';
 import '../../blocs/wallet_bloc.dart';
 
@@ -216,36 +215,33 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
               isSelected ? AppColors.primary.withValues(alpha: 0.1) : null,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: GestureDetector(
-              onTap: () {},
-              child: Row(
-                children: [
-                  Icon(
-                    provider['icon'] as IconData,
-                    size: 20,
-                    color: isSelected ? AppColors.primary : AppColors.textSecondary(context),
+            child: Row(
+              children: [
+                Icon(
+                  provider['icon'] as IconData,
+                  size: 20,
+                  color: isSelected ? AppColors.primary : AppColors.textSecondary(context),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text((provider['name'] as String).tr(), style: AppTypography.bodyLarge(fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 2),
+                      Text(
+                        (provider['description'] as String).tr(),
+                        style: AppTypography.bodySmall(color: AppColors.textTertiary(context)),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text((provider['name'] as String).tr(), style: AppTypography.bodyLarge(fontWeight: FontWeight.w600)),
-                        const SizedBox(height: 2),
-                        Text(
-                          (provider['description'] as String).tr(),
-                          style: AppTypography.bodySmall(color: AppColors.textTertiary(context)),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(
-                    isSelected ? CupertinoIcons.check_mark_circled_solid : CupertinoIcons.chevron_right,
-                    size: 18,
-                    color: isSelected ? AppColors.primary : AppColors.textTertiary(context),
-                  ),
-                ],
-              ),
+                ),
+                Icon(
+                  isSelected ? CupertinoIcons.check_mark_circled_solid : CupertinoIcons.chevron_right,
+                  size: 18,
+                  color: isSelected ? AppColors.primary : AppColors.textTertiary(context),
+                ),
+              ],
             ),
           ),
         );

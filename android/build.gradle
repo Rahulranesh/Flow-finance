@@ -19,6 +19,24 @@ allprojects {
         jcenter()
         mavenCentral()
     }
+
+    afterEvaluate { project ->
+        if (project.hasProperty("android")) {
+            project.android {
+                if (it.hasProperty("compileOptions")) {
+                    compileOptions {
+                        sourceCompatibility JavaVersion.VERSION_11
+                        targetCompatibility JavaVersion.VERSION_11
+                    }
+                }
+                if (it.hasProperty("kotlinOptions")) {
+                    kotlinOptions {
+                        jvmTarget = "11"
+                    }
+                }
+            }
+        }
+    }
 }
 
 rootProject.buildDir = '../build'

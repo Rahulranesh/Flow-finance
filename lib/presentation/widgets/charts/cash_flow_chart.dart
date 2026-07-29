@@ -81,126 +81,123 @@ class CashFlowChart extends StatelessWidget {
         // Chart
         SizedBox(
           height: 250,
-          child: BarChart(
-            BarChartData(
-              alignment: BarChartAlignment.spaceAround,
-              maxY: _getMaxY(),
-              groupsSpace: showDaily ? 10 : 18,
-              barTouchData: BarTouchData(
-                touchTooltipData: BarTouchTooltipData(
-                  getTooltipColor: (group) =>
-                      isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
-                  getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                    final isIncome = rodIndex == 0;
-                    return BarTooltipItem(
-                      '${isIncome ? 'Income'.tr() : 'Expense'.tr()}\n',
-                      AppTypography.labelSmall(
-                        color: isIncome ? AppColors.success : AppColors.error,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      children: [
-                        TextSpan(
-                          text: rod.toY.toCurrency(),
-                          style: AppTypography.bodySmall(
-                            color: isDark
-                                ? AppColors.textPrimaryDark
-                                : AppColors.textPrimaryLight,
-                          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(6, 12, 16, 8),
+            child: BarChart(
+              BarChartData(
+                alignment: BarChartAlignment.spaceAround,
+                maxY: _getMaxY(),
+                groupsSpace: showDaily ? 10 : 18,
+                barTouchData: BarTouchData(
+                  touchTooltipData: BarTouchTooltipData(
+                    getTooltipColor: (group) =>
+                        isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+                    tooltipRoundedRadius: 10,
+                    tooltipBorder: BorderSide(
+                      color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                      width: 0.5,
+                    ),
+                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                      final isIncome = rodIndex == 0;
+                      return BarTooltipItem(
+                        '${isIncome ? 'Income'.tr() : 'Expense'.tr()}\n',
+                        AppTypography.labelSmall(
+                          color: isIncome ? AppColors.success : AppColors.error,
+                          fontWeight: FontWeight.bold,
                         ),
-                      ],
+                        children: [
+                          TextSpan(
+                            text: rod.toY.toCurrency(),
+                            style: AppTypography.bodySmall(
+                              color: isDark
+                                  ? AppColors.textPrimaryDark
+                                  : AppColors.textPrimaryLight,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+                titlesData: FlTitlesData(
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 64,
+                      interval: _getHorizontalInterval(),
+                      getTitlesWidget: (value, meta) {
+                        if (value == meta.min) return const SizedBox.shrink();
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 6),
+                          child: Text(
+                            value.toCurrency(decimalDigits: 0),
+                            style: AppTypography.labelSmall(
+                              color: isDark
+                                  ? AppColors.textSecondaryDark
+                                  : AppColors.textSecondaryLight,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 32,
+                      getTitlesWidget: (value, meta) {
+                        final index = value.toInt();
+                        if (index < 0 || index >= barGroups.length) {
+                          return const SizedBox.shrink();
+                        }
+                        // Only show every Nth label to avoid crowding
+                        final step = _getBottomLabelInterval(barGroups.length).toInt();
+                        if (index % step != 0) {
+                          return const SizedBox.shrink();
+                        }
+                        final date = _getDateForIndex(index);
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Text(
+                            showDaily
+                                ? '${date.month}/${date.day}'
+                                : _getMonthAbbreviation(date.month),
+                            style: AppTypography.labelSmall(
+                              color: isDark
+                                  ? AppColors.textSecondaryDark
+                                  : AppColors.textSecondaryLight,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  rightTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  topTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                ),
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  horizontalInterval: _getHorizontalInterval(),
+                  getDrawingHorizontalLine: (value) {
+                    return FlLine(
+                      color: (isDark ? AppColors.borderDark : AppColors.borderLight).withOpacity(0.5),
+                      strokeWidth: 1,
+                      dashArray: [4, 4],
                     );
                   },
                 ),
+                borderData: FlBorderData(show: false),
+                barGroups: barGroups,
               ),
-              titlesData: FlTitlesData(
-                leftTitles: AxisTitles(
-                  axisNameWidget: Text(
-                    'Amount',
-                    style: AppTypography.labelSmall(
-                      color: isDark
-                          ? AppColors.textSecondaryDark
-                          : AppColors.textSecondaryLight,
-                    ),
-                  ),
-                  axisNameSize: 20,
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    reservedSize: 56,
-                    interval: _getHorizontalInterval(),
-                    getTitlesWidget: (value, meta) {
-                      if (value == meta.min) return const SizedBox.shrink();
-                      return Text(
-                        value.toCurrency(decimalDigits: 0),
-                        style: AppTypography.labelSmall(
-                          color: isDark
-                              ? AppColors.textSecondaryDark
-                              : AppColors.textSecondaryLight,
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                bottomTitles: AxisTitles(
-                  axisNameWidget: Text(
-                    'Date',
-                    style: AppTypography.labelSmall(
-                      color: isDark
-                          ? AppColors.textSecondaryDark
-                          : AppColors.textSecondaryLight,
-                    ),
-                  ),
-                  axisNameSize: 20,
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    reservedSize: 32,
-                    getTitlesWidget: (value, meta) {
-                      final index = value.toInt();
-                      if (index < 0 || index >= barGroups.length) {
-                        return const SizedBox.shrink();
-                      }
-                      // Only show every Nth label to avoid crowding
-                      final step = _getBottomLabelInterval(barGroups.length).toInt();
-                      if (index % step != 0) {
-                        return const SizedBox.shrink();
-                      }
-                      final date = _getDateForIndex(index);
-                      return Padding(
-                        padding: const EdgeInsets.only(top: 6),
-                        child: Text(
-                          showDaily
-                              ? '${date.month}/${date.day}'
-                              : _getMonthAbbreviation(date.month),
-                          style: AppTypography.labelSmall(
-                            color: isDark
-                                ? AppColors.textSecondaryDark
-                                : AppColors.textSecondaryLight,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                rightTitles: const AxisTitles(
-                  sideTitles: SideTitles(showTitles: false),
-                ),
-                topTitles: const AxisTitles(
-                  sideTitles: SideTitles(showTitles: false),
-                ),
-              ),
-              gridData: FlGridData(
-                show: true,
-                drawVerticalLine: false,
-                horizontalInterval: _getHorizontalInterval(),
-                getDrawingHorizontalLine: (value) {
-                  return FlLine(
-                    color:
-                        isDark ? AppColors.borderDark : AppColors.borderLight,
-                    strokeWidth: 1,
-                  );
-                },
-              ),
-              borderData: FlBorderData(show: false),
-              barGroups: barGroups,
             ),
           ),
         ),

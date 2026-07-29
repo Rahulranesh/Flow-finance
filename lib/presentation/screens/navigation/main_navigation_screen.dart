@@ -1,13 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../blocs/settings_controller.dart';
 import '../home/home_screen.dart';
 import '../transactions/transactions_screen.dart';
 import '../analytics/analytics_screen.dart';
 import '../budgets/budgets_screen.dart';
 import '../settings/settings_screen.dart';
-import '../add_transaction/add_transaction_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -29,6 +30,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<SettingsController>();
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -49,7 +51,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         ),
         child: SafeArea(
           child: SizedBox(
-            height: 50,
+            height: 62,
             child: Row(
               children: [
                 _navItem(0, CupertinoIcons.home, 'Home'),
@@ -71,25 +73,28 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () => setState(() => _currentIndex = index),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 24,
-              color: selected ? AppColors.primary : AppColors.textTertiary(context),
-            ),
-            const SizedBox(height: 3),
-            Text(
-              label.tr(),
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 24,
                 color: selected ? AppColors.primary : AppColors.textTertiary(context),
               ),
-            ),
-          ],
+              const SizedBox(height: 4),
+              Text(
+                label.tr(),
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                  color: selected ? AppColors.primary : AppColors.textTertiary(context),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

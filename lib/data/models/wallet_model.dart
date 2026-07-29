@@ -157,9 +157,8 @@ class Wallet {
   Color get color => Color(colorValue);
 
   /// Get icon data
-  IconData get icon => iconName != null
-      ? _getIconFromName(iconName!)
-      : type.icon;
+  IconData get icon =>
+      iconName != null ? _getIconFromName(iconName!) : type.icon;
 
   static IconData _getIconFromName(String name) {
     // Map common icon names to IconData
@@ -295,17 +294,17 @@ class WalletTransfer {
 /// Predefined wallet colors
 class WalletColors {
   static const List<int> colors = [
-    0xFF5B8DEF, // Blue
-    0xFF6DD230, // Green
-    0xFFF5A623, // Orange
+    0xFFB8860B, // Dark gold
+    0xFFB8860B, // Gold
+    0xFFE7B416, // Gold
     0xFFE02020, // Red
-    0xFF9013FE, // Purple
-    0xFF50E3C2, // Teal
-    0xFFB8E986, // Light Green
-    0xFFFF7A45, // Coral
-    0xFF7ED321, // Lime
-    0xFF4A90E2, // Royal Blue
-    0xFFBD10E0, // Magenta
+    0xFF6B7280, // Grey
+    0xFFD1D5DB, // Light grey
+    0xFFF3F4F6, // Soft grey
+    0xFFC7A252, // Muted gold
+    0xFFD4AF37, // Light gold
+    0xFF6B7280, // Slate
+    0xFFD1D5DB, // Silver
     0xFFFFC107, // Amber
   ];
 

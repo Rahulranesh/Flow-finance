@@ -67,10 +67,13 @@ class AppTheme {
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
-        backgroundColor: isLight ? AppColors.backgroundLight : AppColors.backgroundDark,
-        foregroundColor: isLight ? AppColors.textPrimaryLight : AppColors.textPrimaryDark,
+        backgroundColor:
+            isLight ? AppColors.backgroundLight : AppColors.backgroundDark,
+        foregroundColor:
+            isLight ? AppColors.textPrimaryLight : AppColors.textPrimaryDark,
         titleTextStyle: AppTypography.headlineSmall(
-          color: isLight ? AppColors.textPrimaryLight : AppColors.textPrimaryDark,
+          color:
+              isLight ? AppColors.textPrimaryLight : AppColors.textPrimaryDark,
         ),
         systemOverlayStyle: isLight
             ? SystemUiOverlayStyle.dark.copyWith(
@@ -96,7 +99,9 @@ class AppTheme {
       // Input decoration theme
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: isLight ? AppColors.surfaceVariantLight : AppColors.surfaceVariantDark,
+        fillColor: isLight
+            ? AppColors.surfaceVariantLight
+            : AppColors.surfaceVariantDark,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: space4,
           vertical: space3,
@@ -114,7 +119,7 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radiusMd),
-          borderSide: const BorderSide(
+          borderSide: BorderSide(
             color: AppColors.primary,
             width: 2,
           ),
@@ -134,10 +139,14 @@ class AppTheme {
           ),
         ),
         hintStyle: AppTypography.bodyMedium(
-          color: isLight ? AppColors.textTertiaryLight : AppColors.textTertiaryDark,
+          color: isLight
+              ? AppColors.textTertiaryLight
+              : AppColors.textTertiaryDark,
         ),
         labelStyle: AppTypography.labelMedium(
-          color: isLight ? AppColors.textSecondaryLight : AppColors.textSecondaryDark,
+          color: isLight
+              ? AppColors.textSecondaryLight
+              : AppColors.textSecondaryDark,
         ),
       ),
 
@@ -160,7 +169,8 @@ class AppTheme {
 
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: isLight ? AppColors.textPrimaryLight : AppColors.textPrimaryDark,
+          foregroundColor:
+              isLight ? AppColors.textPrimaryLight : AppColors.textPrimaryDark,
           padding: const EdgeInsets.symmetric(
             horizontal: space5,
             vertical: space3,
@@ -188,10 +198,13 @@ class AppTheme {
 
       // Chip theme
       chipTheme: ChipThemeData(
-        backgroundColor: isLight ? AppColors.surfaceVariantLight : AppColors.surfaceVariantDark,
+        backgroundColor: isLight
+            ? AppColors.surfaceVariantLight
+            : AppColors.surfaceVariantDark,
         selectedColor: AppColors.primary.withOpacity(0.1),
         labelStyle: AppTypography.labelMedium(
-          color: isLight ? AppColors.textPrimaryLight : AppColors.textPrimaryDark,
+          color:
+              isLight ? AppColors.textPrimaryLight : AppColors.textPrimaryDark,
         ),
         secondaryLabelStyle: AppTypography.labelMedium(
           color: AppColors.primary,
@@ -208,9 +221,11 @@ class AppTheme {
 
       // Bottom navigation bar theme
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: isLight ? AppColors.surfaceLight : AppColors.surfaceDark,
+        backgroundColor:
+            isLight ? AppColors.surfaceLight : AppColors.surfaceDark,
         selectedItemColor: AppColors.primary,
-        unselectedItemColor: isLight ? AppColors.textTertiaryLight : AppColors.textTertiaryDark,
+        unselectedItemColor:
+            isLight ? AppColors.textTertiaryLight : AppColors.textTertiaryDark,
         type: BottomNavigationBarType.fixed,
         elevation: 0,
         selectedLabelStyle: AppTypography.labelSmall(),
@@ -219,17 +234,20 @@ class AppTheme {
 
       // Navigation bar theme (Material 3)
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: isLight ? AppColors.surfaceLight : AppColors.surfaceDark,
+        backgroundColor:
+            isLight ? AppColors.surfaceLight : AppColors.surfaceDark,
         indicatorColor: AppColors.primary.withOpacity(0.1),
         labelTextStyle: MaterialStateProperty.all(
           AppTypography.labelSmall(),
         ),
         iconTheme: MaterialStateProperty.resolveWith((states) {
           if (states.contains(MaterialState.selected)) {
-            return const IconThemeData(color: AppColors.primary);
+            return IconThemeData(color: AppColors.primary);
           }
           return IconThemeData(
-            color: isLight ? AppColors.textTertiaryLight : AppColors.textTertiaryDark,
+            color: isLight
+                ? AppColors.textTertiaryLight
+                : AppColors.textTertiaryDark,
           );
         }),
       ),
@@ -237,7 +255,7 @@ class AppTheme {
       // Floating action button theme
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
+        foregroundColor: AppColors.textPrimaryLight,
         elevation: 0,
         highlightElevation: 0,
         shape: RoundedRectangleBorder(
@@ -259,7 +277,8 @@ class AppTheme {
 
       // Dialog theme
       dialogTheme: DialogThemeData(
-        backgroundColor: isLight ? AppColors.surfaceLight : AppColors.surfaceDark,
+        backgroundColor:
+            isLight ? AppColors.surfaceLight : AppColors.surfaceDark,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radiusXl),
         ),
@@ -268,7 +287,9 @@ class AppTheme {
 
       // Snackbar theme
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: isLight ? AppColors.textPrimaryLight : AppColors.surfaceElevatedDark,
+        backgroundColor: isLight
+            ? AppColors.textPrimaryLight
+            : AppColors.surfaceElevatedDark,
         contentTextStyle: AppTypography.bodyMedium(
           color: isLight ? Colors.white : AppColors.textPrimaryDark,
         ),
@@ -285,7 +306,9 @@ class AppTheme {
           if (states.contains(MaterialState.selected)) {
             return AppColors.primary;
           }
-          return isLight ? AppColors.textDisabledLight : AppColors.textDisabledDark;
+          return isLight
+              ? AppColors.textDisabledLight
+              : AppColors.textDisabledDark;
         }),
         trackColor: MaterialStateProperty.resolveWith((states) {
           if (states.contains(MaterialState.selected)) {
@@ -318,14 +341,17 @@ class AppTheme {
           if (states.contains(MaterialState.selected)) {
             return AppColors.primary;
           }
-          return isLight ? AppColors.textTertiaryLight : AppColors.textTertiaryDark;
+          return isLight
+              ? AppColors.textTertiaryLight
+              : AppColors.textTertiaryDark;
         }),
       ),
 
       // Slider theme
       sliderTheme: SliderThemeData(
         activeTrackColor: AppColors.primary,
-        inactiveTrackColor: isLight ? AppColors.borderLight : AppColors.borderDark,
+        inactiveTrackColor:
+            isLight ? AppColors.borderLight : AppColors.borderDark,
         thumbColor: AppColors.primary,
         overlayColor: AppColors.primary.withOpacity(0.1),
         trackHeight: 4,
@@ -334,7 +360,8 @@ class AppTheme {
       // Tab bar theme
       tabBarTheme: TabBarThemeData(
         labelColor: AppColors.primary,
-        unselectedLabelColor: isLight ? AppColors.textTertiaryLight : AppColors.textTertiaryDark,
+        unselectedLabelColor:
+            isLight ? AppColors.textTertiaryLight : AppColors.textTertiaryDark,
         labelStyle: AppTypography.labelLarge(),
         unselectedLabelStyle: AppTypography.labelLarge(),
         indicatorColor: AppColors.primary,
@@ -362,27 +389,29 @@ class AppTheme {
       // Progress indicator theme
       progressIndicatorTheme: ProgressIndicatorThemeData(
         color: AppColors.primary,
-        linearTrackColor: isLight ? AppColors.borderLight : AppColors.borderDark,
-        circularTrackColor: isLight ? AppColors.borderLight : AppColors.borderDark,
+        linearTrackColor:
+            isLight ? AppColors.borderLight : AppColors.borderDark,
+        circularTrackColor:
+            isLight ? AppColors.borderLight : AppColors.borderDark,
       ),
     );
   }
 
   /// Light color scheme
-  static const ColorScheme _lightColorScheme = ColorScheme(
+  static final ColorScheme _lightColorScheme = ColorScheme(
     brightness: Brightness.light,
     primary: AppColors.primary,
-    onPrimary: Colors.white,
+    onPrimary: AppColors.textPrimaryLight,
     primaryContainer: AppColors.primaryLight,
     onPrimaryContainer: Colors.white,
     secondary: AppColors.secondary,
-    onSecondary: Colors.white,
+    onSecondary: AppColors.textPrimaryLight,
     secondaryContainer: AppColors.secondaryLight,
-    onSecondaryContainer: Colors.white,
+    onSecondaryContainer: AppColors.textPrimaryLight,
     tertiary: AppColors.info,
-    onTertiary: Colors.white,
+    onTertiary: AppColors.textPrimaryLight,
     tertiaryContainer: AppColors.infoLight,
-    onTertiaryContainer: Colors.white,
+    onTertiaryContainer: AppColors.textPrimaryLight,
     error: AppColors.error,
     onError: Colors.white,
     errorContainer: AppColors.errorLight,
@@ -402,18 +431,18 @@ class AppTheme {
   );
 
   /// Dark color scheme
-  static const ColorScheme _darkColorScheme = ColorScheme(
+  static final ColorScheme _darkColorScheme = ColorScheme(
     brightness: Brightness.dark,
     primary: AppColors.primaryLight,
-    onPrimary: Colors.white,
+    onPrimary: AppColors.textPrimaryLight,
     primaryContainer: AppColors.primaryDark,
     onPrimaryContainer: Colors.white,
     secondary: AppColors.secondaryLight,
-    onSecondary: Colors.white,
+    onSecondary: AppColors.textPrimaryLight,
     secondaryContainer: AppColors.secondaryDark,
     onSecondaryContainer: Colors.white,
     tertiary: AppColors.infoLight,
-    onTertiary: Colors.white,
+    onTertiary: AppColors.textPrimaryLight,
     tertiaryContainer: AppColors.infoDark,
     onTertiaryContainer: Colors.white,
     error: AppColors.errorLight,

@@ -223,7 +223,7 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
                                 color: AppColors.primary.withOpacity(0.14),
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 CupertinoIcons.calendar,
                                 color: AppColors.primary,
                               ),

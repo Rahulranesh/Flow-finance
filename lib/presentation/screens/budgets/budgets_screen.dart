@@ -15,6 +15,7 @@ class BudgetsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<SettingsController>();
     return Scaffold(
       appBar: AppBar(
         title: Text('Budgets'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis),
@@ -30,7 +31,7 @@ class BudgetsScreen extends StatelessWidget {
                 color: AppColors.primary.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(CupertinoIcons.add, size: 20, color: AppColors.primary),
+              child: Icon(CupertinoIcons.add, size: 20, color: AppColors.primary),
             ),
           ),
           const SizedBox(width: 16),
@@ -531,11 +532,32 @@ class _SpendingInsights extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Top Spending Categories'.tr(),
-                    style: AppTypography.titleMedium(),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  Row(
+                    children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(
+                          CupertinoIcons.chart_bar_alt_fill,
+                          color: AppColors.primary,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Top Spending Categories'.tr(),
+                          style: AppTypography.titleMedium(),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 16),
                   if (ranked.isEmpty)
@@ -575,9 +597,12 @@ class _SpendingInsights extends StatelessWidget {
                 border: Border.all(color: AppColors.border(context), width: 0.5),
               ),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    width: 44,
+                    height: 44,
+                    padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       color: (alertBudget.isNotEmpty
                               ? AppColors.warning
@@ -595,7 +620,7 @@ class _SpendingInsights extends StatelessWidget {
                       size: 24,
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -678,7 +703,7 @@ class _InsightItem extends StatelessWidget {
                 : rank == 2
                     ? const Color(0xFFC0C0C0).withOpacity(0.2)
                     : const Color(0xFFCD7F32).withOpacity(0.2),
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(8),
           ),
           child: Center(
             child: Text(
@@ -693,7 +718,7 @@ class _InsightItem extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 10),
         Container(
           width: 8,
           height: 8,
@@ -702,7 +727,7 @@ class _InsightItem extends StatelessWidget {
             shape: BoxShape.circle,
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 10),
         Expanded(
           child: Text(
             category,
@@ -711,13 +736,16 @@ class _InsightItem extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
         ),
-        Text(
-          amount,
-          style: AppTypography.bodyMedium(
-            fontWeight: FontWeight.w600,
+        const SizedBox(width: 8),
+        Flexible(
+          child: Text(
+            amount,
+            style: AppTypography.bodyMedium(
+              fontWeight: FontWeight.w600,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(width: 8),
         Text(
@@ -725,8 +753,6 @@ class _InsightItem extends StatelessWidget {
           style: AppTypography.caption(
             color: AppColors.textTertiary(context),
           ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
         ),
       ],
     );

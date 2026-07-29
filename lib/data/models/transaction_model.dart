@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/app_colors.dart';
 
 /// Transaction model representing a financial transaction
 @immutable
@@ -161,28 +162,28 @@ class Category {
           id: 'food',
           name: 'Food & Dining',
           iconName: 'restaurant',
-          color: Color(0xFFF59E0B),
+          color: Color(0xFFD4AF37),
           isDefault: true,
         ),
         const Category(
           id: 'transport',
           name: 'Transportation',
           iconName: 'directions_car',
-          color: Color(0xFF3B82F6),
+          color: Color(0xFF9CA3AF),
           isDefault: true,
         ),
         const Category(
           id: 'shopping',
           name: 'Shopping',
           iconName: 'shopping_bag',
-          color: Color(0xFFEC4899),
+          color: Color(0xFF6B7280),
           isDefault: true,
         ),
         const Category(
           id: 'entertainment',
           name: 'Entertainment',
           iconName: 'movie',
-          color: Color(0xFF8B5CF6),
+          color: Color(0xFFC7A252),
           isDefault: true,
         ),
         const Category(
@@ -196,35 +197,35 @@ class Category {
           id: 'health',
           name: 'Health & Fitness',
           iconName: 'favorite',
-          color: Color(0xFF10B981),
+          color: Color(0xFFB8860B),
           isDefault: true,
         ),
         const Category(
           id: 'education',
           name: 'Education',
           iconName: 'school',
-          color: Color(0xFF14B8A6),
+          color: Color(0xFF6B7280),
           isDefault: true,
         ),
         const Category(
           id: 'salary',
           name: 'Salary',
           iconName: 'work',
-          color: Color(0xFF22C55E),
+          color: Color(0xFFB8860B),
           isDefault: true,
         ),
         const Category(
           id: 'freelance',
           name: 'Freelance',
           iconName: 'laptop',
-          color: Color(0xFF6366F1),
+          color: Color(0xFFB8860B),
           isDefault: true,
         ),
         const Category(
           id: 'investment',
           name: 'Investment',
           iconName: 'trending_up',
-          color: Color(0xFF06B6D4),
+          color: Color(0xFF9CA3AF),
           isDefault: true,
         ),
       ];
@@ -356,6 +357,7 @@ class UserSettings {
   final String currency;
   final String language;
   final ThemeMode themeMode;
+  final AppAccentColor accentColor;
   final bool notificationsEnabled;
   final bool biometricEnabled;
   final String? userName;
@@ -365,6 +367,7 @@ class UserSettings {
     this.currency = 'INR',
     this.language = 'en',
     this.themeMode = ThemeMode.system,
+    this.accentColor = AppAccentColor.gold,
     this.notificationsEnabled = true,
     this.biometricEnabled = false,
     this.userName,
@@ -375,6 +378,7 @@ class UserSettings {
     String? currency,
     String? language,
     ThemeMode? themeMode,
+    AppAccentColor? accentColor,
     bool? notificationsEnabled,
     bool? biometricEnabled,
     String? userName,
@@ -384,6 +388,7 @@ class UserSettings {
       currency: currency ?? this.currency,
       language: language ?? this.language,
       themeMode: themeMode ?? this.themeMode,
+      accentColor: accentColor ?? this.accentColor,
       notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
       biometricEnabled: biometricEnabled ?? this.biometricEnabled,
       userName: userName ?? this.userName,
@@ -396,6 +401,7 @@ class UserSettings {
       'currency': currency,
       'language': language,
       'themeMode': themeMode.name,
+      'accentColor': accentColor.name,
       'notificationsEnabled': notificationsEnabled,
       'biometricEnabled': biometricEnabled,
       'userName': userName,
@@ -410,6 +416,10 @@ class UserSettings {
       themeMode: ThemeMode.values.firstWhere(
         (e) => e.name == json['themeMode'],
         orElse: () => ThemeMode.system,
+      ),
+      accentColor: AppAccentColor.values.firstWhere(
+        (e) => e.name == json['accentColor'],
+        orElse: () => AppAccentColor.gold,
       ),
       notificationsEnabled: json['notificationsEnabled'] as bool? ?? true,
       biometricEnabled: json['biometricEnabled'] as bool? ?? false,

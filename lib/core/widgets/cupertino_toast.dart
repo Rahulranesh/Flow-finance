@@ -1,9 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:lottie/lottie.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
+import 'flow_mascot.dart';
 
 /// Single source of truth for all in-app notifications.
 /// Uses Overlay (no ScaffoldMessenger dependency), plays Lottie mascot,
@@ -165,15 +165,24 @@ class _MascotToastBodyState extends State<_MascotToastBody>
                       padding: const EdgeInsets.fromLTRB(4, 4, 14, 4),
                       child: Row(
                         children: [
-                          // Lottie mascot
+                          // Mascot image
                           SizedBox(
                             width: 44,
                             height: 44,
-                            child: Lottie.asset(
-                              'assets/mascot.json',
-                              width: 44,
-                              height: 44,
-                              fit: BoxFit.cover,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: Image.asset(
+                                mascotAsset(
+                                      widget.type == CupertinoToastType.success
+                                      ? MascotMood.achieve
+                                      : widget.type == CupertinoToastType.info
+                                      ? MascotMood.happy
+                                      : MascotMood.sorrow,
+                                ),
+                                width: 44,
+                                height: 44,
+                                fit: BoxFit.cover,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 8),

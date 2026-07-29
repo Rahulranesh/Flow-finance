@@ -41,7 +41,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Reports'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis),
+        title:
+            Text('Reports'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis),
         actions: [
           IconButton(
             icon: const Icon(CupertinoIcons.calendar),
@@ -70,16 +71,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
               children: [
                 _buildDateRangeDisplay(),
                 const SizedBox(height: 20),
-
                 _buildSummaryCards(insights),
                 const SizedBox(height: 24),
-
                 _buildChartsSection(filteredTransactions, isDark),
                 const SizedBox(height: 24),
-
                 _buildInsightsSection(insights, isDark),
                 const SizedBox(height: 24),
-
                 _buildTopCategoriesSection(filteredTransactions, isDark),
                 const SizedBox(height: 100),
               ],
@@ -492,9 +489,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
       AppColors.success,
       AppColors.warning,
       AppColors.error,
-      const Color(0xFF9C27B0),
-      const Color(0xFF00BCD4),
-      const Color(0xFFFF9800),
+      const Color(0xFF6B7280),
+      const Color(0xFF6B7280),
+      const Color(0xFFC7A252),
     ];
 
     int hash = 0;

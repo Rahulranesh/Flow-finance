@@ -7,23 +7,26 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Core
+import 'core/services/admob_service.dart';
+import 'core/services/auto_transfer_service.dart';
 import 'core/services/notification_service.dart';
 import 'core/services/firebase_notification_service.dart';
-import 'core/services/admob_service.dart';
-import 'core/theme/app_theme.dart';
-import 'core/theme/app_colors.dart';
+import 'core/services/premium_service.dart';
 import 'core/services/smart_rules_engine.dart';
-import 'core/services/auto_transfer_service.dart';
-
-// Data
-import 'data/database/database_exports.dart';
-import 'data/repositories/repositories.dart';
+import 'core/theme/theme.dart';
+import 'data/database/database.dart';
+import 'data/repositories/budget_repository.dart';
 import 'data/repositories/family_repository.dart';
-
-// BLoCs
-import 'presentation/blocs/blocs.dart';
-
-// Screens
+import 'data/repositories/goal_repository.dart';
+import 'data/repositories/recurring_transaction_repository.dart';
+import 'data/repositories/settings_repository.dart';
+import 'data/repositories/transaction_repository.dart';
+import 'data/repositories/wallet_repository.dart';
+import 'presentation/blocs/budget_bloc.dart';
+import 'presentation/blocs/premium_controller.dart';
+import 'presentation/blocs/settings_controller.dart';
+import 'presentation/blocs/transaction_bloc.dart';
+import 'presentation/blocs/wallet_bloc.dart';
 import 'presentation/screens/navigation/main_navigation_screen.dart';
 import 'presentation/screens/onboarding/onboarding_screen.dart';
 
@@ -52,7 +55,23 @@ void main() async {
 
   runApp(
     EasyLocalization(
-      supportedLocales: const [Locale('en'), Locale('ta')],
+      supportedLocales: const [
+        Locale('en'),
+        Locale('ta'),
+        Locale('hi'),
+        Locale('es'),
+        Locale('fr'),
+        Locale('de'),
+        Locale('zh'),
+        Locale('ja'),
+        Locale('ar'),
+        Locale('pt'),
+        Locale('ru'),
+        Locale('ml'),
+        Locale('te'),
+        Locale('bn'),
+        Locale('mr'),
+      ],
       path: 'assets/translations',
       fallbackLocale: const Locale('en'),
       startLocale: const Locale('en'),
@@ -135,6 +154,16 @@ class FlowFinanceApp extends StatelessWidget {
             context.read<SettingsRepository>(),
           )..load(),
         ),
+
+        // Premium
+        ChangeNotifierProvider(
+          create: (_) => PremiumService(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => PremiumController(
+            context.read<PremiumService>(),
+          ),
+        ),
       ],
       child: Consumer<SettingsController>(
         builder: (context, settings, child) => MaterialApp(
@@ -145,9 +174,7 @@ class FlowFinanceApp extends StatelessWidget {
           themeMode: settings.themeMode,
           localizationsDelegates: context.localizationDelegates,
           supportedLocales: context.supportedLocales,
-          locale: settings.languageCode == 'ta'
-              ? const Locale('ta')
-              : const Locale('en'),
+          locale: context.locale,
           home: AppInitializer(sharedPreferences: sharedPreferences),
         ),
       ),
@@ -221,6 +248,9 @@ class _AppInitializerState extends State<AppInitializer> {
       }
 
       if (mounted) {
+        if (settings.languageCode.isNotEmpty && context.locale.languageCode != settings.languageCode) {
+          await context.setLocale(Locale(settings.languageCode));
+        }
         setState(() {
           _isLoading = false;
         });
@@ -267,18 +297,26 @@ class _AppInitializerState extends State<AppInitializer> {
                     return Transform.scale(
                       scale: value,
                       child: Container(
-                        width: 100,
-                        height: 100,
+                        width: 104,
+                        height: 104,
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [AppColors.primary, AppColors.secondary],
-                          ),
                           borderRadius: BorderRadius.circular(24),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withOpacity(0.3),
+                              blurRadius: 20,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
                         ),
-                        child: const Icon(
-                          CupertinoIcons.money_dollar_circle_fill,
-                          color: Colors.white,
-                          size: 48,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(24),
+                          child: Image.asset(
+                            'assets/icon/app_icon.png',
+                            width: 104,
+                            height: 104,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
                     );

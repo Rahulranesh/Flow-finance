@@ -7,7 +7,6 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
-import 'package:flow_finance/core/utils/extensions.dart';
 import '../../../core/widgets/cupertino_toast.dart';
 import '../../../core/widgets/app_scaffold.dart';
 
@@ -227,44 +226,41 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
         children: UPIApp.supportedApps.map((app) {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: GestureDetector(
-              onTap: () {},
-              child: Row(
-                children: [
-                  Icon(
-                    true ? CupertinoIcons.check_mark_circled_solid : CupertinoIcons.circle,
-                    color: true ? AppColors.primary : AppColors.textTertiary(context),
-                    size: 24,
+            child: Row(
+              children: [
+                Icon(
+                  CupertinoIcons.check_mark_circled_solid,
+                  color: AppColors.primary,
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  const SizedBox(width: 12),
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(CupertinoIcons.creditcard_fill, color: AppColors.primary),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(app.name, style: AppTypography.bodyLarge()),
-                        Text(
-                          app.packageName,
-                          style: AppTypography.bodySmall(
-                            color: AppColors.textTertiary(context),
-                          ),
+                  child: Icon(CupertinoIcons.creditcard_fill, color: AppColors.primary),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(app.name, style: AppTypography.bodyLarge()),
+                      Text(
+                        app.packageName,
+                        style: AppTypography.bodySmall(
+                          color: AppColors.textTertiary(context),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  if (app.supportsSms)
-                    Icon(CupertinoIcons.chat_bubble_2_fill, color: AppColors.success, size: 20),
-                ],
-              ),
+                ),
+                if (app.supportsSms)
+                  Icon(CupertinoIcons.chat_bubble_2_fill, color: AppColors.success, size: 20),
+              ],
             ),
           );
         }).toList(),
@@ -586,7 +582,9 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
 
     showCupertinoModalPopup(
       context: context,
-      builder: (context) => DraggableScrollableSheet(
+      builder: (context) => Material(
+        color: Colors.transparent,
+        child: DraggableScrollableSheet(
         initialChildSize: 0.7,
         minChildSize: 0.5,
         maxChildSize: 0.9,
@@ -634,6 +632,7 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
             ],
           );
         },
+        ),
       ),
     );
   }

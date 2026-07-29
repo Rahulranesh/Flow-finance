@@ -1,9 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/widgets/widgets.dart';
+import '../blocs/transaction_bloc.dart';
 
 class HomeFloatingMascot extends StatefulWidget {
   const HomeFloatingMascot({super.key});
@@ -21,10 +23,13 @@ class _HomeFloatingMascotState extends State<HomeFloatingMascot> {
     });
   }
 
-  void _showFeatureAssistant() {
+  void _showFeatureAssistant(MascotMood mood) {
     showCupertinoModalPopup(
       context: context,
-      builder: (context) => const AppFeatureAssistantSheet(),
+      builder: (context) => Material(
+        color: Colors.transparent,
+        child: AppFeatureAssistantSheet(mood: mood),
+      ),
     );
   }
 
@@ -32,22 +37,29 @@ class _HomeFloatingMascotState extends State<HomeFloatingMascot> {
   Widget build(BuildContext context) {
     if (!_isVisible) return const SizedBox.shrink();
 
+    final transactionBloc = context.watch<TransactionBloc>();
+    final income = transactionBloc.totalIncome;
+    final expense = transactionBloc.totalExpense;
+    final isOverBudget = expense > income && income > 0;
+    final isNegativeBalance = transactionBloc.balance < 0;
+    final isSorrow = isOverBudget || isNegativeBalance;
+    final mood = isSorrow ? MascotMood.sorrow : MascotMood.happy;
+
     return Positioned(
       left: 16,
       bottom: 16,
       child: GestureDetector(
-        onTap: _showFeatureAssistant,
+        onTap: () => _showFeatureAssistant(mood),
         child: Stack(
           clipBehavior: Clip.none,
           children: [
             Container(
               width: 110,
               height: 110,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 shape: BoxShape.circle,
-
               ),
-              child: const FlowMascotAvatar(size: 110),
+              child: FlowMascotAvatar(size: 110, mood: mood),
             ),
             Positioned(
               top: 5,
@@ -77,7 +89,12 @@ class _HomeFloatingMascotState extends State<HomeFloatingMascot> {
 }
 
 class AppFeatureAssistantSheet extends StatelessWidget {
-  const AppFeatureAssistantSheet({super.key});
+  final MascotMood mood;
+
+  const AppFeatureAssistantSheet({
+    super.key,
+    this.mood = MascotMood.happy,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -104,7 +121,7 @@ class AppFeatureAssistantSheet extends StatelessWidget {
           SizedBox(
             width: 120,
             height: 120,
-            child: const FlowMascotAvatar(size: 120),
+            child: FlowMascotAvatar(size: 120, mood: mood),
           ),
           const SizedBox(height: 16),
           Text(

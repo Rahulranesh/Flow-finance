@@ -8,9 +8,11 @@ import '../../../core/widgets/quick_settings_button.dart';
 import '../../../core/utils/extensions.dart';
 import '../../../data/models/models.dart';
 import '../../blocs/blocs.dart';
+import '../../blocs/premium_controller.dart';
 import '../../widgets/transaction_details_sheet.dart';
 import '../settings/sms_sync_screen.dart';
 import '../settings/google_pay_sync_screen.dart';
+import '../settings/paywall_screen.dart';
 import '../add_transaction/add_transaction_screen.dart';
 import '../transactions/transactions_screen.dart';
 import '../settings/settings_screen.dart';
@@ -18,6 +20,7 @@ import '../../widgets/home_floating_mascot.dart';
 import '../wallets/wallets_screen.dart';
 import '../family/family_screen.dart';
 import '../analytics/analytics_screen.dart';
+import '../ai_insights/ai_insights_screen.dart';
 import '../goals/goals_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -30,6 +33,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
+    context.watch<SettingsController>();
     return AppScaffold(
       title: 'Flow Finance'.tr(),
       actions: [
@@ -64,17 +68,39 @@ class _HomeScreenState extends State<HomeScreen> {
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-                  child: FlowMascotBubble(
-                    message: 'Welcome back. I\'ll keep your money simple today.'.tr(),
-                    subtitle:
-                        'Check your balance, log spending, or ask for a quick insight.'.tr(),
-                    actionLabel: 'Add expense'.tr(),
-                    onAction: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const AddTransactionScreen(),
-                        ),
+                  child: Consumer<TransactionBloc>(
+                    builder: (context, transactionBloc, child) {
+                      final income = transactionBloc.totalIncome;
+                      final expense = transactionBloc.totalExpense;
+                      final isOverBudget = expense > income && income > 0;
+                      final isNegativeBalance = transactionBloc.balance < 0;
+                      final isSorrow = isOverBudget || isNegativeBalance;
+
+                      final mood = isSorrow ? MascotMood.sorrow : MascotMood.happy;
+                      final message = isSorrow
+                          ? 'Warning: Spending is higher than income right now!'
+                              .tr()
+                          : 'Welcome back. I\'ll keep your money simple today.'
+                              .tr();
+                      final subtitle = isSorrow
+                          ? 'Expenses lead income. Take a moment to review your recent transactions.'
+                              .tr()
+                          : 'Check your balance, log spending, or ask for a quick insight.'
+                              .tr();
+
+                      return FlowMascotBubble(
+                        mood: mood,
+                        message: message,
+                        subtitle: subtitle,
+                        actionLabel: isSorrow ? 'Review spending'.tr() : 'Add expense'.tr(),
+                        onAction: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const AddTransactionScreen(),
+                            ),
+                          );
+                        },
                       );
                     },
                   ),
@@ -82,117 +108,121 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
 
               // Balance Hero Section
-          SliverToBoxAdapter(
-            child: _BalanceHeroCard(),
-          ),
-
-          // Quick Actions
-          SliverToBoxAdapter(
-            child: _QuickActionsRow(),
-          ),
-
-          // Stats Overview
-          SliverToBoxAdapter(
-            child: _StatsOverview(),
-          ),
-
-          // Recent Transactions Header
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      'Recent Transactions'.tr(),
-                      style: AppTypography.titleLarge(),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const TransactionsScreen()),
-                      );
-                    },
-                    child: Text('See All'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis),
-                  ),
-                ],
+              SliverToBoxAdapter(
+                child: _BalanceHeroCard(),
               ),
-            ),
-          ),
 
-          // Recent Transactions List
-          Consumer<TransactionBloc>(
-            builder: (context, bloc, child) {
-              if (bloc.isLoading) {
-                return const SliverFillRemaining(
-                  child: Center(child: CupertinoActivityIndicator()),
-                );
-              }
+              // Quick Actions
+              SliverToBoxAdapter(
+                child: _QuickActionsRow(),
+              ),
 
-              if (bloc.error != null) {
-                return SliverFillRemaining(
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          CupertinoIcons.exclamationmark_circle,
-                          size: 48,
-                          color: AppColors.error,
+              // Stats Overview
+              SliverToBoxAdapter(
+                child: _StatsOverview(),
+              ),
+
+              // Recent Transactions Header
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Recent Transactions'.tr(),
+                          style: AppTypography.titleLarge(),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 16),
-                        Text(bloc.error!, maxLines: 1, overflow: TextOverflow.ellipsis),
-                        const SizedBox(height: 16),
-                        AppButton.secondary(
-                          label: 'Retry'.tr(),
-                          onPressed: () => bloc.loadTransactions(),
-                        ),
-                      ],
-                    ),
+                      ),
+                      CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const TransactionsScreen()),
+                          );
+                        },
+                        child: Text('See All'.tr(),
+                            maxLines: 1, overflow: TextOverflow.ellipsis),
+                      ),
+                    ],
                   ),
-                );
-              }
-
-              final transactions = bloc.transactions.take(10).toList();
-
-              if (transactions.isEmpty) {
-                return SliverFillRemaining(
-                  child: Center(
-                    child: AppEmptyState(
-                      icon: CupertinoIcons.doc_text,
-                      title: 'No transactions yet'.tr(),
-                      subtitle:
-                          'Add your first transaction to get started'.tr(),
-                    ),
-                  ),
-                );
-              }
-
-              return SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) => _TransactionListItem(
-                    transaction: transactions[index],
-                  ),
-                  childCount: transactions.length,
                 ),
-              );
-            },
-          ),
+              ),
 
-          // Bottom padding
-          const SliverPadding(
-            padding: EdgeInsets.only(bottom: 100),
+              // Recent Transactions List
+              Consumer<TransactionBloc>(
+                builder: (context, bloc, child) {
+                  if (bloc.isLoading) {
+                    return const SliverFillRemaining(
+                      child: Center(child: CupertinoActivityIndicator()),
+                    );
+                  }
+
+                  if (bloc.error != null) {
+                    return SliverFillRemaining(
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              CupertinoIcons.exclamationmark_circle,
+                              size: 48,
+                              color: AppColors.error,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(bloc.error!,
+                                maxLines: 1, overflow: TextOverflow.ellipsis),
+                            const SizedBox(height: 16),
+                            AppButton.secondary(
+                              label: 'Retry'.tr(),
+                              onPressed: () => bloc.loadTransactions(),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+
+                  final transactions = bloc.transactions.take(10).toList();
+
+                  if (transactions.isEmpty) {
+                    return SliverFillRemaining(
+                      child: Center(
+                        child: AppEmptyState(
+                          icon: CupertinoIcons.doc_text,
+                          title: 'No transactions yet'.tr(),
+                          subtitle:
+                              'Add your first transaction to get started'.tr(),
+                        ),
+                      ),
+                    );
+                  }
+
+                  return SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) => _TransactionListItem(
+                        transaction: transactions[index],
+                      ),
+                      childCount: transactions.length,
+                    ),
+                  );
+                },
+              ),
+
+              // Bottom padding
+              const SliverPadding(
+                padding: EdgeInsets.only(bottom: 100),
+              ),
+            ],
           ),
+          HomeFloatingMascot(),
         ],
       ),
-      HomeFloatingMascot(),
-    ],
-  ),
     );
   }
 }
@@ -201,6 +231,7 @@ class _HomeScreenState extends State<HomeScreen> {
 class _BalanceHeroCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    context.watch<SettingsController>();
     final transactionBloc = context.watch<TransactionBloc>();
     final balance = transactionBloc.balance;
     final income = transactionBloc.totalIncome;
@@ -220,7 +251,7 @@ class _BalanceHeroCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
+            gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
@@ -235,25 +266,25 @@ class _BalanceHeroCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                    SizedBox(
-                      child: Text(
-                        '+${NumberFormat.compact().format(income)}',
-                        style: AppTypography.labelMedium(
-                          color: Colors.white,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                  SizedBox(
+                    child: Text(
+                      '+${NumberFormat.compact().format(income)}',
+                      style: AppTypography.labelMedium(
+                        color: Colors.white,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(width: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(10),
+                  ),
+                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -306,10 +337,16 @@ class _BalanceHeroCard extends StatelessWidget {
                       iconColor: AppColors.income,
                     ),
                   ),
-                  Container(
-                    width: 1,
-                    height: 40,
-                    color: Colors.white.withOpacity(0.2),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Container(
+                      width: 1,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.25),
+                        borderRadius: BorderRadius.circular(1),
+                      ),
+                    ),
                   ),
                   Expanded(
                     child: _MiniStat(
@@ -398,10 +435,11 @@ class _QuickActionsRow extends StatelessWidget {
         label: 'SMS Sync',
         color: AppColors.secondary,
         onTap: () {
+          final isPremium = context.read<PremiumController>().isPremium;
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => const SmsSyncScreen(),
+              builder: (_) => isPremium ? const SmsSyncScreen() : const PaywallScreen(),
             ),
           );
         },
@@ -411,10 +449,11 @@ class _QuickActionsRow extends StatelessWidget {
         label: 'Google Pay',
         color: AppColors.success,
         onTap: () {
+          final isPremium = context.read<PremiumController>().isPremium;
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => const GooglePaySyncScreen(),
+              builder: (_) => isPremium ? const GooglePaySyncScreen() : const PaywallScreen(),
             ),
           );
         },
@@ -440,10 +479,11 @@ class _QuickActionsRow extends StatelessWidget {
         label: 'Family Mode',
         color: AppColors.info,
         onTap: () {
+          final isPremium = context.read<PremiumController>().isPremium;
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => const FamilyScreen(),
+              builder: (_) => isPremium ? const FamilyScreen() : const PaywallScreen(),
             ),
           );
         },
@@ -462,14 +502,15 @@ class _QuickActionsRow extends StatelessWidget {
         },
       ),
       _ActionItem(
-        icon: CupertinoIcons.building_2_fill,
-        label: 'Wallets & Accounts',
-        color: AppColors.warning,
+        icon: CupertinoIcons.sparkles,
+        label: 'AI Insights',
+        color: AppColors.primary,
         onTap: () {
+          final isPremium = context.read<PremiumController>().isPremium;
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => const WalletsScreen(),
+              builder: (_) => isPremium ? const AIInsightsScreen() : const PaywallScreen(),
             ),
           );
         },
@@ -495,12 +536,14 @@ class _QuickActionsRow extends StatelessWidget {
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: firstRow.map((action) => _buildActionButton(action)).toList(),
+            children:
+                firstRow.map((action) => _buildActionButton(action)).toList(),
           ),
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: secondRow.map((action) => _buildActionButton(action)).toList(),
+            children:
+                secondRow.map((action) => _buildActionButton(action)).toList(),
           ),
         ],
       ),
@@ -561,6 +604,7 @@ class _ActionItem {
 class _StatsOverview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    context.watch<SettingsController>();
     return Consumer2<BudgetBloc, TransactionBloc>(
       builder: (context, budgetBloc, transactionBloc, child) {
         final totalBudget = budgetBloc.totalBudgetLimit;
@@ -593,10 +637,13 @@ class _StatsOverview extends StatelessWidget {
                     child: _SimpleStatCard(
                       title: 'Monthly Budget'.tr(),
                       value: totalBudget.toCurrency(),
-                      subtitle: 'Left: {amount}'.tr(namedArgs: {'amount': remaining.toCurrency()}),
+                      subtitle: 'Left: {amount}'
+                          .tr(namedArgs: {'amount': remaining.toCurrency()}),
                       icon: CupertinoIcons.money_dollar,
                       trend: totalBudget > 0
-                          ? '{}% used'.tr(args: [((spent / totalBudget) * 100).toStringAsFixed(0)])
+                          ? '{}% used'.tr(args: [
+                              ((spent / totalBudget) * 100).toStringAsFixed(0)
+                            ])
                           : 'No budgets'.tr(),
                       isPositive: remaining >= 0,
                       color: AppColors.primary,
@@ -626,8 +673,9 @@ class _StatsOverview extends StatelessWidget {
                     child: _SimpleStatCard(
                       title: 'Net Savings'.tr(),
                       value: balance.toCurrency(),
-                      subtitle:
-                          'Income: {amount}'.tr(namedArgs: {'amount': transactionBloc.totalIncome.toCurrency()}),
+                      subtitle: 'Income: {amount}'.tr(namedArgs: {
+                        'amount': transactionBloc.totalIncome.toCurrency()
+                      }),
                       icon: CupertinoIcons.money_dollar,
                       trend: '${savingsRate.toStringAsFixed(0)}%',
                       isPositive: balance >= 0,
@@ -638,7 +686,10 @@ class _StatsOverview extends StatelessWidget {
                         accent: AppColors.secondary,
                         headline: balance.toCurrency(),
                         items: [
-                          ('Income'.tr(), transactionBloc.totalIncome.toCurrency()),
+                          (
+                            'Income'.tr(),
+                            transactionBloc.totalIncome.toCurrency()
+                          ),
                           (
                             'Expense'.tr(),
                             transactionBloc.totalExpense.toCurrency()
@@ -651,7 +702,8 @@ class _StatsOverview extends StatelessWidget {
                             'Insight'.tr(),
                             balance >= 0
                                 ? 'You are retaining more than you spend.'.tr()
-                                : 'Expenses are ahead of income right now.'.tr(),
+                                : 'Expenses are ahead of income right now.'
+                                    .tr(),
                           ),
                         ],
                       ),
@@ -714,7 +766,9 @@ class _SimpleStatCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
-                      color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                      color: isDark
+                          ? AppColors.textSecondaryDark
+                          : AppColors.textSecondaryLight,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -728,7 +782,9 @@ class _SimpleStatCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                color: isDark
+                    ? AppColors.textPrimaryDark
+                    : AppColors.textPrimaryLight,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -739,7 +795,9 @@ class _SimpleStatCard extends StatelessWidget {
                 subtitle!,
                 style: TextStyle(
                   fontSize: 11,
-                  color: isDark ? AppColors.textTertiaryDark : AppColors.textTertiaryLight,
+                  color: isDark
+                      ? AppColors.textTertiaryDark
+                      : AppColors.textTertiaryLight,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -848,28 +906,29 @@ class _TransactionListItem extends StatelessWidget {
 
   (IconData, Color) _getCategoryData(String category) {
     final categoryMap = <String, (IconData, Color)>{
-      'Food': (Icons.restaurant, const Color(0xFFF59E0B)),
-      'Food & Dining': (Icons.restaurant, const Color(0xFFF59E0B)),
-      'Transport': (CupertinoIcons.car, const Color(0xFF3B82F6)),
-      'Transportation': (CupertinoIcons.car, const Color(0xFF3B82F6)),
-      'Shopping': (CupertinoIcons.bag, const Color(0xFFEC4899)),
-      'Entertainment': (CupertinoIcons.film, const Color(0xFF8B5CF6)),
+      'Food': (Icons.restaurant, const Color(0xFFD4AF37)),
+      'Food & Dining': (Icons.restaurant, const Color(0xFFD4AF37)),
+      'Transport': (CupertinoIcons.car, const Color(0xFF9CA3AF)),
+      'Transportation': (CupertinoIcons.car, const Color(0xFF9CA3AF)),
+      'Shopping': (CupertinoIcons.bag, const Color(0xFF6B7280)),
+      'Entertainment': (CupertinoIcons.film, const Color(0xFFC7A252)),
       'Bills': (CupertinoIcons.doc_text, const Color(0xFFEF4444)),
       'Bills & Utilities': (CupertinoIcons.doc_text, const Color(0xFFEF4444)),
-      'Health': (CupertinoIcons.heart, const Color(0xFF10B981)),
-      'Health & Fitness': (CupertinoIcons.heart, const Color(0xFF10B981)),
-      'Education': (CupertinoIcons.book, const Color(0xFF14B8A6)),
-      'Salary': (CupertinoIcons.briefcase, const Color(0xFF22C55E)),
-      'Income': (CupertinoIcons.arrow_down, const Color(0xFF22C55E)),
-      'Refund': (CupertinoIcons.refresh, const Color(0xFF22C55E)),
-      'Interest': (CupertinoIcons.money_dollar, const Color(0xFF22C55E)),
-      'Freelance': (CupertinoIcons.doc_plaintext, const Color(0xFF6366F1)),
-      'Investment': (CupertinoIcons.arrow_up_right, const Color(0xFF06B6D4)),
-      'Transfer': (CupertinoIcons.repeat, const Color(0xFF6366F1)),
+      'Health': (CupertinoIcons.heart, const Color(0xFFB8860B)),
+      'Health & Fitness': (CupertinoIcons.heart, const Color(0xFFB8860B)),
+      'Education': (CupertinoIcons.book, const Color(0xFF6B7280)),
+      'Salary': (CupertinoIcons.briefcase, const Color(0xFFB8860B)),
+      'Income': (CupertinoIcons.arrow_down, const Color(0xFFB8860B)),
+      'Refund': (CupertinoIcons.refresh, const Color(0xFFB8860B)),
+      'Interest': (CupertinoIcons.money_dollar, const Color(0xFFB8860B)),
+      'Freelance': (CupertinoIcons.doc_plaintext, const Color(0xFFB8860B)),
+      'Investment': (CupertinoIcons.arrow_up_right, const Color(0xFF9CA3AF)),
+      'Transfer': (CupertinoIcons.repeat, const Color(0xFFB8860B)),
       'Cash Withdrawal': (CupertinoIcons.money_dollar, const Color(0xFFEF4444)),
     };
 
-    return categoryMap[category] ?? (CupertinoIcons.tray_full, AppColors.primary);
+    return categoryMap[category] ??
+        (CupertinoIcons.tray_full, AppColors.primary);
   }
 }
 
@@ -884,133 +943,178 @@ void _showBalanceDetailsSheet(
     context: context,
     builder: (context) => Material(
       color: Colors.transparent,
-      child: Container(
-      decoration: BoxDecoration(
-        color: AppColors.background(context),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-      ),
       child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppColors.primary, AppColors.primaryDark],
-                  ),
-                  borderRadius: BorderRadius.circular(10),
-                ),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.85,
+          ),
+          child: Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: AppColors.background(context),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Money Log',
-                      style: AppTypography.labelLarge(
-                        color: Colors.white.withOpacity(0.9),
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      balance.toCurrency(),
-                      style: AppTypography.displayMedium(color: Colors.white),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 10),
-                    Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
-                      children: [
-                        _sheetPill('Income {amount}'.tr(namedArgs: {'amount': income.toCurrency()})),
-                        _sheetPill('Expense {amount}'.tr(namedArgs: {'amount': expense.toCurrency()})),
-                        _sheetPill(
-                          income > 0
-                              ? 'Savings {percent}%'.tr(namedArgs: {'percent': (balance / income * 100).toStringAsFixed(1)})
-                              : 'Savings 0%'.tr(),
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        margin: const EdgeInsets.only(bottom: 16),
+                        decoration: BoxDecoration(
+                          color: AppColors.border(context),
+                          borderRadius: BorderRadius.circular(2),
                         ),
-                      ],
+                      ),
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              Text('Recent detailed logs'.tr(), style: AppTypography.titleMedium(), maxLines: 1, overflow: TextOverflow.ellipsis),
-              const SizedBox(height: 12),
-              ...transactions.map(
-                (transaction) => Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: GestureDetector(
-                    onTap: () => showTransactionDetailsSheet(context, transaction),
-                    child: Container(
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(18),
                       decoration: BoxDecoration(
-                        color: AppColors.surfaceVariant(context),
+                        gradient: LinearGradient(
+                          colors: [AppColors.primary, AppColors.primaryDark],
+                        ),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                      child: Row(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: (transaction.type == TransactionType.expense ? AppColors.expense : AppColors.income).withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Icon(
-                              transaction.type == TransactionType.expense ? CupertinoIcons.arrow_down : CupertinoIcons.arrow_up,
-                              color: transaction.type == TransactionType.expense ? AppColors.expense : AppColors.income,
-                              size: 20,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(transaction.title,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: AppTypography.bodyLarge(fontWeight: FontWeight.w600),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 2),
-                                  child: Text(
-                                    '${transaction.category} • ${transaction.date.toDateTime()}',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: AppTypography.bodySmall(color: AppColors.textTertiary(context)),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
                           Text(
-                            '${transaction.type == TransactionType.expense ? '-' : '+'}${transaction.amount.toCurrency()}',
-                            style: AppTypography.bodyLarge(
-                              fontWeight: FontWeight.w700,
-                              color: transaction.type == TransactionType.expense ? AppColors.expense : AppColors.income,
+                            'Money Log',
+                            style: AppTypography.labelLarge(
+                              color: Colors.white.withOpacity(0.9),
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
+                          const SizedBox(height: 8),
+                          Text(
+                            balance.toCurrency(),
+                            style: AppTypography.displayMedium(color: Colors.white),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 10),
+                          Wrap(
+                            spacing: 10,
+                            runSpacing: 10,
+                            children: [
+                              _sheetPill('Income {amount}'
+                                  .tr(namedArgs: {'amount': income.toCurrency()})),
+                              _sheetPill('Expense {amount}'
+                                  .tr(namedArgs: {'amount': expense.toCurrency()})),
+                              _sheetPill(
+                                income > 0
+                                    ? 'Savings {percent}%'.tr(namedArgs: {
+                                        'percent': (balance / income * 100)
+                                            .toStringAsFixed(1)
+                                      })
+                                    : 'Savings 0%'.tr(),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
-                  ),
+                    const SizedBox(height: 20),
+                    Text('Recent detailed logs'.tr(),
+                        style: AppTypography.titleMedium(),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis),
+                    const SizedBox(height: 12),
+                    ...transactions.map(
+                      (transaction) => Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: GestureDetector(
+                          onTap: () =>
+                              showTransactionDetailsSheet(context, transaction),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: AppColors.surfaceVariant(context),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 12),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color:
+                                        (transaction.type == TransactionType.expense
+                                                ? AppColors.expense
+                                                : AppColors.income)
+                                            .withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Icon(
+                                    transaction.type == TransactionType.expense
+                                        ? CupertinoIcons.arrow_down
+                                        : CupertinoIcons.arrow_up,
+                                    color:
+                                        transaction.type == TransactionType.expense
+                                            ? AppColors.expense
+                                            : AppColors.income,
+                                    size: 20,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        transaction.title,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: AppTypography.bodyLarge(
+                                            fontWeight: FontWeight.w600),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 2),
+                                        child: Text(
+                                          '${transaction.category} • ${transaction.date.toDateTime()}',
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: AppTypography.bodySmall(
+                                              color:
+                                                  AppColors.textTertiary(context)),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Text(
+                                  '${transaction.type == TransactionType.expense ? '-' : '+'}${transaction.amount.toCurrency()}',
+                                  style: AppTypography.bodyLarge(
+                                    fontWeight: FontWeight.w700,
+                                    color:
+                                        transaction.type == TransactionType.expense
+                                            ? AppColors.expense
+                                            : AppColors.income,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ),
-    ),
     ),
   );
 }
@@ -1025,7 +1129,10 @@ void _showMetricDetailsSheet(
   showCupertinoModalPopup<void>(
     context: context,
     builder: (context) => CupertinoActionSheet(
-      title: Text(title, style: AppTypography.headlineSmall(), maxLines: 1, overflow: TextOverflow.ellipsis),
+      title: Text(title,
+          style: AppTypography.headlineSmall(),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis),
       message: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,

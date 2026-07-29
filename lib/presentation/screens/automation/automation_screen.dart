@@ -5,11 +5,10 @@ import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/services/smart_rules_engine.dart';
 import '../../../core/services/auto_transfer_service.dart';
+import '../../../core/services/currency_formatter.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/app_button.dart';
-
-import '../../../core/widgets/app_scaffold.dart';
 import '../../../core/widgets/flow_mascot.dart';
 import '../../../core/widgets/mascot_snackbar.dart';
 import '../../../core/utils/extensions.dart';
@@ -47,18 +46,53 @@ class _AutomationScreenState extends State<AutomationScreen>
 
   @override
   Widget build(BuildContext context) {
-    return AppScaffold(
-      title: 'Automation'.tr(),
-      bottomNavigationBar: TabBar(
-        controller: _tabController,
-        indicatorColor: AppColors.primary,
-        labelColor: AppColors.primary,
-        unselectedLabelColor: AppColors.textSecondary(context),
-        tabs: [
-          Tab(text: 'Rules'.tr()),
-          Tab(text: 'Transfers'.tr()),
-          Tab(text: 'Round-Up'.tr()),
-        ],
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Scaffold(
+      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+      appBar: AppBar(
+        title: Text(
+          'Automation'.tr(),
+          style: AppTypography.headlineSmall(
+            color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+          ),
+        ),
+        centerTitle: false,
+        backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        leading: CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: () => Navigator.pop(context),
+          child: Icon(
+            CupertinoIcons.back,
+            size: 22,
+            color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+          ),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(46),
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(color: AppColors.border(context), width: 0.5),
+              ),
+            ),
+            child: TabBar(
+              controller: _tabController,
+              indicatorColor: AppColors.primary,
+              labelColor: AppColors.primary,
+              unselectedLabelColor: AppColors.textSecondary(context),
+              labelStyle: AppTypography.labelLarge(fontWeight: FontWeight.w600),
+              unselectedLabelStyle: AppTypography.labelLarge(),
+              tabs: [
+                Tab(text: 'Rules'.tr()),
+                Tab(text: 'Transfers'.tr()),
+                Tab(text: 'Round-Up'.tr()),
+              ],
+            ),
+          ),
+        ),
       ),
       body: TabBarView(
         controller: _tabController,
@@ -87,48 +121,60 @@ class _SmartRulesTabState extends State<_SmartRulesTab> {
   Widget build(BuildContext context) {
     final rules = widget.rulesEngine.getRules();
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      floatingActionButton: CupertinoButton(
-        onPressed: _showAddRuleDialog,
-        color: AppColors.primary,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        borderRadius: BorderRadius.circular(10),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(CupertinoIcons.add, size: 18, color: Colors.white),
-            const SizedBox(width: 6),
-            Text('Add Rule'.tr(), style: const TextStyle(color: Colors.white, fontSize: 14)),
-          ],
-        ),
-      ),
-      body: rules.isEmpty
-          ? _buildEmptyState(
-              icon: Icons.auto_fix_high_rounded,
-              title: 'No smart rules yet'.tr(),
-              subtitle: 'Rules auto-categorize your transactions'.tr(),
-            )
-          : ListView.separated(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
-              itemCount: rules.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (context, i) => _RuleTile(
-                rule: rules[i],
-                onToggle: (value) {
-                  setState(() {
-                    widget.rulesEngine.updateRule(rules[i].copyWith(isActive: value));
-                  });
-                },
-                onDelete: () {
-                  setState(() {
-                    widget.rulesEngine.removeRule(rules[i].id);
-                  });
-                  context.showMascotSnackBar('Rule deleted'.tr(), type: MascotSnackBarType.info);
-                },
-                onEdit: () => _showEditRuleDialog(rules[i]),
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+          child: GestureDetector(
+            onTap: _showAddRuleDialog,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColors.primary.withOpacity(0.2), width: 0.5),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(CupertinoIcons.add, size: 18, color: AppColors.primary),
+                  const SizedBox(width: 8),
+                  Text('Add Rule'.tr(), style: TextStyle(color: AppColors.primary, fontSize: 14, fontWeight: FontWeight.w600)),
+                ],
               ),
             ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Expanded(
+          child: rules.isEmpty
+              ? _buildEmptyState(
+                  icon: Icons.auto_fix_high_rounded,
+                  title: 'No smart rules yet'.tr(),
+                  subtitle: 'Rules auto-categorize your transactions'.tr(),
+                )
+              : ListView.separated(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                  itemCount: rules.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  itemBuilder: (context, i) => _RuleTile(
+                    rule: rules[i],
+                    onToggle: (value) {
+                      setState(() {
+                        widget.rulesEngine.updateRule(rules[i].copyWith(isActive: value));
+                      });
+                    },
+                    onDelete: () {
+                      setState(() {
+                        widget.rulesEngine.removeRule(rules[i].id);
+                      });
+                      context.showMascotSnackBar('Rule deleted'.tr(), type: MascotSnackBarType.info);
+                    },
+                    onEdit: () => _showEditRuleDialog(rules[i]),
+                  ),
+                ),
+        ),
+      ],
     );
   }
 
@@ -286,91 +332,103 @@ class _AutoTransferTabState extends State<_AutoTransferTab> {
     final rules = widget.transferService.rules;
     final summary = widget.transferService.getSavingsSummary();
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      floatingActionButton: CupertinoButton(
-        onPressed: _showAddDialog,
-        color: AppColors.primary,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        borderRadius: BorderRadius.circular(10),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(CupertinoIcons.add, size: 18, color: Colors.white),
-            const SizedBox(width: 6),
-            Text('Add Transfer'.tr(), style: const TextStyle(color: Colors.white, fontSize: 14)),
-          ],
-        ),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
-        children: [
-          // Summary card
-          Container(
-            decoration: BoxDecoration(
-              color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: isDark ? AppColors.borderDark : AppColors.borderLight,
-                width: 0.5,
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+          child: GestureDetector(
+            onTap: _showAddDialog,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColors.primary.withOpacity(0.2), width: 0.5),
               ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const FlowMascotAvatar(size: 52, showGlow: true),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Last 30 Days'.tr(),
-                            style: AppTypography.labelSmall(color: AppColors.textSecondary(context))),
-                        const SizedBox(height: 6),
-                        Row(
-                          children: [
-                            _statChip('Saved'.tr(), '\$${summary.totalSaved.toStringAsFixed(2)}',
-                                AppColors.success),
-                            const SizedBox(width: 12),
-                            _statChip('Transfers'.tr(), '${summary.transferCount}', AppColors.primary),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
+                  Icon(CupertinoIcons.add, size: 18, color: AppColors.primary),
+                  const SizedBox(width: 8),
+                  Text('Add Transfer'.tr(), style: TextStyle(color: AppColors.primary, fontSize: 14, fontWeight: FontWeight.w600)),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 16),
-
-          if (rules.isEmpty)
-            _buildEmptyState(
-              icon: CupertinoIcons.refresh_thick,
-              title: 'No auto-transfer rules'.tr(),
-              subtitle: 'Set up rules to move money automatically'.tr(),
-            )
-          else
-            ...rules.map((rule) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _AutoTransferTile(
-                    rule: rule,
-                    onToggle: (v) {
-                      setState(() {
-                        widget.transferService.addAutoTransferRule(rule.copyWith(isActive: v));
-                      });
-                    },
-                    onDelete: () {
-                      setState(() {
-                        widget.transferService.removeAutoTransferRule(rule.id);
-                      });
-                      context.showMascotSnackBar('Transfer rule deleted'.tr(), type: MascotSnackBarType.info);
-                    },
+        ),
+        const SizedBox(height: 12),
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            children: [
+              // Summary card
+              Container(
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                    width: 0.5,
                   ),
-                )),
-        ],
-      ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      FlowMascotAvatar(size: 52, showGlow: true, mood: MascotMood.achieve),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Last 30 Days'.tr(),
+                                style: AppTypography.labelSmall(color: AppColors.textSecondary(context))),
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                _statChip('Saved'.tr(), CurrencyFormatter.format(summary.totalSaved),
+                                    AppColors.success),
+                                const SizedBox(width: 12),
+                                _statChip('Transfers'.tr(), '${summary.transferCount}', AppColors.primary),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              if (rules.isEmpty)
+                _buildEmptyState(
+                  icon: CupertinoIcons.refresh_thick,
+                  title: 'No auto-transfer rules'.tr(),
+                  subtitle: 'Set up rules to move money automatically'.tr(),
+                )
+              else
+                ...rules.map((rule) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _AutoTransferTile(
+                        rule: rule,
+                        onToggle: (v) {
+                          setState(() {
+                            widget.transferService.addAutoTransferRule(rule.copyWith(isActive: v));
+                          });
+                        },
+                        onDelete: () {
+                          setState(() {
+                            widget.transferService.removeAutoTransferRule(rule.id);
+                          });
+                          context.showMascotSnackBar('Transfer rule deleted'.tr(), type: MascotSnackBarType.info);
+                        },
+                      ),
+                    )),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -457,7 +515,7 @@ class _AutoTransferTile extends StatelessWidget {
                   Text(rule.name, style: AppTypography.bodyLarge(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 2),
                   Text(
-                    '${rule.calculationType.name} · \$${rule.amount}',
+                    '${rule.calculationType.name} · ${CurrencyFormatter.format(rule.amount)}',
                     style: AppTypography.bodySmall(color: AppColors.textTertiary(context)),
                   ),
                 ],
@@ -490,56 +548,68 @@ class _RoundUpTabState extends State<_RoundUpTab> {
   Widget build(BuildContext context) {
     final rules = widget.transferService.roundUpRules;
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      floatingActionButton: CupertinoButton(
-        onPressed: _showAddDialog,
-        color: AppColors.success,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        borderRadius: BorderRadius.circular(10),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(CupertinoIcons.add, size: 18, color: Colors.white),
-            const SizedBox(width: 6),
-            Text('Add Round-Up'.tr(), style: const TextStyle(color: Colors.white, fontSize: 14)),
-          ],
-        ),
-      ),
-      body: rules.isEmpty
-          ? _buildEmptyState(
-              icon: CupertinoIcons.money_dollar,
-              title: 'No round-up rules yet'.tr(),
-              subtitle: 'Round up purchases and save the change'.tr(),
-            )
-          : ListView.separated(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
-              itemCount: rules.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (context, i) => _RoundUpTile(
-                rule: rules[i],
-                onToggle: (v) {
-                  setState(() {
-                    widget.transferService.addRoundUpRule(RoundUpRule(
-                      id: rules[i].id,
-                      name: rules[i].name,
-                      roundUpTo: rules[i].roundUpTo,
-                      customAmount: rules[i].customAmount,
-                      sourceWalletId: rules[i].sourceWalletId,
-                      savingsWalletId: rules[i].savingsWalletId,
-                      isActive: v,
-                      createdAt: rules[i].createdAt,
-                    ));
-                  });
-                },
-                onDelete: () {
-                  setState(() {
-                    widget.transferService.removeRoundUpRule(rules[i].id);
-                  });
-                  context.showMascotSnackBar('Round-up rule deleted'.tr(), type: MascotSnackBarType.info);
-                },
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+          child: GestureDetector(
+            onTap: _showAddDialog,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: AppColors.success.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColors.success.withOpacity(0.2), width: 0.5),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(CupertinoIcons.add, size: 18, color: AppColors.success),
+                  const SizedBox(width: 8),
+                  Text('Add Round-Up'.tr(), style: TextStyle(color: AppColors.success, fontSize: 14, fontWeight: FontWeight.w600)),
+                ],
               ),
             ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Expanded(
+          child: rules.isEmpty
+              ? _buildEmptyState(
+                  icon: CupertinoIcons.money_dollar,
+                  title: 'No round-up rules yet'.tr(),
+                  subtitle: 'Round up purchases and save the change'.tr(),
+                )
+              : ListView.separated(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                  itemCount: rules.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  itemBuilder: (context, i) => _RoundUpTile(
+                    rule: rules[i],
+                    onToggle: (v) {
+                      setState(() {
+                        widget.transferService.addRoundUpRule(RoundUpRule(
+                          id: rules[i].id,
+                          name: rules[i].name,
+                          roundUpTo: rules[i].roundUpTo,
+                          customAmount: rules[i].customAmount,
+                          sourceWalletId: rules[i].sourceWalletId,
+                          savingsWalletId: rules[i].savingsWalletId,
+                          isActive: v,
+                          createdAt: rules[i].createdAt,
+                        ));
+                      });
+                    },
+                    onDelete: () {
+                      setState(() {
+                        widget.transferService.removeRoundUpRule(rules[i].id);
+                      });
+                      context.showMascotSnackBar('Round-up rule deleted'.tr(), type: MascotSnackBarType.info);
+                    },
+                  ),
+                ),
+        ),
+      ],
     );
   }
 
@@ -580,19 +650,20 @@ class _RoundUpTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final sym = CurrencyFormatter.currentCurrency.symbol;
     String roundUpText;
     switch (rule.roundUpTo) {
       case RoundUpTo.nearestDollar:
-        roundUpText = 'Nearest \$1';
+        roundUpText = '${'Nearest'.tr()} $sym${'1'.tr()}';
         break;
       case RoundUpTo.nearestFive:
-        roundUpText = 'Nearest \$5';
+        roundUpText = '${'Nearest'.tr()} $sym${'5'.tr()}';
         break;
       case RoundUpTo.nearestTen:
-        roundUpText = 'Nearest \$10';
+        roundUpText = '${'Nearest'.tr()} $sym${'10'.tr()}';
         break;
       case RoundUpTo.custom:
-        roundUpText = 'Nearest \$${rule.customAmount ?? '?'}';
+        roundUpText = '${'Nearest'.tr()} $sym${rule.customAmount ?? '?'}';
         break;
     }
 
@@ -652,7 +723,7 @@ Widget _buildEmptyState({required IconData icon, required String title, required
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          FlowMascotAvatar(size: 80, showGlow: true, showParticles: false),
+          FlowMascotAvatar(size: 80, showGlow: true, showParticles: false, mood: MascotMood.sorrow),
           const SizedBox(height: 24),
           Icon(icon, size: 40, color: AppColors.primary.withOpacity(0.5)),
           const SizedBox(height: 16),
@@ -727,7 +798,7 @@ class _SmartRuleDialogState extends State<_SmartRuleDialog> {
               // Header
               Row(
                 children: [
-                  const FlowMascotAvatar(size: 36, showGlow: false),
+                  FlowMascotAvatar(size: 36, showGlow: false, mood: MascotMood.happy),
                   const SizedBox(width: 12),
                   Text(
                     widget.existing == null ? 'Add Smart Rule'.tr() : 'Edit Rule'.tr(),
@@ -1095,7 +1166,7 @@ class _AutoTransferDialogState extends State<_AutoTransferDialog> {
               children: [
                 Row(
                   children: [
-                    const FlowMascotAvatar(size: 36, showGlow: false),
+                    FlowMascotAvatar(size: 36, showGlow: false, mood: MascotMood.happy),
                     const SizedBox(width: 12),
                     Text('Add Auto-Transfer'.tr(), style: AppTypography.titleSmall()),
                   ],
@@ -1248,7 +1319,7 @@ class _RoundUpDialogState extends State<_RoundUpDialog> {
               children: [
                 Row(
                   children: [
-                    const FlowMascotAvatar(size: 36, showGlow: false),
+                    FlowMascotAvatar(size: 36, showGlow: false, mood: MascotMood.happy),
                     const SizedBox(width: 12),
                     Text('Add Round-Up Rule'.tr(), style: AppTypography.titleSmall()),
                   ],
@@ -1294,18 +1365,19 @@ class _RoundUpDialogState extends State<_RoundUpDialog> {
                   ),
                   items: RoundUpTo.values.map((t) {
                     String label;
+                    final sym = CurrencyFormatter.currentCurrency.symbol;
                     switch (t) {
                       case RoundUpTo.nearestDollar:
-                        label = 'Nearest \$1';
+                        label = '${'Nearest'.tr()} $sym${'1'.tr()}';
                         break;
                       case RoundUpTo.nearestFive:
-                        label = 'Nearest \$5';
+                        label = '${'Nearest'.tr()} $sym${'5'.tr()}';
                         break;
                       case RoundUpTo.nearestTen:
-                        label = 'Nearest \$10';
+                        label = '${'Nearest'.tr()} $sym${'10'.tr()}';
                         break;
                       case RoundUpTo.custom:
-                        label = 'Custom Amount';
+                        label = 'Custom Amount'.tr();
                         break;
                     }
                     return DropdownMenuItem(value: t, child: Text(label));

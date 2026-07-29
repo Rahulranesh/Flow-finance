@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import '../../core/theme/app_colors.dart';
 import '../database/database.dart' as db;
 
 /// Repository for settings data operations
@@ -91,6 +92,20 @@ class SettingsRepository {
   /// Set theme mode
   Future<void> setThemeMode(ThemeMode mode) =>
       setString('theme_mode', mode.name);
+
+  /// Get accent color
+  Future<AppAccentColor> getAccentColor(
+      {AppAccentColor defaultAccent = AppAccentColor.gold}) async {
+    final value = await getString('accent_color');
+    return AppAccentColor.values.firstWhere(
+      (e) => e.name == value,
+      orElse: () => defaultAccent,
+    );
+  }
+
+  /// Set accent color
+  Future<void> setAccentColor(AppAccentColor accent) =>
+      setString('accent_color', accent.name);
 
   /// Get notifications enabled
   Future<bool> getNotificationsEnabled({bool defaultValue = true}) async {
