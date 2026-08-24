@@ -55,3 +55,6 @@ keystore.jks
 
 /.firebase
 .firebase/
+/budget/
+/promotional/
+/index.html
