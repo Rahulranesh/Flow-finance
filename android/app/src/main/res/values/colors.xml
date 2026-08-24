@@ -1,4 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ic_launcher_background">#ffffff</color>
+    <!-- Complete Glance AppWidget Material 3 color fallback declarations -->
+    <color name="glance_colorPrimary">#B8860B</color>
+    <color name="glance_colorOnPrimary">#ffffff</color>
+    <color name="glance_colorPrimaryContainer">#fff8e7</color>
+    <color name="glance_colorOnPrimaryContainer">#3d2800</color>
+    
+    <color name="glance_colorSecondary">#E7B416</color>
+    <color name="glance_colorOnSecondary">#1e293b</color>
+    <color name="glance_colorSecondaryContainer">#fef3c7</color>
+    <color name="glance_colorOnSecondaryContainer">#451a03</color>
+
+    <color name="glance_colorTertiary">#0f172a</color>
+    <color name="glance_colorOnTertiary">#ffffff</color>
+    <color name="glance_colorTertiaryContainer">#e2e8f0</color>
+    <color name="glance_colorOnTertiaryContainer">#0f172a</color>
+
+    <color name="glance_colorBackground">#f8fafc</color>
+    <color name="glance_colorOnBackground">#1e293b</color>
+
+    <color name="glance_colorSurface">#ffffff</color>
+    <color name="glance_colorOnSurface">#1e293b</color>
+    <color name="glance_colorSurfaceVariant">#f1f5f9</color>
+    <color name="glance_colorOnSurfaceVariant">#64748b</color>
+
+    <color name="glance_colorOutline">#cbd5e1</color>
+    <color name="glance_colorError">#ef4444</color>
+    <color name="glance_colorOnError">#ffffff</color>
 </resources>

@@ -55,8 +55,11 @@ class FirebaseNotificationService {
         onDidReceiveNotificationResponse: _onNotificationTapped,
       );
 
-      // Get FCM token
-      final token = await _firebaseMessaging.getToken();
+      // Get FCM token (with timeout for iOS Simulator compatibility)
+      final token = await _firebaseMessaging.getToken().timeout(
+        const Duration(seconds: 3),
+        onTimeout: () => null,
+      );
       print('FCM Token: $token');
 
       // Listen to token refresh

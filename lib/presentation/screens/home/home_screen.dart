@@ -11,7 +11,6 @@ import '../../blocs/blocs.dart';
 import '../../blocs/premium_controller.dart';
 import '../../widgets/transaction_details_sheet.dart';
 import '../settings/sms_sync_screen.dart';
-import '../settings/google_pay_sync_screen.dart';
 import '../settings/paywall_screen.dart';
 import '../add_transaction/add_transaction_screen.dart';
 import '../transactions/transactions_screen.dart';
@@ -431,34 +430,6 @@ class _QuickActionsRow extends StatelessWidget {
         },
       ),
       _ActionItem(
-        icon: CupertinoIcons.chat_bubble_2_fill,
-        label: 'SMS Sync',
-        color: AppColors.secondary,
-        onTap: () {
-          final isPremium = context.read<PremiumController>().isPremium;
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => isPremium ? const SmsSyncScreen() : const PaywallScreen(),
-            ),
-          );
-        },
-      ),
-      _ActionItem(
-        icon: CupertinoIcons.creditcard,
-        label: 'Google Pay',
-        color: AppColors.success,
-        onTap: () {
-          final isPremium = context.read<PremiumController>().isPremium;
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => isPremium ? const GooglePaySyncScreen() : const PaywallScreen(),
-            ),
-          );
-        },
-      ),
-      _ActionItem(
         icon: CupertinoIcons.money_dollar,
         label: 'Wallets',
         color: AppColors.warning,
@@ -471,12 +442,25 @@ class _QuickActionsRow extends StatelessWidget {
           );
         },
       ),
+      _ActionItem(
+        icon: CupertinoIcons.flag,
+        label: 'Goals',
+        color: AppColors.success,
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const GoalsScreen(),
+            ),
+          );
+        },
+      ),
     ];
 
     final secondRow = [
       _ActionItem(
         icon: CupertinoIcons.person_2,
-        label: 'Family Mode',
+        label: 'Family',
         color: AppColors.info,
         onTap: () {
           final isPremium = context.read<PremiumController>().isPremium;
@@ -515,35 +499,18 @@ class _QuickActionsRow extends StatelessWidget {
           );
         },
       ),
-      _ActionItem(
-        icon: CupertinoIcons.flag,
-        label: 'Goals',
-        color: AppColors.success,
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const GoalsScreen(),
-            ),
-          );
-        },
-      ),
     ];
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Column(
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children:
-                firstRow.map((action) => _buildActionButton(action)).toList(),
+            children: firstRow.map((action) => Expanded(child: _buildActionButton(action))).toList(),
           ),
           const SizedBox(height: 16),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children:
-                secondRow.map((action) => _buildActionButton(action)).toList(),
+            children: secondRow.map((action) => Expanded(child: _buildActionButton(action))).toList(),
           ),
         ],
       ),
@@ -553,15 +520,16 @@ class _QuickActionsRow extends StatelessWidget {
   Widget _buildActionButton(_ActionItem action) {
     return GestureDetector(
       onTap: action.onTap,
+      behavior: HitTestBehavior.opaque,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 56,
-            height: 56,
+            width: 60,
+            height: 60,
             decoration: BoxDecoration(
-              color: action.color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+              color: action.color.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(
               action.icon,
@@ -570,15 +538,15 @@ class _QuickActionsRow extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          SizedBox(
-            width: 56,
-            child: Text(
-              action.label.tr(),
-              style: AppTypography.labelMedium(),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
+          Text(
+            action.label.tr(),
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
           ),
         ],
       ),

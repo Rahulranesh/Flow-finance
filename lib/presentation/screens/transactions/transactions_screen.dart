@@ -115,45 +115,69 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
             ),
           ),
 
-          // Filter Chips
-          SizedBox(
-            height: 44,
-            child: ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              scrollDirection: Axis.horizontal,
-              itemCount: _filters.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
-              itemBuilder: (context, index) {
-                final (label, filter) = _filters[index];
-                final isSelected = filter == _selectedFilter;
+          // Segmented Filter Bar
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Container(
+              height: 46,
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceVariant(context),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: _filters.map((item) {
+                  final (label, filter) = item;
+                  final isSelected = filter == _selectedFilter;
 
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedFilter = filter;
-                    });
-                    context.read<TransactionBloc>().setFilter(filter);
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? AppColors.primary
-                          : AppColors.surfaceVariant(context),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      label.tr(),
-                      style: AppTypography.labelMedium(
-                        color: isSelected ? Colors.white : null,
+                  return Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedFilter = filter;
+                        });
+                        context.read<TransactionBloc>().setFilter(filter);
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        curve: Curves.easeInOut,
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? AppColors.primary
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(9),
+                          boxShadow: isSelected
+                              ? [
+                                  BoxShadow(
+                                    color: AppColors.primary.withOpacity(0.25),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ]
+                              : null,
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          label.tr(),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.w500,
+                            color: isSelected
+                                ? Colors.white
+                                : (isDark
+                                    ? AppColors.textSecondaryDark
+                                    : AppColors.textSecondaryLight),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                );
-              },
+                  );
+                }).toList(),
+              ),
             ),
           ),
 
@@ -167,7 +191,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                   return const Center(child: CupertinoActivityIndicator());
                 }
 
-                if (bloc.error != null) {
+                if (bloc.error != null && bloc.transactions.isEmpty) {
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,

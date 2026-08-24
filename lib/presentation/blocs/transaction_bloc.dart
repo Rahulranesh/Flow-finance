@@ -75,6 +75,7 @@ class TransactionBloc extends ChangeNotifier {
 
   Future<void> addTransaction(Transaction transaction) async {
     _setLoading(true);
+    _clearError();
 
     try {
       await _repository.insertTransaction(transaction);
@@ -111,6 +112,7 @@ class TransactionBloc extends ChangeNotifier {
 
   Future<int> addTransactions(List<Transaction> transactions) async {
     _setLoading(true);
+    _clearError();
 
     try {
       final existingIds = _transactions.map((item) => item.id).toSet();
@@ -138,6 +140,7 @@ class TransactionBloc extends ChangeNotifier {
 
   Future<void> updateTransaction(Transaction transaction) async {
     _setLoading(true);
+    _clearError();
 
     try {
       final ruleResult = _smartRulesEngine.processTransaction(transaction);
@@ -213,6 +216,7 @@ class TransactionBloc extends ChangeNotifier {
 
   Future<void> deleteTransaction(String id) async {
     _setLoading(true);
+    _clearError();
 
     try {
       await _repository.deleteTransaction(id);

@@ -76,7 +76,8 @@ class PlaidService {
         if (linkCustomizationName != null) 
           'link_customization_name': linkCustomizationName,
         if (redirectUri != null) 'redirect_uri': redirectUri,
-        if (androidPackageName) 'android_package_name': 'com.cashew.budget',
+        if (androidPackageName) 'android_package_name': 'com.ranesh.moneymanager',
+
       }),
       );
       

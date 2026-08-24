@@ -12,8 +12,8 @@ class PremiumController extends ChangeNotifier {
   PremiumService get service => _service;
   bool get isPremium => _service.isPremium;
   String? get currentPlan => _service.currentPlan;
-  String? get monthlyPrice => _service.monthlyProduct?.price;
-  String? get yearlyPrice => _service.yearlyProduct?.price;
+  String? get monthlyPrice => null;
+  String? get yearlyPrice => null;
   bool get initialized => _service.initialized;
 
   void _onServiceChanged() {

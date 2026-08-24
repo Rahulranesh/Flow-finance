@@ -1,19 +1,14 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/services.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// Core
-import 'core/services/admob_service.dart';
 import 'core/services/auto_transfer_service.dart';
-import 'core/services/notification_service.dart';
-import 'core/services/firebase_notification_service.dart';
 import 'core/services/premium_service.dart';
 import 'core/services/smart_rules_engine.dart';
-import 'core/theme/theme.dart';
+import 'core/theme/app_theme.dart';
 import 'data/database/database.dart';
 import 'data/repositories/budget_repository.dart';
 import 'data/repositories/family_repository.dart';
@@ -22,6 +17,7 @@ import 'data/repositories/recurring_transaction_repository.dart';
 import 'data/repositories/settings_repository.dart';
 import 'data/repositories/transaction_repository.dart';
 import 'data/repositories/wallet_repository.dart';
+import 'firebase_options.dart';
 import 'presentation/blocs/budget_bloc.dart';
 import 'presentation/blocs/premium_controller.dart';
 import 'presentation/blocs/settings_controller.dart';
@@ -32,362 +28,111 @@ import 'presentation/screens/onboarding/onboarding_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await EasyLocalization.ensureInitialized();
-  final sharedPreferences = await SharedPreferences.getInstance();
 
-  // Set preferred orientations
+  // Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  // Localization
+  await EasyLocalization.ensureInitialized();
+
+  // System UI
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+    ),
+  );
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
 
-  // Set system UI overlay style
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-      systemNavigationBarColor: Colors.transparent,
-      systemNavigationBarDividerColor: Colors.transparent,
-    ),
-  );
+  // Core dependencies
+  final prefs = await SharedPreferences.getInstance();
+  final database = AppDatabase();
+  final settingsRepo = SettingsRepository(database);
+  final transactionRepo = TransactionRepository(database);
+  final walletRepo = WalletRepository(database);
+  final budgetRepo = BudgetRepository(database);
+  final recurringRepo = RecurringTransactionRepository(prefs);
+  final goalRepo = GoalRepository(settingsRepo);
+  final familyRepo = FamilyRepository(prefs);
+  final smartRules = SmartRulesEngine(settingsRepo);
+  final autoTransfer = AutoTransferService(settingsRepo);
+  final premiumService = PremiumService();
 
-  await Firebase.initializeApp();
+  // Check if onboarding has been seen
+  final seenOnboarding = prefs.getBool('seen_onboarding') ?? false;
 
   runApp(
     EasyLocalization(
-      supportedLocales: const [
-        Locale('en'),
-        Locale('ta'),
-        Locale('hi'),
-        Locale('es'),
-        Locale('fr'),
-        Locale('de'),
-        Locale('zh'),
-        Locale('ja'),
-        Locale('ar'),
-        Locale('pt'),
-        Locale('ru'),
-        Locale('ml'),
-        Locale('te'),
-        Locale('bn'),
-        Locale('mr'),
-      ],
+      supportedLocales: const [Locale('en'), Locale('ta')],
       path: 'assets/translations',
       fallbackLocale: const Locale('en'),
-      startLocale: const Locale('en'),
-      child: FlowFinanceApp(sharedPreferences: sharedPreferences),
+      child: MultiProvider(
+        providers: [
+          // Repositories
+          Provider<SettingsRepository>.value(value: settingsRepo),
+          Provider<TransactionRepository>.value(value: transactionRepo),
+          Provider<WalletRepository>.value(value: walletRepo),
+          Provider<BudgetRepository>.value(value: budgetRepo),
+          Provider<RecurringTransactionRepository>.value(value: recurringRepo),
+          Provider<GoalRepository>.value(value: goalRepo),
+          Provider<FamilyRepository>.value(value: familyRepo),
+
+          // BLoCs / Controllers
+          ChangeNotifierProvider<SettingsController>(
+            create: (_) => SettingsController(settingsRepo)..load(),
+          ),
+          ChangeNotifierProvider<WalletBloc>(
+            create: (_) => WalletBloc(walletRepo)..loadWallets(),
+          ),
+          ChangeNotifierProvider<TransactionBloc>(
+            create: (_) => TransactionBloc(
+              transactionRepo,
+              walletRepo,
+              smartRules,
+              autoTransfer,
+              recurringRepo,
+            )..loadTransactions(),
+          ),
+          ChangeNotifierProvider<BudgetBloc>(
+            create: (_) => BudgetBloc(budgetRepo, transactionRepo)
+              ..loadBudgets(),
+          ),
+          ChangeNotifierProvider<PremiumController>(
+            create: (_) => PremiumController(premiumService),
+          ),
+        ],
+        child: FlowFinanceApp(seenOnboarding: seenOnboarding),
+      ),
     ),
   );
 }
 
-/// Main app widget with integrated state management
 class FlowFinanceApp extends StatelessWidget {
-  const FlowFinanceApp({
-    super.key,
-    required this.sharedPreferences,
-  });
+  final bool seenOnboarding;
 
-  final SharedPreferences sharedPreferences;
+  const FlowFinanceApp({super.key, required this.seenOnboarding});
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        // Database
-        Provider(create: (_) => AppDatabase()),
-        Provider.value(value: sharedPreferences),
+    final settingsController = context.watch<SettingsController>();
 
-        // Repositories
-        ProxyProvider<AppDatabase, TransactionRepository>(
-          update: (_, db, __) => TransactionRepository(db),
-        ),
-        ProxyProvider<AppDatabase, BudgetRepository>(
-          update: (_, db, __) => BudgetRepository(db),
-        ),
-        ProxyProvider<AppDatabase, SettingsRepository>(
-          update: (_, db, __) => SettingsRepository(db),
-        ),
-        ProxyProvider<AppDatabase, WalletRepository>(
-          update: (_, db, __) => WalletRepository(db),
-        ),
-        ProxyProvider<AppDatabase, GoalRepository>(
-          update: (_, db, __) => GoalRepository(SettingsRepository(db)),
-        ),
-        ProxyProvider<SharedPreferences, FamilyRepository>(
-          update: (_, prefs, __) => FamilyRepository(prefs),
-        ),
-        ProxyProvider<SharedPreferences, RecurringTransactionRepository>(
-          update: (_, prefs, __) => RecurringTransactionRepository(prefs),
-        ),
-
-        // Repositories and Services
-        ProxyProvider<SettingsRepository, SmartRulesEngine>(
-          update: (_, settingsRepo, __) => SmartRulesEngine(settingsRepo),
-        ),
-        ProxyProvider<SettingsRepository, AutoTransferService>(
-          update: (_, settingsRepo, __) => AutoTransferService(settingsRepo),
-        ),
-
-        // BLoCs
-        ChangeNotifierProvider(
-          create: (context) => TransactionBloc(
-            context.read<TransactionRepository>(),
-            context.read<WalletRepository>(),
-            context.read<SmartRulesEngine>(),
-            context.read<AutoTransferService>(),
-            context.read<RecurringTransactionRepository>(),
-          ),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => BudgetBloc(
-            context.read<BudgetRepository>(),
-            context.read<TransactionRepository>(),
-          ),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => WalletBloc(
-            context.read<WalletRepository>(),
-          ),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => SettingsController(
-            context.read<SettingsRepository>(),
-          )..load(),
-        ),
-
-        // Premium
-        ChangeNotifierProvider(
-          create: (_) => PremiumService(),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => PremiumController(
-            context.read<PremiumService>(),
-          ),
-        ),
-      ],
-      child: Consumer<SettingsController>(
-        builder: (context, settings, child) => MaterialApp(
-          title: 'Flow Finance'.tr(),
-          debugShowCheckedModeBanner: false,
-          theme: AppTheme.light,
-          darkTheme: AppTheme.dark,
-          themeMode: settings.themeMode,
-          localizationsDelegates: context.localizationDelegates,
-          supportedLocales: context.supportedLocales,
-          locale: context.locale,
-          home: AppInitializer(sharedPreferences: sharedPreferences),
-        ),
-      ),
+    return MaterialApp(
+      title: 'Flow Finance',
+      debugShowCheckedModeBanner: false,
+      localizationsDelegates: context.localizationDelegates,
+      supportedLocales: context.supportedLocales,
+      locale: context.locale,
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: settingsController.themeMode,
+      home: seenOnboarding
+          ? const MainNavigationScreen()
+          : const OnboardingScreen(),
     );
-  }
-}
-
-/// App initializer to load data on startup
-class AppInitializer extends StatefulWidget {
-  const AppInitializer({super.key, required this.sharedPreferences});
-
-  final SharedPreferences sharedPreferences;
-
-  @override
-  State<AppInitializer> createState() => _AppInitializerState();
-}
-
-class _AppInitializerState extends State<AppInitializer> {
-  bool _isLoading = true;
-  String? _error;
-  String? _errorDetails;
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeApp();
-  }
-
-  Future<void> _initializeApp() async {
-    try {
-      final notifications = NotificationService();
-      final firebaseNotifications = FirebaseNotificationService();
-      try {
-        await notifications.initialize();
-        await firebaseNotifications.initialize();
-      } catch (e) {
-        debugPrint('Notification initialization failed: $e');
-      }
-
-      try {
-        await AdMobService().initialize();
-      } catch (e) {
-        debugPrint('AdMob initialization failed: $e');
-      }
-
-      // Load initial data
-      final transactionBloc = context.read<TransactionBloc>();
-      final budgetBloc = context.read<BudgetBloc>();
-      final settings = context.read<SettingsController>();
-
-      await Future.wait([
-        transactionBloc.loadTransactions(),
-        budgetBloc.loadBudgets(),
-        settings.isLoading ? settings.load() : Future<void>.value(),
-      ]);
-
-      // Process due recurring transactions
-      final recurringCount = await transactionBloc.processDueRecurringTransactions();
-      if (recurringCount > 0) {
-        debugPrint('Processed $recurringCount due recurring transactions');
-      }
-
-      if (settings.settings.notificationsEnabled) {
-        try {
-          await notifications.requestPermissions();
-          await notifications.scheduleDailyBudgetCheck();
-          await notifications.scheduleWeeklySummary();
-        } catch (e) {
-          debugPrint('Notification scheduling failed: $e');
-        }
-      }
-
-      if (mounted) {
-        if (settings.languageCode.isNotEmpty && context.locale.languageCode != settings.languageCode) {
-          await context.setLocale(Locale(settings.languageCode));
-        }
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    } catch (e, stackTrace) {
-      debugPrint('App initialization failed: $e');
-      debugPrintStack(stackTrace: stackTrace);
-      if (mounted) {
-        setState(() {
-          _error = 'Failed to initialize app'.tr();
-          _errorDetails = e.toString();
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    context.watch<SettingsController>();
-    if (_isLoading) {
-      return Scaffold(
-        backgroundColor: AppColors.backgroundLight,
-        body: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                AppColors.primary.withOpacity(0.1),
-                AppColors.backgroundLight,
-              ],
-            ),
-          ),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TweenAnimationBuilder<double>(
-                  tween: Tween(begin: 0.8, end: 1.0),
-                  duration: const Duration(milliseconds: 800),
-                  curve: Curves.easeInOut,
-                  builder: (context, value, child) {
-                    return Transform.scale(
-                      scale: value,
-                      child: Container(
-                        width: 104,
-                        height: 104,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(24),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.primary.withOpacity(0.3),
-                              blurRadius: 20,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(24),
-                          child: Image.asset(
-                            'assets/icon/app_icon.png',
-                            width: 104,
-                            height: 104,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 32),
-                Text(
-                  'Flow Finance',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                      ),
-                ),
-                const SizedBox(height: 24),
-                const CupertinoActivityIndicator(radius: 14),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-
-    if (_error != null) {
-      return Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                CupertinoIcons.exclamationmark_circle,
-                size: 64,
-                color: AppColors.error,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                _error!,
-                style: Theme.of(context).textTheme.titleLarge,
-                textAlign: TextAlign.center,
-              ),
-              if (_errorDetails != null) ...[
-                const SizedBox(height: 12),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Text(
-                    _errorDetails!,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.textSecondaryLight,
-                        ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ],
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    _isLoading = true;
-                    _error = null;
-                    _errorDetails = null;
-                  });
-                  _initializeApp();
-                },
-                child: Text('Retry'.tr()),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    final seenOnboarding = widget.sharedPreferences.getBool('seen_onboarding') ?? false;
-    return seenOnboarding ? MainNavigationScreen() : OnboardingScreen();
   }
 }

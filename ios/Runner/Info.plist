@@ -9,9 +9,11 @@
   <key>NSFaceIDUsageDescription</key>
   <string>Lock the application</string>
   <key>NSPhotoLibraryUsageDescription</key>
-  <string>Money Manager uses photos to attach to a transaction entry</string>
+  <string>Flow Finance uses photos to attach to a transaction entry</string>
   <key>NSCameraUsageDescription</key>
-  <string>Money Manager uses the camera to capture a photo to be used as a transaction attachment</string>
+  <string>Flow Finance uses the camera to capture a photo to be used as a transaction attachment</string>
+  <key>GADApplicationIdentifier</key>
+  <string>ca-app-pub-3940256099942544~1458002511</string>
   <key>ITSAppUsesNonExemptEncryption</key>
   <false/>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
@@ -19,7 +21,8 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Money Manager</string>
+	<string>Flow Finance</string>
+
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -27,7 +30,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>Money Manager</string>
+	<string>budget</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

@@ -1,6 +1,7 @@
 # Flow Finance — Complete App Documentation
 
-> **Version:** 5.4.3+416 | **Platform:** Android & iOS (Flutter) | **Codename:** *Cashew*
+> **Version:** 5.4.4+417 | **Platform:** Android & iOS (Flutter) | **App Name:** *Flow Finance*
+
 
 ---
 

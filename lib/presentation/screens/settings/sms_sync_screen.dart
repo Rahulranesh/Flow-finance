@@ -8,6 +8,7 @@ import '../../../core/services/sms_transaction_service.dart';
 import '../../../data/models/transaction_model.dart';
 import '../../blocs/transaction_bloc.dart';
 import 'package:provider/provider.dart';
+import 'sms_permission_disclosure_screen.dart';
 
 /// SMS Sync screen for syncing transactions from SMS
 class SmsSyncScreen extends StatefulWidget {
@@ -47,28 +48,28 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
     }
   }
 
+  /// Navigate to the full-screen prominent disclosure before requesting SMS permission.
+  /// This satisfies Google Play policy: apps must show a clear, prominent disclosure
+  /// BEFORE requesting sensitive permissions.
   Future<void> _requestPermissions() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    final granted = await _smsService.requestPermissions();
-
-    setState(() {
-      _hasPermission = granted;
-      _isLoading = false;
-    });
-
-    if (granted) {
-      _showImportSetupIfNeeded(force: true);
-    } else {
-      if (mounted) {
-        CupertinoToast.show(
-        context,
-        message: 'SMS permissions are required to sync transactions'.tr(),
-      );
-      }
-    }
+    if (!mounted) return;
+    await Navigator.push<void>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SmsPermissionDisclosureScreen(
+          onGranted: () {
+            Navigator.pop(context);
+            setState(() => _hasPermission = true);
+            _showImportSetupIfNeeded(force: true);
+          },
+          onDeclined: () => Navigator.pop(context),
+        ),
+        fullscreenDialog: true,
+      ),
+    );
+    // Re-check permission state after returning from disclosure screen
+    final granted = await _smsService.hasPermissions();
+    if (mounted) setState(() => _hasPermission = granted);
   }
 
   void _showImportSetupIfNeeded({bool force = false}) {
@@ -496,31 +497,53 @@ class _SmsSyncScreenState extends State<SmsSyncScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              CupertinoIcons.chat_bubble_2_fill,
-              size: 80,
-              color: AppColors.primary.withOpacity(0.5),
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Icon(
+                CupertinoIcons.chat_bubble_2_fill,
+                size: 40,
+                color: AppColors.primary,
+              ),
             ),
             const SizedBox(height: 24),
             Text(
-              'SMS Permission Required'.tr(),
+              'SMS Access Required'.tr(),
               style: AppTypography.titleLarge(),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             Text(
-              'We need access to your SMS messages to automatically detect and import transactions from bank notifications.'
-                  .tr(),
+              'Flow Finance reads bank SMS alerts on your device to auto-detect income and expenses. Your messages are NEVER uploaded or shared.'.tr(),
               style: AppTypography.bodyMedium(
                 color: AppColors.textSecondary(context),
               ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
-            AppButton.primary(
-              label: 'Grant Permission'.tr(),
-              onPressed: _requestPermissions,
-              icon: CupertinoIcons.check_mark_circled_solid,
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton.icon(
+                onPressed: _requestPermissions,
+                icon: const Icon(CupertinoIcons.lock_open_fill, size: 18),
+                label: Text(
+                  'Allow SMS Access'.tr(),
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+              ),
             ),
           ],
         ),

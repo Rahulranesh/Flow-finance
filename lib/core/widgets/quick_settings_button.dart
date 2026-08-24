@@ -4,7 +4,6 @@ import 'package:easy_localization/easy_localization.dart';
 import '../theme/theme.dart';
 import '../../presentation/screens/settings/settings_screen.dart';
 import '../../presentation/screens/settings/sms_sync_screen.dart';
-import '../../presentation/screens/settings/google_pay_sync_screen.dart';
 import '../../presentation/screens/goals/goals_screen.dart';
 
 /// Quick settings button with menu
@@ -20,6 +19,7 @@ class QuickSettingsButton extends StatelessWidget {
           builder: (context) => CupertinoActionSheet(
             title: Text('Quick Settings'.tr()),
             actions: [
+              /* SMS Sync (Disabled)
               CupertinoActionSheetAction(
                 child: Row(
                   children: [
@@ -33,19 +33,7 @@ class QuickSettingsButton extends StatelessWidget {
                   Navigator.push(context, MaterialPageRoute(builder: (context) => const SmsSyncScreen()));
                 },
               ),
-              CupertinoActionSheetAction(
-                child: Row(
-                  children: [
-                    Icon(CupertinoIcons.creditcard, size: 20, color: AppColors.secondary),
-                    const SizedBox(width: 12),
-                    Flexible(child: Text('Google Pay Sync'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis)),
-                  ],
-                ),
-                onPressed: () {
-                  Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const GooglePaySyncScreen()));
-                },
-              ),
+              */
               CupertinoActionSheetAction(
                 child: Row(
                   children: [

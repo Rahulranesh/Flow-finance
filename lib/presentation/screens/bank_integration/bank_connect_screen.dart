@@ -59,7 +59,8 @@ class _BankConnectScreenState extends State<BankConnectScreen> {
     _trueLayerService.initialize(
       clientId: 'YOUR_TRUELAYER_CLIENT_ID',
       clientSecret: 'YOUR_TRUELAYER_SECRET',
-      redirectUri: 'com.cashew.budget://callback',
+      redirectUri: 'com.ranesh.moneymanager://callback',
+
       environment: TrueLayerEnvironment.sandbox,
     );
   }

@@ -470,6 +470,35 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
 
   Future<void> _toggleSmsPermission(bool value) async {
     if (value) {
+      final agreed = await showCupertinoDialog<bool>(
+        context: context,
+        builder: (context) => CupertinoAlertDialog(
+          title: Text('SMS Permission Required'.tr()),
+          content: Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Text(
+              'Flow Finance uses READ_SMS and RECEIVE_SMS permissions to automatically detect incoming bank transaction alerts (e.g., debit/credit messages).\n\n'
+              '• Used solely for personal expense & budget tracking.\n'
+              '• All SMS parsing happens 100% locally on your device.\n'
+              '• Your SMS data is NEVER uploaded, shared, or sold.'.tr(),
+              textAlign: TextAlign.left,
+            ),
+          ),
+          actions: [
+            CupertinoDialogAction(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text('Deny'.tr()),
+            ),
+            CupertinoDialogAction(
+              isDefaultAction: true,
+              onPressed: () => Navigator.pop(context, true),
+              child: Text('Agree & Continue'.tr()),
+            ),
+          ],
+        ),
+      );
+      if (agreed != true) return;
+
       final granted = await _upiService.requestSmsPermission();
       setState(() => _smsPermissionGranted = granted);
 
@@ -484,7 +513,8 @@ class _UPISetupScreenState extends State<UPISetupScreen> {
         builder: (context) => CupertinoAlertDialog(
           title: Text('Revoke Permission'.tr()),
           content: Text(
-            'To revoke SMS permission, please go to Settings > Apps > Cashew > Permissions'.tr(),
+            'To revoke SMS permission, please go to Settings > Apps > Flow Finance > Permissions'.tr(),
+
           ),
           actions: [
             CupertinoDialogAction(

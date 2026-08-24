@@ -19,12 +19,10 @@ import '../../../data/repositories/goal_repository.dart';
 import '../../blocs/premium_controller.dart';
 import 'paywall_screen.dart';
 import 'sms_sync_screen.dart';
-import 'google_pay_sync_screen.dart';
 import '../family/family_screen.dart';
 import '../goals/goals_screen.dart';
 import '../wallets/wallets_screen.dart';
 import '../recurring/recurring_transactions_screen.dart';
-import '../bank_integration/bank_connect_screen.dart';
 import '../automation/automation_screen.dart';
 import '../../blocs/blocs.dart';
 
@@ -357,17 +355,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   const _SettingsDivider(),
                   _SettingsTile(
-                    icon: CupertinoIcons.building_2_fill,
-                    iconColor: AppColors.info,
-                    title: 'Bank Integration'.tr(),
-                    subtitle: 'Connect your real bank accounts'.tr(),
-                    onTap: () => _navigatePremiumOrScreen(
-                      context,
-                      const BankConnectScreen(),
-                    ),
-                  ),
-                  const _SettingsDivider(),
-                  _SettingsTile(
                     icon: Icons.auto_awesome,
                     iconColor: AppColors.warning,
                     title: 'Automation & Rules'.tr(),
@@ -384,6 +371,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _SettingsSection(
                 title: 'Sync & Integration'.tr(),
                 children: [
+                  /* SMS Sync (Disabled)
                   _SettingsTile(
                     icon: CupertinoIcons.chat_bubble,
                     iconColor: AppColors.primary,
@@ -396,18 +384,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                   const _SettingsDivider(),
-                  _SettingsTile(
-                    icon: CupertinoIcons.creditcard,
-                    iconColor: AppColors.secondary,
-                    title: 'Google Pay Sync'.tr(),
-                    subtitle:
-                        'Import Google Pay transactions from SMS'.tr(),
-                    onTap: () => _navigatePremiumOrScreen(
-                      context,
-                      const GooglePaySyncScreen(),
-                    ),
-                  ),
-                  const _SettingsDivider(),
+                  */
                   _SettingsTile(
                     icon: CupertinoIcons.flag,
                     iconColor: AppColors.success,

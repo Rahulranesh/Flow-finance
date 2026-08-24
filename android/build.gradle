@@ -1,15 +1,14 @@
 buildscript {
-    ext.kotlin_version = '2.1.0'
+    ext.kotlin_version = '1.9.0'
     repositories {
         google()
         jcenter()
         mavenCentral()
     }
-
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.9.1'
+        classpath 'com.android.tools.build:gradle:8.1.4'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'com.google.gms:google-services:4.4.1'
+        classpath 'com.google.gms:google-services:4.3.14'
     }
 }
 
@@ -19,56 +18,29 @@ allprojects {
         jcenter()
         mavenCentral()
     }
-
-    afterEvaluate { project ->
-        if (project.hasProperty("android")) {
-            project.android {
-                if (it.hasProperty("compileOptions")) {
-                    compileOptions {
-                        sourceCompatibility JavaVersion.VERSION_11
-                        targetCompatibility JavaVersion.VERSION_11
-                    }
-                }
-                if (it.hasProperty("kotlinOptions")) {
-                    kotlinOptions {
-                        jvmTarget = "11"
-                    }
-                }
-            }
-        }
-    }
 }
 
 rootProject.buildDir = '../build'
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
     project.evaluationDependsOn(':app')
+
+    plugins.withId("com.android.library") {
+        android {
+            if (namespace == null) {
+                namespace = "com.plugin.${project.name.replaceAll('-', '_')}"
+            }
+        }
+    }
+    plugins.withId("com.android.application") {
+        android {
+            if (namespace == null) {
+                namespace = "com.plugin.${project.name.replaceAll('-', '_')}"
+            }
+        }
+    }
 }
 
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
-
-subprojects {
-    project.plugins.withId("com.android.library") {
-        project.android {
-            compileSdkVersion 36
-            if (namespace == null) {
-                namespace project.group
-            }
-        }
-    }
-}
-
-
-subprojects {
-    project.plugins.withId("com.android.library") {
-        project.android {
-            compileSdkVersion 36
-            if (namespace == null) {
-                namespace project.group
-            }
-        }
-    }
-}
-
