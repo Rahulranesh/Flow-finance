@@ -159,8 +159,8 @@ flutter:
 
   assets:
     - assets/fonts/
-    - assets/categories/
     - assets/icon/
+
 
 
     - assets/landing/
