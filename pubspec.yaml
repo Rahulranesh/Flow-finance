@@ -161,8 +161,8 @@ flutter:
     - assets/mascot.json
     - assets/fonts/
     - assets/categories/
-    - assets/banner/
     - assets/icon/
+
     - assets/landing/
     - assets/images/
     - assets/static/
