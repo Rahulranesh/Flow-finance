@@ -18,8 +18,9 @@ import '../../../data/models/goal_model.dart';
 import '../../../data/repositories/goal_repository.dart';
 import '../../blocs/premium_controller.dart';
 import 'paywall_screen.dart';
-import 'sms_sync_screen.dart';
+
 import '../family/family_screen.dart';
+
 import '../goals/goals_screen.dart';
 import '../wallets/wallets_screen.dart';
 import '../recurring/recurring_transactions_screen.dart';

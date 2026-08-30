@@ -10,8 +10,8 @@ import '../../../data/models/models.dart';
 import '../../blocs/blocs.dart';
 import '../../blocs/premium_controller.dart';
 import '../../widgets/transaction_details_sheet.dart';
-import '../settings/sms_sync_screen.dart';
 import '../settings/paywall_screen.dart';
+
 import '../add_transaction/add_transaction_screen.dart';
 import '../transactions/transactions_screen.dart';
 import '../settings/settings_screen.dart';

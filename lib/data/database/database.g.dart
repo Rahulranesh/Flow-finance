@@ -80,7 +80,7 @@ class $TransactionsTable extends Transactions
       'currency', aliasedName, false,
       type: DriftSqlType.string,
       requiredDuringInsert: false,
-      defaultValue: const Constant('USD'));
+      defaultValue: const Constant('INR'));
   static const VerificationMeta _exchangeRateMeta =
       const VerificationMeta('exchangeRate');
   @override
@@ -1834,7 +1834,7 @@ class $WalletsTable extends Wallets with TableInfo<$WalletsTable, Wallet> {
       'currency', aliasedName, false,
       type: DriftSqlType.string,
       requiredDuringInsert: false,
-      defaultValue: const Constant('USD'));
+      defaultValue: const Constant('INR'));
   static const VerificationMeta _balanceMeta =
       const VerificationMeta('balance');
   @override

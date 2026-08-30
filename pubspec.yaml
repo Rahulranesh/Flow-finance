@@ -158,10 +158,10 @@ flutter:
   # https://flutter.dev/assets-and-images/#from-packages
 
   assets:
-    - assets/mascot.json
     - assets/fonts/
     - assets/categories/
     - assets/icon/
+
 
     - assets/landing/
     - assets/images/

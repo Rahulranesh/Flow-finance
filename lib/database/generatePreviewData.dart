@@ -1,17 +1,4 @@
 import 'dart:math';
-import 'package:budget/colors.dart';
-import 'package:budget/database/initializeDefaultDatabase.dart';
-import 'package:budget/database/tables.dart';
-import 'package:budget/functions.dart';
-import 'package:budget/struct/databaseGlobal.dart';
-import 'package:budget/struct/settings.dart';
-import 'package:budget/widgets/navigationFramework.dart';
-import 'package:budget/widgets/notificationsSettings.dart';
-import 'package:budget/widgets/openPopup.dart';
-import 'package:budget/widgets/tappable.dart';
-import 'package:budget/widgets/textWidgets.dart';
-import 'package:budget/widgets/viewAllTransactionsButton.dart';
-import 'package:budget/widgets/walletEntry.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
